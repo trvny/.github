@@ -1,1 +1,2 @@
-<img class="image" src="https://mirrors.creativecommons.org/presskit/cc.srr.primary.svg" width="96" alt="cc" /> <img class="image" src="https://upload.wikimedia.org/wikipedia/commons/4/44/CC_some_rights_reserved_PL.svg" width="95" alt="cc" />
+<img class="image" src="https://mirrors.creativecommons.org/presskit/cc.srr.primary.svg" width="96" alt="cc" /> <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/CC_some_rights_reserved_PL.svg" width="95" alt="cc" />
+<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" />
