@@ -3,8 +3,12 @@ title: "_"
 message: kurde
 type: software
 authors:
-  - family-names: T
-    given-names: Bartek
+  - name: trvny
+  - name: github-actions[bot]
+  - name: dependabot[bot]
+  - name: actions-user
+  - name: claude
+  - name: codex
 identifiers:
   - type: url
     value: 'https://github.com/trvny'
