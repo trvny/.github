@@ -1,17 +1,15 @@
 cff-version: 1.2.0
+title: "_"
 message: kurde
-title:  
 type: software
 authors:
-  - family-names: travny
+  - family-names: T
     given-names: Bartek
 identifiers:
   - type: url
     value: 'https://github.com/trvny'
-repository-code: 'https://github.com/trvny/feeds'
+repository-code: 'https://github.com/trvny/trvny'
 url: 'https://tvpi.pages.dev/'
-keywords:
-  - travny
 license: 0BSD
 version: 0.0.0
 date-released: '2026-07-29'
