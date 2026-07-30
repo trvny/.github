@@ -3,8 +3,8 @@ title: travny
 message: kurde
 type: software
 authors:
-  - given-names: Bartek
-    family-names: YOUR_NAME_HERE
+  - family-names: YOUR_NAME_HERE
+    given-names: Bartek
 identifiers:
   - type: url
     value: 'https://github.com/trvny'
