@@ -1,11 +1,17 @@
 cff-version: 1.2.0
-message: "kurde"
+title: travny
+message: kurde
+type: software
 authors:
-- family-names: "YOUR_NAME_HERE"
-  given-names: "YOUR_NAME_HERE"
-  orcid: "https://orcid.org/0000-0000-0000-0000"
-title: ".github"
+  - given-names: Bartek
+    family-names: YOUR_NAME_HERE
+identifiers:
+  - type: url
+    value: 'https://github.com/trvny'
+repository-code: 'https://github.com/trvny/feeds'
+url: 'https://tvpi.pages.dev/'
+keywords:
+  - travny
+license: 0BSD
 version: 0.0.0
-doi: 10.5281/zenodo.1234
-date-released: 2026-07-29
-url: "https://github.com/trvny/.github"
+date-released: '2026-07-29'
