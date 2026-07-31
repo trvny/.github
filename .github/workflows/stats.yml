@@ -35,9 +35,9 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: stats
-          options: username=${{ github.repository_owner }}&show_icons=true&hide_title=true&include_all_commits=true&prs_merged,prs_merged_percentage,prs_authored,prs_commented&theme=neon)
+          options: username=${{ github.repository_owner }}&show_icons=true&hide_title=true&rank_icon=github&include_all_commits=true&prs_merged,prs_merged_percentage,prs_authored,prs_commented&theme=neon)
           path: assets/profile/stats.svg
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}
 
 
       - name: Top languages
@@ -48,7 +48,7 @@ jobs:
           path: assets/profile/top-langs.svg
           token: ${{ secrets.GH_PAT }}
  
-      - name: Feeds card
+      - name: feeds card
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
@@ -56,7 +56,7 @@ jobs:
           path: assets/profile/pin_feeds.svg
           token: ${{ secrets.GH_PAT }}
 
-      - name: TVPI card
+      - name: tvpi card
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
@@ -64,7 +64,7 @@ jobs:
           path: assets/profile/pin_tvpi.svg
           token: ${{ secrets.GH_PAT }}
 
-      - name: WamBridge card
+      - name: wambridge card
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
@@ -72,7 +72,7 @@ jobs:
           path: assets/profile/pin_wambridge.svg
           token: ${{ secrets.GH_PAT }}
 
-      - name: Gist card
+      - name: gist card
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: gist
