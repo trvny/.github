@@ -4,8 +4,8 @@
 </div>
 <p align="center"> <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/CC_some_rights_reserved_PL.svg" width="96" alt="cc" /> </p>
 
-![stats](https://github-stats-extended.vercel.app/api?username=trvny&hide_title=true&show=prs_merged%2Cprs_merged_percentage&hide=issues%2Ccontribs&show_icons=true&include_all_commits=true&theme=neon) ![toplanguages](./assets/profile/top-langs.svg)  
-![pin](./assets/profile/pin_feeds.svg) ![pin](./assets/profile/pin_tvpi.svg) ![pin](./assets/profile/pin_wambridge.svg) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
+![toplanguages](./assets/profile/top-langs.svg)  
+[![feeds](./assets/profile/pin_feeds.svg)](https://github.com/trvny/feeds) [![tvpi](./assets/profile/pin_tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin_wambridge.svg)](https://github.com/trvny/wambridge) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
 
 ---
 ## 📰 Ostatnio w eterze
