@@ -40,8 +40,8 @@ jobs:
               'trvny/tvpi',
               'trvny/autka',
             ];
-            const retainDays = 7;
-            const keepMinimumRuns = 5;
+            const retainDays = 3;
+            const keepMinimumRuns = 3;
             const cutoff = Date.now() - retainDays * 24 * 60 * 60 * 1000;
             const failures = [];
             const summaries = [];
