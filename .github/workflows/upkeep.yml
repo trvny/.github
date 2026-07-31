@@ -54,7 +54,8 @@ jobs:
             trvny/.github,
             trvny/feeds,
             trvny/tvpi,
-            trvny/autka
+            trvny/autka,
+            trvny/wambridge
         with:
           github-token: ${{ secrets.GH_PAT }}
           script: |
