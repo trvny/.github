@@ -30,17 +30,15 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v7.0.1
-        with:
-          ref: ${{ github.event.repository.default_branch }}
 
       - name: Top languages
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: top-langs
-          options: username=${{ github.repository_owner }}&layout=donut&hide_title=true&langs_count=10&theme=synthwave
+          options: username=${{ github.repository_owner }}&show_icons=true&layout=donut&hide_title=true&langs_count=10&theme=synthwave
           path: assets/profile/top-langs.svg
           token: ${{ secrets.GH_PAT }}
-
+         options: username=${{ github.repository_owner }}&show_icons=true
       - name: Feeds card
         uses: stats-organization/github-readme-stats-action@v2
         with:
@@ -61,7 +59,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: gist
-          options: id=167d2271e3cf7d21e118aa7d906a7d2c
+          options: options: username=${{ github.repository_owner }}&show_icons=trueid=167d2271e3cf7d21e118aa7d906a7d2c
           path: assets/profile/gist.svg
           token: ${{ secrets.GH_PAT }}
 
