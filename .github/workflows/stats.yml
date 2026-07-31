@@ -1,5 +1,6 @@
 name: stats
-on: 
+
+on:
   schedule:
     - cron: "0 0 1 * *"
   workflow_dispatch:
@@ -13,63 +14,22 @@ permissions: {}
 
 jobs:
   stats:
-    name: Refresh cards
+    name: Refresh pins
     runs-on: ubuntu-slim
     timeout-minutes: 10
     permissions:
       contents: write
     steps:
-      - name: Keep workflow alive
-        # Scheduled workflows are auto-disabled after 60 days of repo
-        # inactivity; re-enabling on every run prevents that.
-        run: |
-          curl -s -X PUT \
-            -H "Authorization: Bearer ${{ github.token }}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/stats.yml/enable"
-
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Stats and gist cards
-        env:
-          STATS_URL: >-
-            https://github-stats-extended.vercel.app/api?username=${{ github.repository_owner }}&show_icons=true&locale=pl&hide_title=true&theme=neon&hide=issues&show=prs_merged,prs_merged_percentage,prs_commented&include_all_commits=true
-          GIST_URL: >-
-            https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark
-        run: |
-          fetch_card() {
-            url="$1"
-            destination="$2"
-            temporary="${destination}.tmp"
-
-            curl --fail --show-error --location --retry 3 "$url" -o "$temporary"
-            grep -q '<svg' "$temporary"
-            if grep -Eq 'Something went wrong|Could not fetch data|Resource not accessible' "$temporary"; then
-              rm -f "$temporary"
-              return 1
-            fi
-            mv "$temporary" "$destination"
-          }
-
-          fetch_card "$STATS_URL" assets/profile/stats.svg
-          fetch_card "$GIST_URL" assets/profile/gist.svg
-
-      - name: Top languages
-        uses: stats-organization/github-readme-stats-action@v2
-        with:
-          card: top-langs
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&layout=donut&hide_title=true&langs_count=15&&size_weight=0.5&count_weight=0.5&theme=ambient_gradient
-          path: assets/profile/top-langs.svg
-          token: ${{ secrets.GH_PAT }}
- 
       - name: feeds card
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ffeeds&theme=great-gatsby
           path: assets/profile/pin_feeds.svg
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ github.token }}
 
       - name: tvpi card
         uses: stats-organization/github-readme-stats-action@v2
@@ -77,7 +37,7 @@ jobs:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ftvpi&theme=yeblu
           path: assets/profile/pin_tvpi.svg
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ github.token }}
 
       - name: wambridge card
         uses: stats-organization/github-readme-stats-action@v2
@@ -85,14 +45,14 @@ jobs:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fwambridge&theme=blue_navy
           path: assets/profile/pin_wambridge.svg
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ github.token }}
 
-      - name: Commit cards
+      - name: Commit pins
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/profile/*.svg
+          git add assets/profile/pin_*.svg
           git diff --cached --quiet && exit 0
-          git commit -m "chore(readme): refresh cards [skip ci]"
+          git commit -m "chore(readme): refresh pins [skip ci]"
           git pull --rebase origin main
           git push
