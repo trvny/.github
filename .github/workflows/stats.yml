@@ -37,7 +37,7 @@ jobs:
           card: stats
           options: username=${{ github.repository_owner }}&show_icons=true&hide_title=true&rank_icon=github&theme=neon
           path: assets/profile/stats.svg
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ github.token }}
           fail_on_error: true
 
       - name: Top languages
