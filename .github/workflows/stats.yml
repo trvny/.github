@@ -1,0 +1,74 @@
+
+on: 
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: stats-${{ github.repository }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  stats:
+    name: Refresh cards
+    runs-on: ubuntu-slim
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - name: Keep workflow alive
+        # Scheduled workflows are auto-disabled after 60 days of repo
+        # inactivity; re-enabling on every run prevents that.
+        run: |
+          curl -s -X PUT \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/stats.yml/enable"
+
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Top languages
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: top-langs
+          options: username=${{ github.repository_owner }}&layout=donut&hide_title=true&langs_count=10&theme=synthwave
+          path: assets/profile/top-langs.svg
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Feeds card
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: pin
+          options: username=${{ github.repository_owner }}&repo=trvny%2Ffeeds&theme=great-gatsby
+          path: assets/profile/pin_1.svg
+          token: ${{ secrets.GH_PAT }}
+
+      - name: TVPI card
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: pin
+          options: username=${{ github.repository_owner }}&repo=trvny%2Ftvpi&theme=yeblu
+          path: assets/profile/pin_2.svg
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Gist card
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: gist
+          options: id=167d2271e3cf7d21e118aa7d906a7d2c
+          path: assets/profile/gist.svg
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Commit cards
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/profile/*.svg
+          git commit -m "chore(readme): refresh cards [skip ci]" || exit 0
+          git push
