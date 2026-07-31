@@ -34,7 +34,7 @@ jobs:
       - name: Stats and gist cards
         env:
           STATS_URL: >-
-            https://github-stats-extended.vercel.app/api?username=${{ github.repository_owner }}&show_icons=true&locale=pl&hide_title=true&theme=neon&show=prs_merged,prs_merged_percentage,prs_commented&include_all_commits=true
+            https://github-stats-extended.vercel.app/api?username=${{ github.repository_owner }}&show_icons=true&locale=pl&hide_title=true&theme=neon&hide=issues&show=prs_merged,prs_merged_percentage,prs_commented&include_all_commits=true
           GIST_URL: >-
             https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark
         run: |
