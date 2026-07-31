@@ -31,14 +31,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Generate stats card
-        uses: stats-organization/github-readme-stats-action@v2
-        with:
-          card: stats
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&hide_title=true&theme=neon&show=prs_merged,prs_merged_percentage,prs_commented&include_all_commits=true
-          path: assets/profile/stats.svg
-          token: ${{ github.token }}
-          fail_on_error: true
+      - name: Stats and gist cards
+        env:
+          STATS_URL: >-
+            https://github-stats-extended.vercel.app/api?username=${{ github.repository_owner }}&show_icons=true&locale=pl&hide_title=true&theme=neon&show=prs_merged,prs_merged_percentage,prs_commented&include_all_commits=true
+          GIST_URL: >-
+            https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark
+        run: |
+          fetch_card() {
+            url="$1"
+            destination="$2"
+            temporary="${destination}.tmp"
+
+            curl --fail --show-error --location --retry 3 "$url" -o "$temporary"
+            grep -q '<svg' "$temporary"
+            if grep -Eq 'Something went wrong|Could not fetch data|Resource not accessible' "$temporary"; then
+              rm -f "$temporary"
+              return 1
+            fi
+            mv "$temporary" "$destination"
+          }
+
+          fetch_card "$STATS_URL" assets/profile/stats.svg
+          fetch_card "$GIST_URL" assets/profile/gist.svg
 
       - name: Top languages
         uses: stats-organization/github-readme-stats-action@v2
@@ -70,14 +85,6 @@ jobs:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fwambridge&theme=blue_navy
           path: assets/profile/pin_wambridge.svg
-          token: ${{ secrets.GH_PAT }}
-
-      - name: gist card
-        uses: stats-organization/github-readme-stats-action@v2
-        with:
-          card: gist
-          options: id=167d2271e3cf7d21e118aa7d906a7d2c&&show_icons=true&locale=pl&theme=chartreuse-dark&browser_rendering=true
-          path: assets/profile/gist.svg
           token: ${{ secrets.GH_PAT }}
 
       - name: Commit cards
