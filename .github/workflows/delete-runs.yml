@@ -1,0 +1,141 @@
+name: Delete old runs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 1 * *"
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  delete-runs:
+    runs-on: ubuntu-slim
+    timeout-minutes: 90
+    permissions: {}
+    steps:
+      - name: Require cross-repository token
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "::error::Add the repository secret GH_PAT."
+            exit 1
+          fi
+
+      - name: Delete old workflow runs
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
+          script: |
+            const repositories = [
+              'trvny/trvny',
+              'trvny/.github',
+              'trvny/feeds',
+              'trvny/tvpi',
+              'trvny/autka',
+            ];
+            const retainDays = 7;
+            const keepMinimumRuns = 5;
+            const cutoff = Date.now() - retainDays * 24 * 60 * 60 * 1000;
+            const failures = [];
+            const summaries = [];
+
+            for (const repository of repositories) {
+              const [owner, repo] = repository.split('/');
+              let before = null;
+              let matched = null;
+              let deleted = 0;
+              let failed = 0;
+
+              try {
+                const [workflows, runs] = await Promise.all([
+                  github.paginate(
+                    github.rest.actions.listRepoWorkflows,
+                    { owner, repo, per_page: 100 },
+                  ),
+                  github.paginate(
+                    github.rest.actions.listWorkflowRunsForRepo,
+                    { owner, repo, status: 'completed', per_page: 100 },
+                  ),
+                ]);
+                before = runs.length;
+                const activeWorkflowIds = new Set(workflows.map((workflow) => workflow.id));
+                const runsByWorkflow = new Map();
+
+                for (const run of runs) {
+                  const workflowRuns = runsByWorkflow.get(run.workflow_id) ?? [];
+                  workflowRuns.push(run);
+                  runsByWorkflow.set(run.workflow_id, workflowRuns);
+                }
+
+                const runsToDelete = [];
+                for (const [workflowId, workflowRuns] of runsByWorkflow) {
+                  workflowRuns.sort(
+                    (left, right) => Date.parse(right.created_at) - Date.parse(left.created_at),
+                  );
+                  const minimum = activeWorkflowIds.has(workflowId) ? keepMinimumRuns : 0;
+
+                  for (const run of workflowRuns.slice(minimum)) {
+                    if (Date.parse(run.created_at) < cutoff) {
+                      runsToDelete.push(run);
+                    }
+                  }
+                }
+
+                matched = runsToDelete.length;
+                core.info(`${repository}: ${matched} run(s) to delete from ${before}`);
+                for (const run of runsToDelete) {
+                  try {
+                    await github.rest.actions.deleteWorkflowRun({
+                      owner,
+                      repo,
+                      run_id: run.id,
+                    });
+                    deleted += 1;
+                  } catch (error) {
+                    failed += 1;
+                    failures.push(`${repository}#${run.id}: ${error.message}`);
+                    core.error(failures.at(-1));
+                  }
+                }
+              } catch (error) {
+                failed += 1;
+                failures.push(`${repository}: ${error.message}`);
+                core.error(failures.at(-1));
+              }
+
+              summaries.push([
+                repository,
+                before === null ? 'N/A' : String(before),
+                matched === null ? 'N/A' : String(matched),
+                String(deleted),
+                String(failed),
+                before === null ? 'N/A' : String(Math.max(0, before - deleted)),
+              ]);
+            }
+
+            await core.summary
+              .addHeading('Workflow run cleanup')
+              .addRaw(`Retention: ${retainDays} days; minimum kept per active workflow: ${keepMinimumRuns}.`)
+              .addTable([
+                [
+                  { data: 'Repository', header: true },
+                  { data: 'Before', header: true },
+                  { data: 'Matched', header: true },
+                  { data: 'Deleted', header: true },
+                  { data: 'Failed', header: true },
+                  { data: 'Remaining', header: true },
+                ],
+                ...summaries,
+              ])
+              .write();
+
+            if (failures.length > 0) {
+              core.setFailed(`${failures.length} workflow run(s) could not be deleted`);
+            }
