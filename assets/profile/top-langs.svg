@@ -13,7 +13,7 @@
         <style>
           .header {
             font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
-            fill: #e2e9ec;
+            fill: #ffffff;
             animation: fadeInAnimation 0.8s ease-in-out forwards;
           }
           @supports(-moz-appearance: auto) {
@@ -38,7 +38,7 @@
       }
     }
     .stat {
-      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: #e5289e;
+      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: #ffffff;
     }
     @supports(-moz-appearance: auto) {
       /* Selector detects Firefox */
@@ -47,7 +47,7 @@
     .bold { font-weight: 700 }
     .lang-name {
       font: 400 11px "Segoe UI", Ubuntu, Sans-Serif;
-      fill: #e5289e;
+      fill: #ffffff;
     }
     .stagger {
       opacity: 0;
@@ -84,6 +84,16 @@
         </style>
 
         
+        <defs>
+          <linearGradient
+            id="gradient"
+            gradientTransform="rotate(35)"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0%" stop-color="#4158d0" />,<stop offset="50%" stop-color="#c850c0" />,<stop offset="100%" stop-color="#ffcc70" />
+          </linearGradient>
+        </defs>
+        
 
         <rect
           data-testid="card-bg"
@@ -93,7 +103,7 @@
           height="99%"
           stroke="#e4e2e2"
           width="349"
-          fill="#2b213a"
+          fill="url(#gradient)"
           stroke-opacity="1"
         />
 
