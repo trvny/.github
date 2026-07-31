@@ -35,10 +35,10 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: top-langs
-          options: username=${{ github.repository_owner }}&show_icons=true&layout=donut&hide_title=true&langs_count=10&theme=synthwave
+          options: username=${{ github.repository_owner }}&show_icons=true&layout=donut&hide_title=true&langs_count=10&theme=ambient_gradient
           path: assets/profile/top-langs.svg
           token: ${{ secrets.GH_PAT }}
-         options: username=${{ github.repository_owner }}&show_icons=true
+ 
       - name: Feeds card
         uses: stats-organization/github-readme-stats-action@v2
         with:
@@ -59,7 +59,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: gist
-          options: options: username=${{ github.repository_owner }}&show_icons=trueid=167d2271e3cf7d21e118aa7d906a7d2c
+          options: id=167d2271e3cf7d21e118aa7d906a7d2c&&theme=chartreuse-dark&browser_rendering=true
           path: assets/profile/gist.svg
           token: ${{ secrets.GH_PAT }}
 
