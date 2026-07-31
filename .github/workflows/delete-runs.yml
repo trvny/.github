@@ -39,6 +39,7 @@ jobs:
               'trvny/feeds',
               'trvny/tvpi',
               'trvny/autka',
+              'trvny/wambridge',
             ];
             const retainDays = 3;
             const keepMinimumRuns = 3;
