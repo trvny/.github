@@ -15,7 +15,7 @@ jobs:
   stats:
     name: Refresh cards
     runs-on: ubuntu-slim
-    timeout-minutes: 90
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
@@ -29,13 +29,13 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/actions/workflows/stats.yml/enable"
 
       - name: Checkout
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@v7
 
       - name: Top languages
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: top-langs
-          options: username=${{ github.repository_owner }}&show_icons=true&layout=donut&hide_title=true&langs_count=10&theme=ambient_gradient
+          options: username=${{ github.repository_owner }}&show_icons=true&layout=donut&hide_title=true&langs_count=15&&size_weight=0.5&count_weight=0.5&theme=ambient_gradient
           path: assets/profile/top-langs.svg
           token: ${{ secrets.GH_PAT }}
  
@@ -44,7 +44,7 @@ jobs:
         with:
           card: pin
           options: username=${{ github.repository_owner }}&repo=trvny%2Ffeeds&theme=great-gatsby
-          path: assets/profile/pin_1.svg
+          path: assets/profile/pin_feeds.svg
           token: ${{ secrets.GH_PAT }}
 
       - name: TVPI card
@@ -52,7 +52,15 @@ jobs:
         with:
           card: pin
           options: username=${{ github.repository_owner }}&repo=trvny%2Ftvpi&theme=yeblu
-          path: assets/profile/pin_2.svg
+          path: assets/profile/pin_tvpi.svg
+          token: ${{ secrets.GH_PAT }}
+
+      - name: WamBridge card
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: pin
+          options: username=${{ github.repository_owner }}&repo=trvny%2Fwambridge&theme=blue_navy
+          path: assets/profile/pin_wambridge.svg
           token: ${{ secrets.GH_PAT }}
 
       - name: Gist card
