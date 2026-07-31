@@ -35,7 +35,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: stats
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&hide_title=true&theme=neon
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&hide_title=true&theme=neon&show=prs_merged,prs_merged_percentage,prs_commented&include_all_commits=true
           path: assets/profile/stats.svg
           token: ${{ github.token }}
           fail_on_error: true
