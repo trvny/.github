@@ -35,10 +35,10 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: stats
-          options: username=${{ github.repository_owner }}&show_icons=true&hide_title=true&rank_icon=github&show=prs_merged,prs_merged_percentage,prs_authored,prs_commented&theme=neon
+          options: username=${{ github.repository_owner }}&show_icons=true&hide_title=true&rank_icon=github&theme=neon
           path: assets/profile/stats.svg
           token: ${{ secrets.GH_PAT }}
-
+          fail_on_error: true
 
       - name: Top languages
         uses: stats-organization/github-readme-stats-action@v2
