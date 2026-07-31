@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="travny">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f14"/>
+      <stop offset="0.55" stop-color="#11161d"/>
+      <stop offset="1" stop-color="#0d1117"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f5f7fa"/>
+      <stop offset="1" stop-color="#9aa7b4"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffae3b"/>
+      <stop offset="1" stop-color="#ff7a18"/>
+    </linearGradient>
+    <style>
+      .mono{font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace}
+      .sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+    </style>
+  </defs>
+
+  <rect width="1200" height="300" rx="20" fill="url(#bg)"/>
+
+  <g stroke="#1c232c" stroke-width="1" opacity="0.6">
+    <path d="M0 75 H1200 M0 150 H1200 M0 225 H1200"/>
+    <path d="M300 0 V300 M600 0 V300 M900 0 V300"/>
+  </g>
+
+  <g transform="translate(96,150)" fill="none" stroke="url(#amber)" stroke-width="9" stroke-linecap="round">
+    <path d="M-2 34 a4 4 0 1 0 0.1 0 Z" fill="url(#amber)" stroke="none"/>
+    <path d="M-2 6 a28 28 0 0 1 28 28"/>
+    <path d="M-2 -22 a56 56 0 0 1 56 56"/>
+  </g>
+
+  <text x="190" y="168" class="mono" font-size="86" font-weight="700" fill="url(#ink)" letter-spacing="-2">travny</text>
+  <text x="196" y="212" class="mono" font-size="22" fill="#6b7785" letter-spacing="6">FEEDS · STREAMS · SCRIPTS · STUFF</text>
+
+  <rect x="620" y="128" width="16" height="44" rx="2" fill="url(#amber)">
+    <animate attributeName="opacity" values="1;1;0;0" dur="1.1s" repeatCount="indefinite"/>
+  </rect>
+
+  <text x="1104" y="46" text-anchor="end" class="mono" font-size="18" fill="#3d4753">~/ self-updating</text>
+</svg>
