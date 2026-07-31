@@ -35,7 +35,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: stats
-          options: username=${{ github.repository_owner }}&show_icons=true&hide_title=true&rank_icon=github&theme=neon
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&hide_title=true&theme=neon
           path: assets/profile/stats.svg
           token: ${{ github.token }}
           fail_on_error: true
@@ -44,7 +44,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: top-langs
-          options: username=${{ github.repository_owner }}&show_icons=true&layout=donut&hide_title=true&langs_count=15&&size_weight=0.5&count_weight=0.5&theme=ambient_gradient
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&layout=donut&hide_title=true&langs_count=15&&size_weight=0.5&count_weight=0.5&theme=ambient_gradient
           path: assets/profile/top-langs.svg
           token: ${{ secrets.GH_PAT }}
  
@@ -52,7 +52,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&repo=trvny%2Ffeeds&theme=great-gatsby
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ffeeds&theme=great-gatsby
           path: assets/profile/pin_feeds.svg
           token: ${{ secrets.GH_PAT }}
 
@@ -60,7 +60,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&repo=trvny%2Ftvpi&theme=yeblu
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ftvpi&theme=yeblu
           path: assets/profile/pin_tvpi.svg
           token: ${{ secrets.GH_PAT }}
 
@@ -68,7 +68,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&repo=trvny%2Fwambridge&theme=blue_navy
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fwambridge&theme=blue_navy
           path: assets/profile/pin_wambridge.svg
           token: ${{ secrets.GH_PAT }}
 
@@ -76,7 +76,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: gist
-          options: id=167d2271e3cf7d21e118aa7d906a7d2c&&theme=chartreuse-dark&browser_rendering=true
+          options: id=167d2271e3cf7d21e118aa7d906a7d2c&&show_icons=true&locale=pl&theme=chartreuse-dark&browser_rendering=true
           path: assets/profile/gist.svg
           token: ${{ secrets.GH_PAT }}
 
