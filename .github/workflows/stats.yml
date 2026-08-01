@@ -27,7 +27,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ffeeds&theme=great-gatsby
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ffeeds&theme=great-gatsby&description_lines_count=1
           path: assets/profile/pin_feeds.svg
           token: ${{ github.token }}
 
@@ -45,6 +45,14 @@ jobs:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fwambridge&theme=blue_navy
           path: assets/profile/pin_wambridge.svg
+          token: ${{ github.token }}
+
+      - name: autka card
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: pin
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fautka&theme=synthwave
+          path: assets/profile/pin_autka.svg
           token: ${{ github.token }}
 
       - name: Commit pins
