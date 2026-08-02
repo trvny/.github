@@ -3,7 +3,7 @@ name: Delete old runs
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 1/3 * *"
+    - cron: "37 21 1/3 * *"
 
 permissions: {}
 
