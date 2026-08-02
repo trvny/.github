@@ -2,6 +2,7 @@
 name: kanarek
 
 on: # yamllint disable-line rule:truthy
+  # zizmor: ignore[dangerous-triggers] only same-repository PRs call the trusted reusable workflow
   pull_request_target:
     types:
       - opened
@@ -9,11 +10,14 @@ on: # yamllint disable-line rule:truthy
       - synchronize
       - ready_for_review
       - converted_to_draft
+      - auto_merge_enabled
+      - auto_merge_disabled
       - closed
   pull_request_review:
     types:
       - submitted
       - dismissed
+  # zizmor: ignore[dangerous-triggers] only PR runs from this repository are accepted
   workflow_run:
     workflows:
       - MegaLinter
@@ -34,12 +38,13 @@ jobs:
     if: >-
       ${{
         vars.KANAREK_ENABLED == 'true' &&
-        (github.event_name != 'workflow_run' ||
-         github.event.workflow_run.event == 'pull_request') &&
         (github.event_name != 'pull_request_target' ||
          github.event.pull_request.head.repo.full_name == github.repository) &&
         (github.event_name != 'pull_request_review' ||
-         github.event.pull_request.head.repo.full_name == github.repository)
+         github.event.pull_request.head.repo.full_name == github.repository) &&
+        (github.event_name != 'workflow_run' ||
+         (github.event.workflow_run.event == 'pull_request' &&
+          github.event.workflow_run.head_repository.full_name == github.repository))
       }}
     permissions:
       actions: read
