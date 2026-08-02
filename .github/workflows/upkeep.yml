@@ -3,7 +3,7 @@ name: upkeep
 
 on: # yamllint disable-line rule:truthy
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "37 21 */2 * *"
   workflow_dispatch:
 
 concurrency:
