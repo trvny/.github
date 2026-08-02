@@ -28,6 +28,6 @@
 
 Kod, workflowy i konfiguracja są objęte [ISC](LICENSE). Autorskie treści,
 dokumentacja i grafiki są udostępniane na [CC BY 4.0](docs/LICENSE.CC-BY-4.0).
-Materiały zewnętrzne opisuje [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Materiały zewnętrzne opisuje [THIRD_PARTY_NOTICES.md](docs/THIRD_PARTY_NOTICES.md).
 
 ---
