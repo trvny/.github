@@ -8,7 +8,7 @@ Reusable PR status companion for `trvny/*` repositories.
 2. Adjust `workflow_run.workflows` and `with.watched_workflows` to the exact CI workflow names used by that repository.
 3. Add the repository variable `KANAREK_ENABLED=true`.
 
-The caller intentionally uses a short trigger list. For several watched CI workflows, intermediate completions are coalesced and the PR comment is refreshed after the last one finishes.
+The caller intentionally uses a short trigger list. For several watched CI workflows, intermediate completions are coalesced and the PR comment is refreshed after the last one finishes. Repositories without PR checks should omit `workflow_run` and pass `require_ci: false`.
 
 ## Optional secrets
 
