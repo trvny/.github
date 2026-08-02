@@ -24,5 +24,10 @@
 <!--ENDS_HERE_QUOTE_README-->
 <!-- markdownlint-enable MD033 -->
 
+## Licencje
+
+Kod, workflowy i konfiguracja są objęte [ISC](LICENSE). Autorskie treści,
+dokumentacja i grafiki są udostępniane na [CC BY 4.0](docs/LICENSE.CC-BY-4.0).
+Materiały zewnętrzne opisuje [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 ---
-<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" />
