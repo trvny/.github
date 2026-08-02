@@ -31,6 +31,10 @@ function code(value) {
   return `\`${String(value).replaceAll('`', 'ˋ')}\``;
 }
 
+function ciRequired() {
+  return process.env.KANAREK_REQUIRE_CI !== 'false';
+}
+
 function rootLabel(root) {
   const known = ROOT_LABELS.get(root.toLowerCase());
   if (known) return known;
@@ -82,7 +86,7 @@ function status(pr, branch, ci, review) {
     blockers.push('konflikty scalania');
   }
   if (pr.mergeable === null) blockers.push('GitHub liczy scalalność');
-  if (ci.total === 0) blockers.push('brak wyników CI');
+  if (ciRequired() && ci.total === 0) blockers.push('brak wyników CI');
   if (ci.pending.length) blockers.push(`${ci.pending.length} kontroli w toku`);
   if (ci.failed.length) blockers.push(`${ci.failed.length} kontroli z błędem`);
   if (review.changes) blockers.push('review żąda zmian');
@@ -105,7 +109,7 @@ function blockerKinds(pr, branch, ci, review) {
       ? 'conflict'
       : null,
     pr.mergeable === null ? 'mergeability-pending' : null,
-    ci.total === 0 ? 'ci-missing' : null,
+    ciRequired() && ci.total === 0 ? 'ci-missing' : null,
     ci.pending.length ? 'ci-pending' : null,
     ci.failed.length ? 'ci-failed' : null,
     review.changes ? 'review-changes' : null,
@@ -121,6 +125,7 @@ function branchBadge(pr, branch) {
 }
 
 function checksBadge(ci) {
+  if (ci.total === 0 && !ciRequired()) return 'CI ➖';
   if (ci.total === 0) return 'CI ⚪';
   if (ci.failed.length) return `CI 🔴 ${ci.failed.length}`;
   if (ci.pending.length) return `CI 🟡 ${ci.pending.length}`;

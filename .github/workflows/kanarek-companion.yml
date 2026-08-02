@@ -9,6 +9,11 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: ""
         type: string
+      require_ci:
+        description: Treat missing CI results as a waiting state
+        required: false
+        default: true
+        type: boolean
       ai_enabled:
         required: false
         default: true
@@ -85,6 +90,7 @@ jobs:
       - name: Run Kanarek companion
         uses: actions/github-script@v9
         env:
+          KANAREK_REQUIRE_CI: ${{ inputs.require_ci }}
           KANAREK_AI_ENABLED: ${{ inputs.ai_enabled }}
           KANAREK_QUIP_BANK_ENABLED: ${{ inputs.quip_bank_enabled }}
           KANAREK_COALESCE_WORKFLOW_RUNS: "true"
