@@ -2,7 +2,7 @@ name: stats
 
 on:
   schedule:
-    - cron: "0 0 * 1/6 *"
+    - cron: "17 0 1 1,7 *"
   workflow_dispatch:
   workflow_call:
 
