@@ -34,7 +34,7 @@ jobs:
           node --check kanarek/kanarek-companion-quip.cjs
           node --check kanarek/kanarek-companion-view.cjs
 
-      - name: Check portable areas and phrase bank
+      - name: Check portable areas, optional CI and phrase bank
         run: |
           node <<'NODE'
           const view = require('./kanarek/kanarek-companion-view.cjs');
@@ -47,6 +47,24 @@ jobs:
           ]);
           if (areas.join('|') !== 'Automatyka GitHub|Kod źródłowy|Dokumentacja') {
             throw new Error(`unexpected areas: ${areas.join('|')}`);
+          }
+
+          process.env.KANAREK_REQUIRE_CI = 'false';
+          const state = view.status(
+            {
+              merged: false,
+              state: 'open',
+              draft: false,
+              mergeable: true,
+              mergeable_state: 'clean',
+              base: { ref: 'main' },
+            },
+            { behind: 0 },
+            { total: 0, pending: [], failed: [], passed: [] },
+            { changes: 0, approvals: 0 },
+          );
+          if (state.key !== 'ready') {
+            throw new Error(`CI-less repository stayed ${state.key}`);
           }
 
           const merged = bank.mergeEntries(
