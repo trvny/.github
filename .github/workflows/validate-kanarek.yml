@@ -1,0 +1,57 @@
+---
+name: Validate Kanarek
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    paths:
+      - "kanarek/**"
+      - ".github/workflows/kanarek-companion.yml"
+      - ".github/workflows/validate-kanarek.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "kanarek/**"
+      - ".github/workflows/kanarek-companion.yml"
+      - ".github/workflows/validate-kanarek.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check kanarek/kanarek-companion.cjs
+          node --check kanarek/kanarek-companion-bank.cjs
+          node --check kanarek/kanarek-companion-quip.cjs
+          node --check kanarek/kanarek-companion-view.cjs
+
+      - name: Check portable areas and phrase bank
+        run: |
+          node <<'NODE'
+          const view = require('./kanarek/kanarek-companion-view.cjs');
+          const bank = require('./kanarek/kanarek-companion-bank.cjs');
+
+          const areas = view.areas([
+            '.github/workflows/ci.yml',
+            'src/index.ts',
+            'docs/setup.md',
+          ]);
+          if (areas.join('|') !== 'Automatyka GitHub|Kod źródłowy|Dokumentacja') {
+            throw new Error(`unexpected areas: ${areas.join('|')}`);
+          }
+
+          const merged = bank.mergeEntries(
+            [{ k: '0123456789abcdef', q: 'Pierwszy zapisany tekst Kanarka.' }],
+            [{ k: '0123456789abcdef', q: 'Pierwszy zapisany tekst Kanarka.' }],
+          );
+          if (merged.length !== 1) throw new Error('phrase bank did not deduplicate');
+          NODE

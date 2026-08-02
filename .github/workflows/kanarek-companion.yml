@@ -1,0 +1,115 @@
+---
+name: Reusable Kanarek companion
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      watched_workflows:
+        description: Comma-separated CI workflow names used for coalescing
+        required: false
+        default: ""
+        type: string
+      ai_enabled:
+        required: false
+        default: true
+        type: boolean
+      quip_bank_enabled:
+        required: false
+        default: true
+        type: boolean
+      ai_percent:
+        required: false
+        default: 25
+        type: number
+      quip_kv_namespace_id:
+        required: false
+        default: 1534e989ac23449fab8e18abc2bc250d
+        type: string
+      openai_model:
+        required: false
+        default: gpt-5-nano
+        type: string
+      openai_fallback_model:
+        required: false
+        default: gpt-4.1-nano
+        type: string
+      anthropic_model:
+        required: false
+        default: claude-haiku-4-5
+        type: string
+      gemini_model:
+        required: false
+        default: gemini-3.5-flash-lite
+        type: string
+      xai_model:
+        required: false
+        default: grok-4.5
+        type: string
+    secrets:
+      OPENAI_API_KEY:
+        required: false
+      ANTHROPIC_API_KEY:
+        required: false
+      GEMINI_API_KEY:
+        required: false
+      XAI_API_KEY:
+        required: false
+      CLOUDFLARE_ACCOUNT_ID:
+        required: false
+      CLOUDFLARE_API_TOKEN:
+        required: false
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  pull-requests: write
+  statuses: read
+
+jobs:
+  report:
+    name: Refresh PR status comment
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted Kanarek scripts
+        uses: actions/checkout@v7
+        with:
+          repository: trvny/.github
+          ref: main
+          path: .kanarek-source
+          persist-credentials: false
+          sparse-checkout: kanarek
+          sparse-checkout-cone-mode: true
+
+      - name: Run Kanarek companion
+        uses: actions/github-script@v9
+        env:
+          KANAREK_AI_ENABLED: ${{ inputs.ai_enabled }}
+          KANAREK_QUIP_BANK_ENABLED: ${{ inputs.quip_bank_enabled }}
+          KANAREK_COALESCE_WORKFLOW_RUNS: "true"
+          KANAREK_WATCHED_WORKFLOWS: ${{ inputs.watched_workflows }}
+          KANAREK_AI_PERCENT: ${{ inputs.ai_percent }}
+          KANAREK_QUIP_KV_NAMESPACE_ID: ${{ inputs.quip_kv_namespace_id }}
+          KANAREK_OPENAI_MODEL: ${{ inputs.openai_model }}
+          KANAREK_OPENAI_FALLBACK_MODEL: ${{ inputs.openai_fallback_model }}
+          KANAREK_ANTHROPIC_MODEL: ${{ inputs.anthropic_model }}
+          KANAREK_GEMINI_MODEL: ${{ inputs.gemini_model }}
+          KANAREK_XAI_MODEL: ${{ inputs.xai_model }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const run = require('./.kanarek-source/kanarek/kanarek-companion.cjs');
+            const { loadQuipBank } = require('./.kanarek-source/kanarek/kanarek-companion-bank.cjs');
+            const bank = await loadQuipBank({ github, context, core });
+            try {
+              await run({ github: bank.github, context, core });
+            } finally {
+              await bank.flush();
+            }
