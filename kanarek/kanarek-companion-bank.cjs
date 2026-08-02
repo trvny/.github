@@ -102,7 +102,7 @@ function syntheticComment(entries) {
   };
 }
 
-function wrappedGithub(github, bankEntries, capturedBodies) {
+function wrappedGithub(github, ensureLoaded, capturedBodies, core) {
   const issues = Object.create(github.rest.issues);
   const listCommentsForRepo =
     github.rest.issues.listCommentsForRepo.bind(github.rest.issues);
@@ -111,6 +111,12 @@ function wrappedGithub(github, bankEntries, capturedBodies) {
 
   issues.listCommentsForRepo = async (...args) => {
     const response = await listCommentsForRepo(...args);
+    let bankEntries = [];
+    try {
+      bankEntries = await ensureLoaded();
+    } catch (error) {
+      core.warning(`Cloudflare quip bank unavailable: ${error.message}`);
+    }
     if (!bankEntries.length) return response;
     return {
       ...response,
@@ -158,33 +164,35 @@ async function loadQuipBank({ github, context, core }) {
 
   let bankEntries = [];
   let bankLoaded = false;
-  try {
+  const ensureLoaded = async () => {
+    if (bankLoaded) return bankEntries;
     bankEntries = entriesFromValue(await kvRequest('GET'));
     bankLoaded = true;
     core.info(`Loaded ${bankEntries.length} quip(s) from Cloudflare KV.`);
-  } catch (error) {
-    core.warning(`Cloudflare quip bank unavailable: ${error.message}`);
-  }
+    return bankEntries;
+  };
 
   const capturedBodies = [];
   return {
-    github: wrappedGithub(github, bankEntries, capturedBodies),
+    github: wrappedGithub(github, ensureLoaded, capturedBodies, core),
     flush: async () => {
       try {
-        let currentEntries = bankEntries;
-        if (!bankLoaded) {
-          try {
-            currentEntries = entriesFromValue(await kvRequest('GET'));
-            bankLoaded = true;
-          } catch (error) {
-            core.warning(
-              `Cloudflare quip bank update skipped after read failure: ${error.message}`,
-            );
-            return;
-          }
+        const captured = capturedBodies.flatMap(entriesFromComment);
+        if (!captured.length) {
+          core.info('Cloudflare quip bank not needed for this run.');
+          return;
         }
 
-        const captured = capturedBodies.flatMap(entriesFromComment);
+        let currentEntries;
+        try {
+          currentEntries = await ensureLoaded();
+        } catch (error) {
+          core.warning(
+            `Cloudflare quip bank update skipped after read failure: ${error.message}`,
+          );
+          return;
+        }
+
         let recent = [];
         try {
           recent = await recentCompanionEntries(
