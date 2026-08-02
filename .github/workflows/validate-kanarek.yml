@@ -40,36 +40,69 @@ jobs:
           const view = require('./kanarek/kanarek-companion-view.cjs');
           const bank = require('./kanarek/kanarek-companion-bank.cjs');
 
-          const areas = view.areas([
-            '.github/workflows/ci.yml',
-            'src/index.ts',
-            'docs/setup.md',
-          ]);
-          if (areas.join('|') !== 'Automatyka GitHub|Kod źródłowy|Dokumentacja') {
-            throw new Error(`unexpected areas: ${areas.join('|')}`);
-          }
+          (async () => {
+            const areas = view.areas([
+              '.github/workflows/ci.yml',
+              'src/index.ts',
+              'docs/setup.md',
+            ]);
+            if (areas.join('|') !== 'Automatyka GitHub|Kod źródłowy|Dokumentacja') {
+              throw new Error(`unexpected areas: ${areas.join('|')}`);
+            }
 
-          process.env.KANAREK_REQUIRE_CI = 'false';
-          const state = view.status(
-            {
-              merged: false,
-              state: 'open',
-              draft: false,
-              mergeable: true,
-              mergeable_state: 'clean',
-              base: { ref: 'main' },
-            },
-            { behind: 0 },
-            { total: 0, pending: [], failed: [], passed: [] },
-            { changes: 0, approvals: 0 },
-          );
-          if (state.key !== 'ready') {
-            throw new Error(`CI-less repository stayed ${state.key}`);
-          }
+            process.env.KANAREK_REQUIRE_CI = 'false';
+            const state = view.status(
+              {
+                merged: false,
+                state: 'open',
+                draft: false,
+                mergeable: true,
+                mergeable_state: 'clean',
+                base: { ref: 'main' },
+              },
+              { behind: 0 },
+              { total: 0, pending: [], failed: [], passed: [] },
+              { changes: 0, approvals: 0 },
+            );
+            if (state.key !== 'ready') {
+              throw new Error(`CI-less repository stayed ${state.key}`);
+            }
 
-          const merged = bank.mergeEntries(
-            [{ k: '0123456789abcdef', q: 'Pierwszy zapisany tekst Kanarka.' }],
-            [{ k: '0123456789abcdef', q: 'Pierwszy zapisany tekst Kanarka.' }],
-          );
-          if (merged.length !== 1) throw new Error('phrase bank did not deduplicate');
+            const merged = bank.mergeEntries(
+              [{ k: '0123456789abcdef', q: 'Pierwszy zapisany tekst Kanarka.' }],
+              [{ k: '0123456789abcdef', q: 'Pierwszy zapisany tekst Kanarka.' }],
+            );
+            if (merged.length !== 1) throw new Error('phrase bank did not deduplicate');
+
+            process.env.KANAREK_QUIP_BANK_ENABLED = 'true';
+            process.env.CLOUDFLARE_ACCOUNT_ID = 'test-account';
+            process.env.CLOUDFLARE_API_TOKEN = 'test-token';
+            process.env.KANAREK_QUIP_KV_NAMESPACE_ID = 'test-namespace';
+            let requests = 0;
+            global.fetch = async () => {
+              requests += 1;
+              throw new Error('unexpected Cloudflare request');
+            };
+            const noop = async () => ({ data: [] });
+            const lazy = await bank.loadQuipBank({
+              github: {
+                rest: {
+                  issues: {
+                    listCommentsForRepo: noop,
+                    createComment: noop,
+                    updateComment: noop,
+                  },
+                },
+              },
+              context: { repo: { owner: 'trvny', repo: 'test' } },
+              core: { info() {}, warning() {} },
+            });
+            await lazy.flush();
+            if (requests !== 0) {
+              throw new Error(`unused phrase bank made ${requests} request(s)`);
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
           NODE
