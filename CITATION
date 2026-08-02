@@ -14,6 +14,6 @@ identifiers:
     value: 'https://github.com/trvny'
 repository-code: 'https://github.com/trvny/.github'
 url: 'https://tvpi.pages.dev/'
-license: 0BSD
+license: ISC
 version: 0.0.0
 date-released: '2026-07-29'
