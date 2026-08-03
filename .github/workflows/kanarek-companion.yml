@@ -32,11 +32,11 @@ on: # yamllint disable-line rule:truthy
         type: string
       openai_model:
         required: false
-        default: gpt-5-nano
+        default: gpt-5.6-luna
         type: string
       openai_fallback_model:
         required: false
-        default: gpt-4.1-nano
+        default: gpt-5.4-nano
         type: string
       anthropic_model:
         required: false
