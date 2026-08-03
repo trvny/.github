@@ -84,7 +84,7 @@ jobs:
           ref: main
           path: .kanarek-source
           persist-credentials: false
-          sparse-checkout: kanarek
+          sparse-checkout: .github/kanarek
           sparse-checkout-cone-mode: true
 
       - name: Run Kanarek companion
@@ -111,8 +111,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const run = require('./.kanarek-source/kanarek/kanarek-companion.cjs');
-            const { loadQuipBank } = require('./.kanarek-source/kanarek/kanarek-companion-bank.cjs');
+            const run = require('./.kanarek-source/.github/kanarek/kanarek-companion.cjs');
+            const { loadQuipBank } = require('./.kanarek-source/.github/kanarek/kanarek-companion-bank.cjs');
             const bank = await loadQuipBank({ github, context, core });
             try {
               await run({ github: bank.github, context, core });

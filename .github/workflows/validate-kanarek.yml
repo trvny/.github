@@ -4,14 +4,14 @@ name: Validate Kanarek
 on: # yamllint disable-line rule:truthy
   pull_request:
     paths:
-      - "kanarek/**"
+      - ".github/kanarek/**"
       - ".github/workflows/kanarek-companion.yml"
       - ".github/workflows/validate-kanarek.yml"
   push:
     branches:
       - main
     paths:
-      - "kanarek/**"
+      - ".github/kanarek/**"
       - ".github/workflows/kanarek-companion.yml"
       - ".github/workflows/validate-kanarek.yml"
 
@@ -29,16 +29,16 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
-          node --check kanarek/kanarek-companion.cjs
-          node --check kanarek/kanarek-companion-bank.cjs
-          node --check kanarek/kanarek-companion-quip.cjs
-          node --check kanarek/kanarek-companion-view.cjs
+          node --check .github/kanarek/kanarek-companion.cjs
+          node --check .github/kanarek/kanarek-companion-bank.cjs
+          node --check .github/kanarek/kanarek-companion-quip.cjs
+          node --check .github/kanarek/kanarek-companion-view.cjs
 
       - name: Check portable areas, optional CI and phrase bank
         run: |
           node <<'NODE'
-          const view = require('./kanarek/kanarek-companion-view.cjs');
-          const bank = require('./kanarek/kanarek-companion-bank.cjs');
+          const view = require('./.github/kanarek/kanarek-companion-view.cjs');
+          const bank = require('./.github/kanarek/kanarek-companion-bank.cjs');
 
           (async () => {
             const areas = view.areas([
