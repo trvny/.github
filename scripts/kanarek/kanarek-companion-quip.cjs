@@ -2,8 +2,8 @@
 
 const { createHash } = require('node:crypto');
 
-const PRIMARY_MODEL = 'gpt-5-nano';
-const FALLBACK_MODEL = 'gpt-5.6-luna';
+const PRIMARY_MODEL = 'gpt-5.6-luna';
+const FALLBACK_MODEL = 'gpt-5.4-nano';
 const ANTHROPIC_MODEL = 'claude-haiku-4-5';
 const GEMINI_MODEL = 'gemini-3.5-flash-lite';
 const XAI_MODEL = 'grok-4.5';
@@ -188,7 +188,7 @@ async function requestOpenAi(model, facts) {
       },
     ],
   };
-  if (supportsReasoning(model)) body.reasoning = { effort: 'minimal' };
+  if (supportsReasoning(model)) body.reasoning = { effort: 'low' };
 
   const response = await postJson(
     'https://api.openai.com/v1/responses',
