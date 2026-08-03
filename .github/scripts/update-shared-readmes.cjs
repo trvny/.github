@@ -7,6 +7,7 @@ const QUOTE_END_MARKER = '<!--ENDS_HERE_QUOTE_README-->';
 const FEED_START_MARKER = '<!--README_FEED:START-->';
 const FEED_END_MARKER = '<!--README_FEED:END-->';
 const README_MODES = new Set(['both', 'feed', 'quote']);
+const README_PATHS = ['README.md', 'README_pl.md'];
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -92,6 +93,19 @@ function syncBlocks(readme, feedBlock, quoteBlock, mode = 'both') {
   return updated;
 }
 
+function hasRequestedBlocks(readme, mode = 'both') {
+  if (!README_MODES.has(mode)) {
+    throw new Error(`Invalid README mode: ${mode}`);
+  }
+
+  const hasFeed =
+    readme.includes(FEED_START_MARKER) && readme.includes(FEED_END_MARKER);
+  const hasQuote =
+    readme.includes(QUOTE_START_MARKER) && readme.includes(QUOTE_END_MARKER);
+
+  return (mode === 'quote' || hasFeed) && (mode === 'feed' || hasQuote);
+}
+
 async function fetchReadme(github, owner, repo, path = 'README.md') {
   const repository = await github.rest.repos.get({ owner, repo });
   const branch = repository.data.default_branch;
@@ -129,28 +143,47 @@ module.exports = async function updateSharedReadmes({ github, context, core }) {
     const [owner, repo] = target.repository.split('/');
     core.startGroup(`Update ${target.repository} (${target.mode})`);
     try {
-      const readme = await fetchReadme(github, owner, repo);
-      const updated = syncBlocks(
-        readme.content,
-        feedBlock,
-        quoteBlock,
-        target.mode,
-      );
-      if (updated === readme.content) {
-        core.info(`${target.repository}: dynamic README content is unchanged.`);
-        continue;
-      }
+      for (const path of README_PATHS) {
+        let readme;
+        try {
+          readme = await fetchReadme(github, owner, repo, path);
+        } catch (error) {
+          if (path !== 'README.md' && error.status === 404) {
+            core.info(`${target.repository}/${path}: file does not exist, skipping.`);
+            continue;
+          }
+          throw error;
+        }
 
-      await github.rest.repos.createOrUpdateFileContents({
-        owner,
-        repo,
-        path: 'README.md',
-        branch: readme.branch,
-        message: 'chore(readme): refresh shared content [skip ci]',
-        content: Buffer.from(updated, 'utf8').toString('base64'),
-        sha: readme.sha,
-      });
-      core.info(`${target.repository}: README updated.`);
+        if (path !== 'README.md' && !hasRequestedBlocks(readme.content, target.mode)) {
+          core.info(
+            `${target.repository}/${path}: dynamic blocks not present, skipping.`,
+          );
+          continue;
+        }
+
+        const updated = syncBlocks(
+          readme.content,
+          feedBlock,
+          quoteBlock,
+          target.mode,
+        );
+        if (updated === readme.content) {
+          core.info(`${target.repository}/${path}: dynamic content is unchanged.`);
+          continue;
+        }
+
+        await github.rest.repos.createOrUpdateFileContents({
+          owner,
+          repo,
+          path,
+          branch: readme.branch,
+          message: 'chore(readme): refresh shared content [skip ci]',
+          content: Buffer.from(updated, 'utf8').toString('base64'),
+          sha: readme.sha,
+        });
+        core.info(`${target.repository}/${path}: README updated.`);
+      }
     } catch (error) {
       failures.push(`${target.repository}: ${error.message}`);
       core.error(failures.at(-1));
@@ -166,6 +199,7 @@ module.exports = async function updateSharedReadmes({ github, context, core }) {
 
 module.exports._test = {
   extractBlock,
+  hasRequestedBlocks,
   parseTargets,
   syncBlocks,
 };
