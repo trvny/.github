@@ -165,7 +165,10 @@ function render(
   const blockers = details.length
     ? `\n\n<sub>${details.join(' · ')}</sub>`
     : '';
-  const scope = projectAreas.join(', ') || 'Pozostałe';
+  const scope =
+    projectAreas
+      .map((area) => (area === 'Automatyka GitHub' ? 'Kanarek' : area))
+      .join(', ') || 'Pozostałe';
 
   return `${MARKER}
 <!-- kanarek-state:${stateHash} -->

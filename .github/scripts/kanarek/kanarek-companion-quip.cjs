@@ -22,16 +22,21 @@ const PRESETS = {
     'Zielono. Kanarek odkłada śrubokręt.',
     'Kable spokojne, lampki zielone. Można lecieć.',
     'Maszyna mruczy poprawnie. Kanarek kiwa dziobem.',
+    'Czytnik mruczy, Kanarek strzyże błędy, feed płynie.',
   ],
   waiting: [
     'Maszyny mielą. Kanarek pilnuje kabla.',
     'Lampki jeszcze myślą. Ptak zostaje na posterunku.',
     'Trochę szumu w przewodach. Kanarek cierpliwie czeka.',
+    'Kanarek śledzi CI, aż kod zabulgotuje. Testy jeszcze mieszają.',
+    'Kiedy CI śpi, Android mruga „już idzie”, a kabel cierpliwie czeka.',
   ],
   blocked: [
     'Czerwona lampka świeci. Kanarek woła człowieka.',
     'Coś zgrzyta w maszynie. Dziób wskazuje blokadę.',
     'Lot wstrzymany. Jeden kabel wyraźnie protestuje.',
+    'Czerwona lampka świeci. Kanarek woła człowieka, CI w zawieszeniu.',
+    'CI in dreamland: blockers hum while Kanarek naps through the blockade.',
   ],
   draft: [
     'Szkic w klatce. Na razie bez alarmu.',
