@@ -6,11 +6,14 @@
 ![toplanguages](./assets/profile/top-langs.svg)  
 [![feeds](./assets/profile/pin_feeds.svg)](https://github.com/trvny/feeds) [![tvpi](./assets/profile/pin_tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin_wambridge.svg)](https://github.com/trvny/wambridge) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
 
-## Licencje
+## Licenses
 
-Kod, workflowy i konfiguracja są objęte [ISC](LICENSE). Autorskie treści,
-dokumentacja i grafiki są udostępniane na [CC BY 4.0](docs/LICENSE.CC-BY-4.0).
-Materiały zewnętrzne opisuje [THIRD_PARTY_NOTICES.md](docs/THIRD_PARTY_NOTICES.md).
+Code, workflows, and configuration are licensed under [ISC](LICENSE). Original
+content, documentation, and graphics are available under
+[CC BY 4.0](docs/LICENSE.CC-BY-4.0). Third-party materials are documented in
+[THIRD_PARTY_NOTICES.md](docs/THIRD_PARTY_NOTICES.md).  
+[![code license](https://img.shields.io/github/license/trvny/.github?label=code&logo=opensourceinitiative&logoColor=white&style=flat-square)](LICENSE)
+[![content license](https://img.shields.io/badge/content-CC_BY_4.0-2b579a?style=flat-square&logo=creativecommons&logoColor=white)](docs/LICENSE.CC-BY-4.0)
 
 ---
 ## 📰 Ostatnio w eterze
