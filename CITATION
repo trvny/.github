@@ -8,10 +8,11 @@ authors:
   - name: dependabot[bot]
   - name: actions-user
   - name: claude
-  - name: claudiusz69[bot]
   - name: chatgpt
-  - name: chatgpt-codex-connector[bot]
   - name: codex
+  - name: chatgpt-codex-connector
+  - name: gptomek[bot]
+  - name: claudiusz69[bot]
 identifiers:
   - type: url
     value: 'https://github.com/trvny'
