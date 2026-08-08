@@ -134,7 +134,7 @@ jobs:
           README_FEED_MAX_ENTRIES: ${{ vars.README_FEED_MAX_ENTRIES || '6' }}
           README_PATH: README.md
           README_TARGET_REPOS: >-
-            ${{ vars.README_TARGET_REPOS || 'trvny/feeds:both,trvny/tvpi:both,trvny/autka:both,trvny/wambridge:both,trvny/.github:both,trvny/trvny:both' }}
+            ${{ vars.README_TARGET_REPOS || 'trvny/feeds:both,trvny/tvpi:both,trvny/autka:both,trvny/wambridge:both,trvny/.github:both,trvny/trvny:both,trvny/.ai:both' }}
         with:
           github-token: ${{ secrets.GH_PAT }}
           script: |
