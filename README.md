@@ -6,6 +6,12 @@
 ![toplanguages](./assets/profile/top-langs.svg)  
 [![feeds](./assets/profile/pin_feeds.svg)](https://github.com/trvny/feeds) [![tvpi](./assets/profile/pin_tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin_wambridge.svg)](https://github.com/trvny/wambridge) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
 
+## Licencje
+
+Kod, workflowy i konfiguracja są objęte [ISC](LICENSE). Autorskie treści,
+dokumentacja i grafiki są udostępniane na [CC BY 4.0](docs/LICENSE.CC-BY-4.0).
+Materiały zewnętrzne opisuje [THIRD_PARTY_NOTICES.md](docs/THIRD_PARTY_NOTICES.md).
+
 ---
 ## 📰 Ostatnio w eterze
 <!--README_FEED:START-->
@@ -23,11 +29,3 @@
 <i>❝Conquer anger with non-anger. Conquer badness with goodness. Conquer meanness with generosity. Conquer dishonesty with truth. — Buddha❞</i>
 <!--ENDS_HERE_QUOTE_README-->
 <!-- markdownlint-enable MD033 -->
-
-## Licencje
-
-Kod, workflowy i konfiguracja są objęte [ISC](LICENSE). Autorskie treści,
-dokumentacja i grafiki są udostępniane na [CC BY 4.0](docs/LICENSE.CC-BY-4.0).
-Materiały zewnętrzne opisuje [THIRD_PARTY_NOTICES.md](docs/THIRD_PARTY_NOTICES.md).
-
----
