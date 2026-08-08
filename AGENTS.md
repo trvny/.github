@@ -6,30 +6,32 @@ small-looking changes can affect several repositories.
 
 ## Change rules
 
-- Check current `main`, open pull requests, and recent changes.
+- When work could overlap ongoing changes, check `main`, open pull requests, and
+  recent commits first.
 - For reusable workflows, inspect their `workflow_call` interface and known
   callers before changing inputs, secrets, outputs, permissions, or triggers.
-- Keep reusable workflow interfaces backward compatible unless the task
-  explicitly includes updating every caller.
-- For profile content, distinguish maintained text from sections and assets
-  updated by automation.
-- Do not hand-edit content between generator markers unless changing the
-  generator is intentionally out of scope.
-- Do not overwrite generated profile assets without checking the workflow or
-  script that owns them.
-- Use least-privilege workflow permissions and avoid workflows that exist only
-  to push a commit that triggers another workflow.
-- Keep comments, pull-request descriptions, and changelogs brief.
-
-## Validation
-
-After reusable-workflow changes, verify its interface and known callers. For
-profile automation, verify the owning workflow or generator and its referenced
-paths.
+- Prefer backward-compatible reusable-workflow interfaces. When a breaking
+  change is intentional, update the known callers with it.
+- Treat content between generator markers and generated profile assets as owned
+  by their generator or workflow; prefer changing the maintained source.
+- Keep workflow permissions least-privilege and avoid workflows whose main job
+  is pushing a commit that only triggers another workflow.
 
 ## GitHub workflow
 
-Keep one logical change per pull request. Truly trivial low-risk edits may go
-directly to `main`. Treat Codex review as advisory only; do not ask it to
-implement, commit, or push. Merge only after relevant checks pass on the final
-head commit and actionable review threads are resolved. Prefer squash merge.
+- When available, use `gptomek[bot]` for commits, comments, review replies, and
+  reactions. Open pull requests as `trvny` so external automatic reviews are
+  triggered.
+- Prefer one logical change per pull request. Truly trivial low-risk edits can
+  go directly to `main`.
+- Let automatic Codex review handle review when available; treat its findings as
+  advisory and apply the useful ones directly.
+- Merge after relevant checks pass on the final head commit and actionable
+  review threads are resolved. Prefer squash merge.
+- Keep pull-request descriptions, comments, and changelogs brief.
+
+## Validation
+
+After reusable-workflow changes, verify the interface and known callers. For
+profile automation, verify the owning workflow or generator and its referenced
+paths.
