@@ -1,9 +1,20 @@
+<div align="center">
 <img src="assets/banner.svg" alt="trvny" width="100%">
+<br>
 
 <div align="center">
 <sub>consolidation over fragmentation · po kolei, na spokojnie</sub></div>
 
-![toplanguages](./assets/profile/top-langs.svg)  
+[![feeds](https://img.shields.io/badge/feeds-live-ff7a18?style=for-the-badge&logo=rss&logoColor=white)](https://trvny.github.io/feeds)
+[![tvpi](https://img.shields.io/badge/tvpi-IPTV-2563eb?style=for-the-badge&logo=jellyfin&logoColor=white)](https://travny.pages.dev/tv/)
+[![weather](https://img.shields.io/badge/weather-KOŚCIELEC-f38020?style=for-the-badge&logo=cloudflareworkers&logoColor=white)](https://weather.travny.workers.dev)
+[![codebench](https://img.shields.io/badge/codebench-barcodes-111827?style=for-the-badge&logo=qrcode&logoColor=white)](https://codebench.travny.workers.dev)
+[![streambench](https://img.shields.io/badge/streambench-media-7c3aed?style=for-the-badge&logo=vlcmediaplayer&logoColor=white)](https://streambench.travny.workers.dev)
+[![wambridge](https://img.shields.io/badge/wambridge-Samsung_M5-1428a0?style=for-the-badge&logo=samsung&logoColor=white)](https://github.com/trvny/wambridge)
+
+[![GitHub Stats](https://github-stats-extended.vercel.app/api/top-langs?username=trvny&layout=donut&hide_title=true&langs_count=10&theme=ambient_gradient)](https://github-stats-extended.vercel.app/api/top-langs?username=trvny&layout=donut&hide_title=true&langs_count=10&theme=ambient_gradient)
+</div>
+  
 [![feeds](./assets/profile/pin_feeds.svg)](https://github.com/trvny/feeds) [![tvpi](./assets/profile/pin_tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin_wambridge.svg)](https://github.com/trvny/wambridge) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
 
 ## Licenses
