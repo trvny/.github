@@ -9,3 +9,14 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    groups:
+      pre-commit:
+        patterns:
+          - "*"
