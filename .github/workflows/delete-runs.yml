@@ -196,6 +196,11 @@ jobs:
             const failures = [];
             const summaries = [];
 
+            const cacheSize = (cache) => {
+              const size = Number(cache.size_in_bytes);
+              return Number.isFinite(size) && size > 0 ? size : 0;
+            };
+
             const formatBytes = (bytes) => {
               if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
               const units = ['B', 'KiB', 'MiB', 'GiB'];
@@ -211,24 +216,27 @@ jobs:
               let before = null;
               let beforeBytes = null;
               let storageLimitBytes = null;
-              let staleMatched = 0;
-              let budgetMatched = 0;
+              let staleMatched = null;
+              let budgetMatched = null;
               let deleted = 0;
               let deletedBytes = 0;
               let failed = 0;
 
               try {
-                const caches = [];
+                const cachesById = new Map();
                 for (let page = 1; ; page += 1) {
                   const response = await github.request(
                     'GET /repos/{owner}/{repo}/actions/caches',
                     { owner, repo, per_page: 100, page },
                   );
                   const pageCaches = response.data.actions_caches ?? [];
-                  caches.push(...pageCaches);
+                  for (const cache of pageCaches) {
+                    cachesById.set(cache.id, cache);
+                  }
                   if (pageCaches.length < 100) break;
                 }
 
+                const caches = [...cachesById.values()];
                 caches.sort(
                   (left, right) =>
                     Date.parse(right.last_accessed_at ?? right.created_at) -
@@ -236,9 +244,11 @@ jobs:
                 );
                 before = caches.length;
                 beforeBytes = caches.reduce(
-                  (total, cache) => total + (cache.size_in_bytes ?? 0),
+                  (total, cache) => total + cacheSize(cache),
                   0,
                 );
+                staleMatched = 0;
+                budgetMatched = 0;
 
                 try {
                   const response = await github.request(
@@ -248,6 +258,10 @@ jobs:
                   const limitGb = Number(response.data.max_cache_size_gb);
                   if (Number.isFinite(limitGb) && limitGb > 0) {
                     storageLimitBytes = limitGb * 1024 ** 3;
+                  } else {
+                    core.warning(
+                      `${repository}: cache storage limit response has no usable max_cache_size_gb; budget pruning disabled.`,
+                    );
                   }
                 } catch (error) {
                   core.warning(
@@ -267,7 +281,7 @@ jobs:
                 }
 
                 let projectedBytes = beforeBytes - [...selected.values()].reduce(
-                  (total, cache) => total + (cache.size_in_bytes ?? 0),
+                  (total, cache) => total + cacheSize(cache),
                   0,
                 );
 
@@ -279,8 +293,10 @@ jobs:
                     if (Date.parse(cache.last_accessed_at ?? cache.created_at) >= budgetCutoff) {
                       continue;
                     }
+                    const size = cacheSize(cache);
+                    if (size === 0) continue;
                     selected.set(cache.id, cache);
-                    projectedBytes -= cache.size_in_bytes ?? 0;
+                    projectedBytes -= size;
                     budgetMatched += 1;
                   }
                 }
@@ -306,7 +322,7 @@ jobs:
                     const cache = batch[index];
                     if (result.status === 'fulfilled') {
                       deleted += 1;
-                      deletedBytes += cache.size_in_bytes ?? 0;
+                      deletedBytes += cacheSize(cache);
                     } else {
                       failed += 1;
                       failures.push(
@@ -327,8 +343,8 @@ jobs:
                 before === null ? 'N/A' : String(before),
                 beforeBytes === null ? 'N/A' : formatBytes(beforeBytes),
                 storageLimitBytes === null ? 'N/A' : formatBytes(storageLimitBytes),
-                String(staleMatched),
-                String(budgetMatched),
+                staleMatched === null ? 'N/A' : String(staleMatched),
+                budgetMatched === null ? 'N/A' : String(budgetMatched),
                 String(deleted),
                 formatBytes(deletedBytes),
                 beforeBytes === null ? 'N/A' : formatBytes(Math.max(0, beforeBytes - deletedBytes)),
