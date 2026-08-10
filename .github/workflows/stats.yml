@@ -16,7 +16,7 @@ jobs:
   stats:
     name: Refresh pins
     runs-on: ubuntu-slim
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       contents: write
     steps:

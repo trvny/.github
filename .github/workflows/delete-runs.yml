@@ -14,7 +14,7 @@ concurrency:
 jobs:
   delete-runs:
     runs-on: ubuntu-slim
-    timeout-minutes: 90
+    timeout-minutes: 20
     permissions: {}
     steps:
       - name: Require cross-repository token
@@ -139,4 +139,164 @@ jobs:
 
             if (failures.length > 0) {
               core.setFailed(`${failures.length} workflow run(s) could not be deleted`);
+            }
+
+  delete-caches:
+    runs-on: ubuntu-slim
+    timeout-minutes: 20
+    permissions: {}
+    steps:
+      - name: Require cross-repository token
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "::error::Add the repository secret GH_PAT."
+            exit 1
+          fi
+
+      - name: Delete stale Actions caches
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
+          script: |
+            const repositories = [
+              'trvny/trvny',
+              'trvny/.github',
+              'trvny/feeds',
+              'trvny/tvpi',
+              'trvny/autka',
+              'trvny/wambridge',
+              'trvny/.ai',
+              'trvny/WiFi-Automatic',
+            ];
+            const retainDays = 3;
+            const keepMinimumCaches = 3;
+            const deleteBatchSize = 5;
+            const cutoff = Date.now() - retainDays * 24 * 60 * 60 * 1000;
+            const failures = [];
+            const summaries = [];
+
+            const formatBytes = (bytes) => {
+              if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+              const units = ['B', 'KiB', 'MiB', 'GiB'];
+              const exponent = Math.min(
+                Math.floor(Math.log(bytes) / Math.log(1024)),
+                units.length - 1,
+              );
+              return `${(bytes / 1024 ** exponent).toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`;
+            };
+
+            for (const repository of repositories) {
+              const [owner, repo] = repository.split('/');
+              let before = null;
+              let beforeBytes = null;
+              let matched = null;
+              let matchedBytes = 0;
+              let deleted = 0;
+              let deletedBytes = 0;
+              let failed = 0;
+
+              try {
+                const caches = [];
+                for (let page = 1; ; page += 1) {
+                  const response = await github.request(
+                    'GET /repos/{owner}/{repo}/actions/caches',
+                    { owner, repo, per_page: 100, page },
+                  );
+                  const pageCaches = response.data.actions_caches ?? [];
+                  caches.push(...pageCaches);
+                  if (pageCaches.length < 100) break;
+                }
+
+                caches.sort(
+                  (left, right) =>
+                    Date.parse(right.last_accessed_at ?? right.created_at) -
+                    Date.parse(left.last_accessed_at ?? left.created_at),
+                );
+                before = caches.length;
+                beforeBytes = caches.reduce(
+                  (total, cache) => total + (cache.size_in_bytes ?? 0),
+                  0,
+                );
+
+                const cachesToDelete = caches
+                  .slice(keepMinimumCaches)
+                  .filter(
+                    (cache) =>
+                      Date.parse(cache.last_accessed_at ?? cache.created_at) < cutoff,
+                  );
+                matched = cachesToDelete.length;
+                matchedBytes = cachesToDelete.reduce(
+                  (total, cache) => total + (cache.size_in_bytes ?? 0),
+                  0,
+                );
+                core.info(
+                  `${repository}: ${matched} stale cache(s) (${formatBytes(matchedBytes)}) from ${before}`,
+                );
+
+                for (let offset = 0; offset < cachesToDelete.length; offset += deleteBatchSize) {
+                  const batch = cachesToDelete.slice(offset, offset + deleteBatchSize);
+                  const results = await Promise.allSettled(
+                    batch.map((cache) =>
+                      github.request(
+                        'DELETE /repos/{owner}/{repo}/actions/caches/{cache_id}',
+                        { owner, repo, cache_id: cache.id },
+                      ),
+                    ),
+                  );
+
+                  for (let index = 0; index < results.length; index += 1) {
+                    const result = results[index];
+                    const cache = batch[index];
+                    if (result.status === 'fulfilled') {
+                      deleted += 1;
+                      deletedBytes += cache.size_in_bytes ?? 0;
+                    } else {
+                      failed += 1;
+                      failures.push(
+                        `${repository} cache #${cache.id}: ${result.reason?.message ?? result.reason}`,
+                      );
+                      core.error(failures.at(-1));
+                    }
+                  }
+                }
+              } catch (error) {
+                failed += 1;
+                failures.push(`${repository}: ${error.message}`);
+                core.error(failures.at(-1));
+              }
+
+              summaries.push([
+                repository,
+                before === null ? 'N/A' : String(before),
+                beforeBytes === null ? 'N/A' : formatBytes(beforeBytes),
+                matched === null ? 'N/A' : String(matched),
+                String(deleted),
+                formatBytes(deletedBytes),
+                String(failed),
+              ]);
+            }
+
+            await core.summary
+              .addHeading('Actions cache cleanup')
+              .addRaw(`Retention: ${retainDays} days since last access; minimum kept per repository: ${keepMinimumCaches}.`)
+              .addTable([
+                [
+                  { data: 'Repository', header: true },
+                  { data: 'Before', header: true },
+                  { data: 'Size', header: true },
+                  { data: 'Matched', header: true },
+                  { data: 'Deleted', header: true },
+                  { data: 'Freed', header: true },
+                  { data: 'Failed', header: true },
+                ],
+                ...summaries,
+              ])
+              .write();
+
+            if (failures.length > 0) {
+              core.setFailed(`${failures.length} Actions cache operation(s) failed`);
             }
