@@ -23,12 +23,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: top languages card
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: top-langs
+          options: username=${{ github.repository_owner }}&layout=donut&langs_count=12&hide_title=true&theme=ambient_gradient
+          path: assets/profile/top-langs.svg
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: feeds card
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ffeeds&theme=great-gatsby&description_lines_count=1
-          path: assets/profile/pin_feeds.svg
+          path: assets/profile/pin-feeds.svg
           token: ${{ github.token }}
 
       - name: tvpi card
@@ -36,7 +44,7 @@ jobs:
         with:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ftvpi&theme=yeblu
-          path: assets/profile/pin_tvpi.svg
+          path: assets/profile/pin-tvpi.svg
           token: ${{ github.token }}
 
       - name: wambridge card
@@ -44,7 +52,7 @@ jobs:
         with:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fwambridge&theme=blue_navy
-          path: assets/profile/pin_wambridge.svg
+          path: assets/profile/pin-wambridge.svg
           token: ${{ github.token }}
 
       - name: autka card
@@ -52,14 +60,14 @@ jobs:
         with:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fautka&theme=synthwave
-          path: assets/profile/pin_autka.svg
+          path: assets/profile/pin-autka.svg
           token: ${{ github.token }}
 
       - name: Commit pins
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/profile/pin_*.svg
+          git add assets/profile/*.svg
           git diff --cached --quiet && exit 0
           git commit -m "chore(readme): refresh pins [skip ci]"
           git pull --rebase origin main
