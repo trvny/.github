@@ -1,0 +1,47 @@
+name: 🐛 Coś nie działa
+description: Zepsuło się, stoi, albo robi nie to co trzeba
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dzięki, że w ogóle Ci się chciało. Wypełnij tyle, ile wiesz — reszta może zostać pusta.
+
+        **Jak nie wiesz, co wpisać, wpisz „kurde" albo 2137.**
+
+  - type: textarea
+    id: co
+    attributes:
+      label: Co się stało
+      placeholder: kurde, przestało działać
+    validations:
+      required: true
+
+  - type: textarea
+    id: oczekiwane
+    attributes:
+      label: A co miało się stać
+      placeholder: miało nie przestać
+
+  - type: textarea
+    id: powtorzenie
+    attributes:
+      label: Jak to powtórzyć
+      description: Jeśli da się powtórzyć. Jeśli nie — napisz, że nie, to też jest informacja.
+      value: |
+        1.
+        2.
+        3. i wtedy 💥
+
+  - type: input
+    id: wersja
+    attributes:
+      label: Wersja albo commit
+      placeholder: v2.1.0 — a jak nie wiadomo, to 2137
+
+  - type: textarea
+    id: logi
+    attributes:
+      label: Logi, zrzuty, cokolwiek
+      description: Wklej co masz. Sformatuje się samo, nie trzeba backticków.
+      render: shell

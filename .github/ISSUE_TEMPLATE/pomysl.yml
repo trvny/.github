@@ -1,0 +1,31 @@
+name: 💡 Pomysł
+description: Mogłoby działać lepiej, albo w ogóle
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Zasada ta sama: nie wiesz, co wpisać — **„kurde" albo 2137**.
+
+  - type: textarea
+    id: pomysl
+    attributes:
+      label: O co chodzi
+    validations:
+      required: true
+
+  - type: textarea
+    id: po_co
+    attributes:
+      label: Po co
+      description: Jaki problem to rozwiązuje. „Bo fajnie" jest akceptowalną odpowiedzią.
+
+  - type: dropdown
+    id: pilnosc
+    attributes:
+      label: Pilność
+      options:
+        - Może kiedyś
+        - Byłoby miło
+        - Po kolei, na spokojnie
+        - "2137"
