@@ -27,7 +27,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: top-langs
-          options: username=${{ github.repository_owner }}&layout=donut&langs_count=12&hide_title=true&theme=ambient_gradient
+          options: username=${{ github.repository_owner }}&layout=donut&langs_count=13&hide_title=true&theme=ambient_gradient&show_icons=true&locale=pl
           path: assets/profile/top-langs.svg
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -62,6 +62,14 @@ jobs:
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fautka&theme=synthwave
           path: assets/profile/pin-autka.svg
           token: ${{ github.token }}
+  
+      - name: gist card
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: gist
+          options: id=167d2271e3cf7d21e118aa7d906a7d2c
+          token: ${{ secrets.GH_PAT }}
+          path: assets/profile/gist.svg
 
       - name: Commit pins
         run: |
