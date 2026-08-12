@@ -1,5 +1,6 @@
 name: 🐛 Coś nie działa
 description: Zepsuło się, stoi, albo robi nie to co trzeba
+title: "Coś, coś się popsuło"
 labels: ["bug"]
 body:
   - type: markdown
