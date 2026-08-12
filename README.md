@@ -15,7 +15,7 @@
 [![GitHub Stats](https://github-stats-extended.vercel.app/api/top-langs?username=trvny&layout=donut&hide_title=true&langs_count=10&theme=ambient_gradient)](https://github-stats-extended.vercel.app/api/top-langs?username=trvny&layout=donut&hide_title=true&langs_count=10&theme=ambient_gradient)
 </div>
   
-[![feeds](./assets/profile/pin_feeds.svg)](https://github.com/trvny/feeds) [![tvpi](./assets/profile/pin_tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin_wambridge.svg)](https://github.com/trvny/wambridge) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
+[![feeds](./assets/profile/pin-feeds.svg)](https://github.com/trvny/feeds) [![tvpi](./assets/profile/pin-tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin-wambridge.svg)](https://github.com/trvny/wambridge) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
 
 ## Licenses
 
