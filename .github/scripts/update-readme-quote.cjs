@@ -8,7 +8,7 @@ const FEED_START_MARKER = '<!--README_FEED:START-->';
 const FEED_END_MARKER = '<!--README_FEED:END-->';
 const DEFAULT_GIST_ID = '167d2271e3cf7d21e118aa7d906a7d2c';
 const DEFAULT_FEED_URL =
-  'https://raw.githubusercontent.com/trvny/feeds/main/feedseek/feeds/feed_daily_digest.xml';
+  'https://raw.githubusercontent.com/trvny/feedseek/main/feeds/feed_daily_digest.xml';
 const UPSTREAM_BASE =
   'https://raw.githubusercontent.com/offensive-vk/auto-update-quote/v7';
 
