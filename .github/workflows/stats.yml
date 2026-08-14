@@ -31,11 +31,11 @@ jobs:
           path: assets/profile/top-langs.svg
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: feeds card
+      - name: feedseek card
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ffeeds&theme=great-gatsby&description_lines_count=1
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ffeedseek&theme=great-gatsby&description_lines_count=1
           path: assets/profile/pin-feeds.svg
           token: ${{ github.token }}
 
