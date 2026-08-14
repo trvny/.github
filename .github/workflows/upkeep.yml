@@ -124,8 +124,7 @@ jobs:
           GIST_ID: 167d2271e3cf7d21e118aa7d906a7d2c
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
           README_FEED_URLS: >-
-            https://raw.githubusercontent.com/trvny/feedseek/main/feeds/feed_daily_digest.xml,
-            ${{ vars.README_FEED_URLS }},
+            ${{ vars.README_FEED_URLS || 'https://raw.githubusercontent.com/trvny/feedseek/main/feeds/feed_daily_digest.xml' }},
             https://news.google.com/atom/topics/CAAqHAgKIhZDQklTQ2pvSWJHOWpZV3hmZGpJb0FBUAE/sections/CAQiUENCSVNOam9JYkc5allXeGZkakpDRUd4dlkyRnNYM1l5WDNObFkzUnBiMjV5Q3hJSkwyMHZNREl5WW5OdWVnc0tDUzl0THpBeU1tSnpiaWdBKjEIACotCAoiJ0NCSVNGem9JYkc5allXeGZkako2Q3dvSkwyMHZNREl5WW5OdUtBQVABUAE?hl=pl&gl=PL&ceid=PL%3Apl&oc=11,
             https://raw.githubusercontent.com/trvny/feedseek/main/feeds/feed_aibridge.xml,
             https://raw.githubusercontent.com/trvny/feedseek/main/feeds/feed_github.xml,
@@ -136,14 +135,7 @@ jobs:
           README_FEED_MAX_ENTRIES: ${{ vars.README_FEED_MAX_ENTRIES || '6' }}
           README_PATH: README.md
           README_TARGET_REPOS: >-
-            trvny/feedseek:both,
-            trvny/kanarek:both,
-            trvny/tvpi:both,
-            trvny/autka:both,
-            trvny/wambridge:both,
-            trvny/.github:both,
-            trvny/trvny:both,
-            ${{ vars.README_TARGET_REPOS }},
+            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,trvny/kanarek:both,trvny/tvpi:both,trvny/autka:both,trvny/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
             trvny/.ai:both
         with:
           github-token: ${{ secrets.GH_PAT }}
