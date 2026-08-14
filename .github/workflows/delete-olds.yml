@@ -36,7 +36,8 @@ jobs:
             const repositories = [
               'trvny/trvny',
               'trvny/.github',
-              'trvny/feeds',
+              'trvny/feedseek',
+              'trvny/kanarek',
               'trvny/tvpi',
               'trvny/autka',
               'trvny/wambridge',
@@ -179,7 +180,8 @@ jobs:
             const repositories = [
               'trvny/trvny',
               'trvny/.github',
-              'trvny/feeds',
+              'trvny/feedseek',
+              'trvny/kanarek',
               'trvny/tvpi',
               'trvny/autka',
               'trvny/wambridge',
