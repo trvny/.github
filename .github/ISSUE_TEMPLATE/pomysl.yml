@@ -5,7 +5,6 @@ body:
   - type: markdown
     attributes:
       value: |
-        Zasada ta sama: nie wiesz, co wpisać — **„kurde" albo 2137**.
 
   - type: textarea
     id: pomysl
