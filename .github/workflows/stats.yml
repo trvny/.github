@@ -39,11 +39,19 @@ jobs:
           path: assets/profile/pin-feeds.svg
           token: ${{ github.token }}
 
+      - name: kanarek card
+        uses: stats-organization/github-readme-stats-action@v2
+        with:
+          card: pin
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fkanarek&theme=shades-of-purple&description_lines_count=1
+          path: assets/profile/pin-kanarek.svg
+          token: ${{ github.token }}
+
       - name: tvpi card
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ftvpi&theme=yeblu
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ftvpi&theme=yeblu&description_lines_count=1
           path: assets/profile/pin-tvpi.svg
           token: ${{ github.token }}
 
@@ -51,7 +59,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fwambridge&theme=blue_navy
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fwambridge&theme=blue_navy&description_lines_count=1
           path: assets/profile/pin-wambridge.svg
           token: ${{ github.token }}
 
@@ -59,7 +67,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fautka&theme=synthwave
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fautka&theme=synthwave&description_lines_count=1
           path: assets/profile/pin-autka.svg
           token: ${{ github.token }}
   
@@ -67,7 +75,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: gist
-          options: id=167d2271e3cf7d21e118aa7d906a7d2c
+          options: id=167d2271e3cf7d21e118aa7d906a7d2c&theme=aura
           token: ${{ secrets.GH_PAT }}
           path: assets/profile/gist.svg
 
