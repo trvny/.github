@@ -8,13 +8,11 @@ body:
       value: |
         Dzięki, że w ogóle Ci się chciało. Wypełnij tyle, ile wiesz — reszta może zostać pusta.
 
-        **Jak nie wiesz, co wpisać, wpisz „kurde" albo 2137.**
-
   - type: textarea
     id: co
     attributes:
-      label: Co się stało
-      placeholder: kurde, przestało działać
+      label: Coś się
+      placeholder: coś się popsuło
     validations:
       required: true
 
