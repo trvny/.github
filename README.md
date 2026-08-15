@@ -15,7 +15,10 @@
 ![GitHub Stats](./assets/profile/top-langs.svg)
 </div>
   
-[![feedseek](./assets/profile/pin-feeds.svg)](https://github.com/trvny/feedseek) [![tvpi](./assets/profile/pin-tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin-wambridge.svg)](https://github.com/trvny/wambridge) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
+[![feedseek](./assets/profile/pin-feeds.svg)](https://github.com/trvny/feedseek) [![kanarek](./assets/profile/pin-kanarek.svg)](https://github.com/trvny/kanarek) [![tvpi](./assets/profile/pin-tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin-wambridge.svg)](https://github.com/trvny/wambridge)
+
+# .github
+> This repo contains shared community resources that will propagate to all public repositories that don't already have their own resource that fills this purpose. You can learn more about this GitHub feature [here](https://help.github.com/en/articles/creating-a-default-community-health-file-for-your-organization). 
 
 ## [Licenses](LICENSE)
 
