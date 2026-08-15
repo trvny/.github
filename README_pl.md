@@ -5,7 +5,7 @@
 <div align="center">
 <sub>consolidation over fragmentation · po kolei, na spokojnie</sub></div>
 
-[Polski](README_pl.md) · **English**
+**Polski** · [English](README.md)
 
 [![feedseek](https://img.shields.io/badge/feed-seek-ff7a18?style=for-the-badge&logo=rss&logoColor=white)](https://trvny.github.io/feedseek) [![tvpi](https://img.shields.io/badge/tvpi-IPTV-2563eb?style=for-the-badge&logo=jellyfin&logoColor=white)](https://travny.pages.dev/tv/)
 [![wambridge](https://img.shields.io/badge/wambridge-Samsung_M5-1428a0?style=for-the-badge&logo=samsung&logoColor=white)](https://github.com/trvny/wambridge)
@@ -17,25 +17,25 @@
   
 [![feedseek](./assets/profile/pin-feeds.svg)](https://github.com/trvny/feedseek) [![tvpi](./assets/profile/pin-tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin-wambridge.svg)](https://github.com/trvny/wambridge) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
 
-## [Licenses](LICENSE)
+## [Licencje](LICENSE)
 
 [![code license](https://img.shields.io/github/license/trvny/.github?label=code&logo=opensourceinitiative&logoColor=white&color=6f42c1&style=flat-square)](https://spdx.org/licenses/ISC)
 [![content license](https://img.shields.io/badge/content-CC_BY_4.0-2b579a?style=flat-square&logo=creativecommons&logoColor=white)](https://creativecommons.org/licenses/by/4.0)
 
-Code, workflows, and configuration are licensed under [ISC](LICENSE). Original
-content, documentation, and graphics are available under
-[CC BY 4.0](docs/LICENSE.CC-BY-4.0). Third-party materials are documented in
+Kod, workflowy i konfigurację obejmuje [ISC](LICENSE). Oryginalne treści,
+dokumentacja i grafiki są dostępne na [CC BY 4.0](docs/LICENSE.CC-BY-4.0).
+Materiały zewnętrzne są opisane w
 [THIRD_PARTY_NOTICES.md](docs/THIRD_PARTY_NOTICES.md).
 
 ---
-## 💬 Quote from the drawer
+## 💬 Cytat z szuflady
 <!-- markdownlint-disable MD033 -->
 <!--STARTS_HERE_QUOTE_README-->
 <i>❝“Software is a gas; it expands to fill its container.”— Nathan Myhrvold❞</i>
 <!--ENDS_HERE_QUOTE_README-->
 <!-- markdownlint-enable MD033 -->
 
-## 📰 Recently on the air
+## 📰 Ostatnio w eterze
 <!--README_FEED:START-->
 - [Bakteria w wodzie! Zjeżdżalnia na Basenach Letnich w Chrzanowie zamknięta - Przelom.pl](https://news.google.com/atom/articles/CBMiuwFBVV95cUxQUHJJa3pnenhMdWVWTngwS0E5NFN4YV9PVFduVHdoQWlkQkFmUlRkQ05Fa0k4SjNWeWtfMnloeUIxN2pEbV9laTlLNlREWEJJQ3VMRzlFdU1EcEQ1ZWNlLTBCQzc4LW93eTUwRzUya0g2bEpVeGltdGZmVFV6Vkk2VngxLURfTVA2Y2tmdFdDTWR4aFhnSmVxem9PY3M4U2FvX2NGWEJBNXhSb0xMM3NqaUZLanBSTE8yY0w0?oc=5)
 - [iPhone Ultra w polskich sklepach? Nie mamy dobrych wiadomości](https://antyweb.pl/iphone-ultra-w-polskich-sklepach-nie-mamy-dobrych-wiadomosci)
