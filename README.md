@@ -5,12 +5,10 @@
 <div align="center">
 <sub>consolidation over fragmentation · po kolei, na spokojnie</sub></div>
 
-[![feedseek](https://img.shields.io/badge/feedseek-live-ff7a18?style=for-the-badge&logo=rss&logoColor=white)](https://trvny.github.io/feedseek)
-[![tvpi](https://img.shields.io/badge/tvpi-IPTV-2563eb?style=for-the-badge&logo=jellyfin&logoColor=white)](https://travny.pages.dev/tv/)
-[![weather](https://img.shields.io/badge/weather-KOŚCIELEC-f38020?style=for-the-badge&logo=cloudflareworkers&logoColor=white)](https://weather.travny.workers.dev)
-[![codebench](https://img.shields.io/badge/codebench-barcodes-111827?style=for-the-badge&logo=qrcode&logoColor=white)](https://codebench.travny.workers.dev)
-[![streambench](https://img.shields.io/badge/streambench-media-7c3aed?style=for-the-badge&logo=vlcmediaplayer&logoColor=white)](https://streambench.travny.workers.dev)
+[![feedseek](https://img.shields.io/badge/feed-seek-ff7a18?style=for-the-badge&logo=rss&logoColor=white)](https://trvny.github.io/feedseek) [![tvpi](https://img.shields.io/badge/tvpi-IPTV-2563eb?style=for-the-badge&logo=jellyfin&logoColor=white)](https://travny.pages.dev/tv/)
 [![wambridge](https://img.shields.io/badge/wambridge-Samsung_M5-1428a0?style=for-the-badge&logo=samsung&logoColor=white)](https://github.com/trvny/wambridge)
+[![weather](https://img.shields.io/badge/weather-KOŚCIELEC-f38020?style=for-the-badge&logo=cloudflareworkers&logoColor=white)](https://weather.travny.workers.dev)  
+[![codebench](https://img.shields.io/badge/codebench-barcodes-111827?style=for-the-badge&logo=qrcode&logoColor=white)](https://codebench.travny.workers.dev) [![streambench](https://img.shields.io/badge/streambench-media-7c3aed?style=for-the-badge&logo=vlcmediaplayer&logoColor=white)](https://streambench.travny.workers.dev)
 
 ![GitHub Stats](./assets/profile/top-langs.svg)
 </div>
