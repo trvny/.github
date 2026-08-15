@@ -1,8 +1,16 @@
 # Code of Conduct
 
+## Scope
+
+This Code of Conduct applies to project spaces including:
+
+- project-related stuff;
+
+It is not intended to govern somebody's entire existence on the internet.
+
 ## Our extremely complicated principle
 
->
+``             ``    
 
 That's most of it.
 
@@ -27,13 +35,11 @@ Civilized participation includes:
 
 The following are not welcome:
 
--
-
-Criticizing is fine.
+``             ``   
 
 ## Mistakes are allowed
 
-People occasionally phrase things badly, misunderstand each other, miss context, write questionable code, make bad jokes, or have a worse day than usual.
+People occasionally phrase things badly, misunderstand each other, miss context, write code drunk, make bad jokes, or have a worse day than usual.
 
 Not every awkward interaction requires the International Court.
 
@@ -43,30 +49,12 @@ Patterns matter more than isolated imperfections.
 
 Disagreement itself is not misconduct. You are are allowed to disagree.
 
-If a discussion becomes nothing but increasingly elaborate ways of telling another person they are an idiot, its useful lifespan has probably ended.
-
-## Scope
-
-This Code of Conduct applies to project spaces including:
-
-- project-related stuff;
-
-It is not intended to govern somebody's entire existence on the internet.
-
 ## Enforcement
 
 Responses depend on severity and context.
 
 They may include:
 
-**A reminder**  
+**ABSOLUTLY NOTHING**  
 
 Steps may be skipped when the situation warrants it.
-
-There is no mandatory four-stage boss fight before somebody can be removed for obviously unacceptable behavior.
-
-## Final version
-
-Contribute.
-Or not.
-Disagree.
