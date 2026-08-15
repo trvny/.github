@@ -14,7 +14,7 @@ It is not intended to govern somebody's entire existence on the internet.
 
 That's most of it.
 
-This community exists to do some "thing" with the code, nobody will be treated like an unwanted guest.
+This community exists to do some "thing" with the code. Nobody will be treated like an unwanted guest.
 
 You do not need to agree with everyone. Or anyone.
 You do not need to do anything.
@@ -39,7 +39,7 @@ The following are not welcome:
 
 ## Mistakes are allowed
 
-People occasionally phrase things badly, misunderstand each other, miss context, write code drunk, make bad jokes, or have a worse day than usual.
+People occasionally phrase things badly, misunderstand each other, miss context, write code while drunk, make bad jokes, or have a worse day than usual.
 
 Not every awkward interaction requires the International Court.
 
@@ -47,7 +47,7 @@ Patterns matter more than isolated imperfections.
 
 ## Disagreements
 
-Disagreement itself is not misconduct. You are are allowed to disagree.
+Disagreement itself is not misconduct. You are allowed to disagree.
 
 ## Enforcement
 
@@ -55,6 +55,6 @@ Responses depend on severity and context.
 
 They may include:
 
-**ABSOLUTLY NOTHING**  
+**ABSOLUTELY NOTHING**  
 
 Steps may be skipped when the situation warrants it.
