@@ -11,6 +11,18 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  REPOSITORIES: |
+    trvny/trvny
+    trvny/.github
+    trvny/feedseek
+    trvny/kanarek
+    trvny/tvpi
+    trvny/Autka
+    trvny/wambridge
+    trvny/.ai
+    trvny/WiFi-Automatic
+
 jobs:
   delete-runs:
     runs-on: ubuntu-slim
@@ -33,15 +45,7 @@ jobs:
           retries: 3
           retry-exempt-status-codes: 400,401,404,422
           script: |
-            const repositories = [
-              'trvny/trvny',
-              'trvny/.github',
-              'trvny/feedseek',
-              'trvny/kanarek',
-              'trvny/tvpi',
-              'trvny/autka',
-              'trvny/wambridge',
-            ];
+            const repositories = process.env.REPOSITORIES.trim().split(/\s+/);
             const retainDays = 3;
             const keepMinimumRuns = 3;
             const deleteBatchSize = 5;
@@ -177,17 +181,7 @@ jobs:
           retries: 3
           retry-exempt-status-codes: 400,401,404,422
           script: |
-            const repositories = [
-              'trvny/trvny',
-              'trvny/.github',
-              'trvny/feedseek',
-              'trvny/kanarek',
-              'trvny/tvpi',
-              'trvny/autka',
-              'trvny/wambridge',
-              'trvny/.ai',
-              'trvny/WiFi-Automatic',
-            ];
+            const repositories = process.env.REPOSITORIES.trim().split(/\s+/);
             const retainDays = 5;
             const keepMinimumCaches = 3;
             const budgetMinimumAgeHours = 24;
