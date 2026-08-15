@@ -188,10 +188,11 @@ jobs:
               'trvny/.ai',
               'trvny/WiFi-Automatic',
             ];
-            const retainDays = 7;
+            const retainDays = 3;
             const keepMinimumCaches = 3;
             const budgetMinimumAgeHours = 24;
-            const budgetTargetRatio = 0.95;
+            const budgetTriggerRatio = 0.95;
+            const budgetTargetRatio = 0.90;
             const deleteBatchSize = 5;
             const cutoff = Date.now() - retainDays * 24 * 60 * 60 * 1000;
             const budgetCutoff = Date.now() - budgetMinimumAgeHours * 60 * 60 * 1000;
@@ -287,7 +288,10 @@ jobs:
                   0,
                 );
 
-                if (storageLimitBytes !== null && projectedBytes > storageLimitBytes) {
+                if (
+                  storageLimitBytes !== null &&
+                  projectedBytes > storageLimitBytes * budgetTriggerRatio
+                ) {
                   const targetBytes = Math.floor(storageLimitBytes * budgetTargetRatio);
                   for (const cache of [...caches].reverse()) {
                     if (projectedBytes <= targetBytes) break;
@@ -357,7 +361,7 @@ jobs:
             await core.summary
               .addHeading('Actions cache cleanup')
               .addRaw(
-                `Stale after ${retainDays} days without access. If usage exceeds the repository cache limit, least-recently-used caches older than ${budgetMinimumAgeHours}h are pruned toward ${Math.round(budgetTargetRatio * 100)}% of that limit. At least ${keepMinimumCaches} newest caches are always kept.`,
+                `Stale after ${retainDays} days without access. Above ${Math.round(budgetTriggerRatio * 100)}% of the repository cache limit, least-recently-used caches older than ${budgetMinimumAgeHours}h are pruned toward ${Math.round(budgetTargetRatio * 100)}%. At least ${keepMinimumCaches} newest caches are always kept.`,
               )
               .addTable([
                 [
