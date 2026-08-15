@@ -15,10 +15,10 @@
   
 [![feedseek](./assets/profile/pin-feeds.svg)](https://github.com/trvny/feedseek) [![tvpi](./assets/profile/pin-tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin-wambridge.svg)](https://github.com/trvny/wambridge) [![gist](https://github-stats-extended.vercel.app/api/gist?id=167d2271e3cf7d21e118aa7d906a7d2c&theme=chartreuse-dark)](https://gist.github.com/trvny/167d2271e3cf7d21e118aa7d906a7d2c)
 
-## Licenses
+## [Licenses](LICENSE)
 
-[![code license](https://img.shields.io/github/license/trvny/.github?label=code&logo=opensourceinitiative&logoColor=white&color=6f42c1&style=flat-square)](LICENSE)
-[![content license](https://img.shields.io/badge/content-CC_BY_4.0-2b579a?style=flat-square&logo=creativecommons&logoColor=white)](docs/LICENSE.CC-BY-4.0)
+[![code license](https://img.shields.io/github/license/trvny/.github?label=code&logo=opensourceinitiative&logoColor=white&color=6f42c1&style=flat-square)](https://spdx.org/licenses/ISC)
+[![content license](https://img.shields.io/badge/content-CC_BY_4.0-2b579a?style=flat-square&logo=creativecommons&logoColor=white)](https://creativecommons.org/licenses/by/4.0)
 
 Code, workflows, and configuration are licensed under [ISC](LICENSE). Original
 content, documentation, and graphics are available under
@@ -26,6 +26,13 @@ content, documentation, and graphics are available under
 [THIRD_PARTY_NOTICES.md](docs/THIRD_PARTY_NOTICES.md).
 
 ---
+## 💬 Cytat z szuflady
+<!-- markdownlint-disable MD033 -->
+<!--STARTS_HERE_QUOTE_README-->
+<i>❝“Software is a gas; it expands to fill its container.”— Nathan Myhrvold❞</i>
+<!--ENDS_HERE_QUOTE_README-->
+<!-- markdownlint-enable MD033 -->
+
 ## 📰 Ostatnio w eterze
 <!--README_FEED:START-->
 - [Bakteria w wodzie! Zjeżdżalnia na Basenach Letnich w Chrzanowie zamknięta - Przelom.pl](https://news.google.com/atom/articles/CBMiuwFBVV95cUxQUHJJa3pnenhMdWVWTngwS0E5NFN4YV9PVFduVHdoQWlkQkFmUlRkQ05Fa0k4SjNWeWtfMnloeUIxN2pEbV9laTlLNlREWEJJQ3VMRzlFdU1EcEQ1ZWNlLTBCQzc4LW93eTUwRzUya0g2bEpVeGltdGZmVFV6Vkk2VngxLURfTVA2Y2tmdFdDTWR4aFhnSmVxem9PY3M4U2FvX2NGWEJBNXhSb0xMM3NqaUZLanBSTE8yY0w0?oc=5)
@@ -35,10 +42,3 @@ content, documentation, and graphics are available under
 - [US could not verify Israeli warnings of Iran plots against Trump, sources say](https://www.reuters.com/world/middle-east/us-could-not-verify-israeli-warnings-iran-plots-against-trump-sources-say-2026-08-13/)
 - [Sandisk forecasts mid-to-high-teens revenue growth through 2030](https://www.reuters.com/business/sandisk-forecasts-mid-to-high-teens-revenue-growth-through-2030-2026-08-13/)
 <!--README_FEED:END-->
-
-## 💬 Cytat z szuflady
-<!-- markdownlint-disable MD033 -->
-<!--STARTS_HERE_QUOTE_README-->
-<i>❝“Software is a gas; it expands to fill its container.”— Nathan Myhrvold❞</i>
-<!--ENDS_HERE_QUOTE_README-->
-<!-- markdownlint-enable MD033 -->
