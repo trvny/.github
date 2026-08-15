@@ -188,11 +188,11 @@ jobs:
               'trvny/.ai',
               'trvny/WiFi-Automatic',
             ];
-            const retainDays = 3;
+            const retainDays = 5;
             const keepMinimumCaches = 3;
             const budgetMinimumAgeHours = 24;
-            const budgetTriggerRatio = 0.95;
-            const budgetTargetRatio = 0.90;
+            const budgetTriggerBytes = 5 * 1024 ** 3;
+            const budgetTargetBytes = 4.5 * 1024 ** 3;
             const deleteBatchSize = 5;
             const cutoff = Date.now() - retainDays * 24 * 60 * 60 * 1000;
             const budgetCutoff = Date.now() - budgetMinimumAgeHours * 60 * 60 * 1000;
@@ -218,7 +218,6 @@ jobs:
               const [owner, repo] = repository.split('/');
               let before = null;
               let beforeBytes = null;
-              let storageLimitBytes = null;
               let staleMatched = null;
               let budgetMatched = null;
               let deleted = 0;
@@ -253,25 +252,6 @@ jobs:
                 staleMatched = 0;
                 budgetMatched = 0;
 
-                try {
-                  const response = await github.request(
-                    'GET /repos/{owner}/{repo}/actions/cache/storage-limit',
-                    { owner, repo },
-                  );
-                  const limitGb = Number(response.data.max_cache_size_gb);
-                  if (Number.isFinite(limitGb) && limitGb > 0) {
-                    storageLimitBytes = limitGb * 1024 ** 3;
-                  } else {
-                    core.warning(
-                      `${repository}: cache storage limit response has no usable max_cache_size_gb; budget pruning disabled.`,
-                    );
-                  }
-                } catch (error) {
-                  core.warning(
-                    `${repository}: cache storage limit unavailable (${error.message}); budget pruning disabled.`,
-                  );
-                }
-
                 const protectedIds = new Set(
                   caches.slice(0, keepMinimumCaches).map((cache) => cache.id),
                 );
@@ -288,13 +268,9 @@ jobs:
                   0,
                 );
 
-                if (
-                  storageLimitBytes !== null &&
-                  projectedBytes > storageLimitBytes * budgetTriggerRatio
-                ) {
-                  const targetBytes = Math.floor(storageLimitBytes * budgetTargetRatio);
+                if (projectedBytes > budgetTriggerBytes) {
                   for (const cache of [...caches].reverse()) {
-                    if (projectedBytes <= targetBytes) break;
+                    if (projectedBytes <= budgetTargetBytes) break;
                     if (protectedIds.has(cache.id) || selected.has(cache.id)) continue;
                     if (Date.parse(cache.last_accessed_at ?? cache.created_at) >= budgetCutoff) {
                       continue;
@@ -348,7 +324,6 @@ jobs:
                 repository,
                 before === null ? 'N/A' : String(before),
                 beforeBytes === null ? 'N/A' : formatBytes(beforeBytes),
-                storageLimitBytes === null ? 'N/A' : formatBytes(storageLimitBytes),
                 staleMatched === null ? 'N/A' : String(staleMatched),
                 budgetMatched === null ? 'N/A' : String(budgetMatched),
                 String(deleted),
@@ -361,14 +336,13 @@ jobs:
             await core.summary
               .addHeading('Actions cache cleanup')
               .addRaw(
-                `Stale after ${retainDays} days without access. Above ${Math.round(budgetTriggerRatio * 100)}% of the repository cache limit, least-recently-used caches older than ${budgetMinimumAgeHours}h are pruned toward ${Math.round(budgetTargetRatio * 100)}%. At least ${keepMinimumCaches} newest caches are always kept.`,
+                `Stale after ${retainDays} days without access. Above ${formatBytes(budgetTriggerBytes)}, least-recently-used caches older than ${budgetMinimumAgeHours}h are pruned toward ${formatBytes(budgetTargetBytes)}. At least ${keepMinimumCaches} newest caches are always kept.`,
               )
               .addTable([
                 [
                   { data: 'Repository', header: true },
                   { data: 'Before', header: true },
                   { data: 'Size', header: true },
-                  { data: 'Limit', header: true },
                   { data: 'Stale', header: true },
                   { data: 'Budget', header: true },
                   { data: 'Deleted', header: true },
