@@ -1,71 +1,71 @@
-# GitHub flow
+# Contributing
 
-Follow GitHub flow to collaborate on projects.
+Thanks for considering contributing.
 
-## Introduction
+Seriously. Open source gets a bit lonely when everyone quietly downloads things and disappears into the night.
 
-GitHub flow is a lightweight, branch-based workflow. The GitHub flow is useful for everyone, not just developers. For example, here at GitHub, we use GitHub flow for our [site policy](https://github.com/github/site-policy), [documentation](https://github.com/github/docs), and [roadmap](https://github.com/github/roadmap).
+You do not need to know the entire codebase, write perfect English, prepare a formal proposal, or prove that you have been programming since birth. If you found something broken, confusing, ugly, outdated, unnecessarily complicated, or simply have an idea that could make things better, you're welcome here.
 
-## Prerequisites
+## Ways to contribute
 
-To follow GitHub flow, you will need a GitHub account and a repository. For information on how to create an account, see [Creating an account on GitHub](/en/get-started/start-your-journey/creating-an-account-on-github). For information on how to create a repository, see [Quickstart for repositories](/en/repositories/creating-and-managing-repositories/quickstart-for-repositories). For information on how to find an existing repository to contribute to, see [Finding ways to contribute to open source on GitHub](/en/get-started/exploring-projects-on-github/finding-ways-to-contribute-to-open-source-on-github).
+Contributing does not only mean writing a giant feature.
 
-## Following GitHub flow
+Useful contributions include:
 
-> \[!TIP]
-> You can complete all steps of GitHub flow through the GitHub web interface, command line and [GitHub CLI](https://cli.github.com), or [GitHub Desktop](/en/desktop). For more information about the tools you can use to connect to GitHub, see [Connecting to GitHub](/en/get-started/using-github/connecting-to-github).
+- fixing bugs, typos, documentation, or weird edge cases;
+- improving existing code or simplifying something unnecessarily complicated;
+- reporting problems with enough information to reproduce them;
+- suggesting features or better approaches;
+- improving accessibility, performance, UX, compatibility, or documentation;
+- reviewing existing issues or pull requests;
+- pointing out that something makes absolutely no sense.
 
-### Create a branch
+Small contributions are still contributions.
 
-Create a branch in your repository. A short, descriptive branch name enables your collaborators to see ongoing work at a glance. For example, `increase-test-timeout` or `add-code-of-conduct`. For more information, see [Creating and deleting branches within your repository](/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository).
+## Before starting
 
-By creating a branch, you create a space to work without affecting the default branch. Additionally, you give collaborators a chance to review your work.
+For small changes, just go ahead.
 
-### Make changes
+If an issue for the same problem already exists, joining that discussion is usually better than creating its identical twin.
 
-On your branch, make any desired changes to the repository. For more information, see [Creating new files](/en/repositories/working-with-files/managing-files/creating-new-files), [Editing files](/en/repositories/working-with-files/managing-files/editing-files), [Renaming a file](/en/repositories/working-with-files/managing-files/renaming-a-file), [Moving a file to a new location](/en/repositories/working-with-files/managing-files/moving-a-file-to-a-new-location), or [Deleting files in a repository](/en/repositories/working-with-files/managing-files/deleting-files-in-a-repository).
+## Making changes
 
-Your branch is a safe place to make changes. If you make a mistake, you can revert your changes or push additional changes to fix the mistake. Your changes will not end up on the default branch until you merge your branch.
+Try to keep each change reasonably focused.
 
-Commit and push your changes to your branch. Give each commit a descriptive message to help you and future contributors understand what changes the commit contains. For example, `fix typo` or `increase rate limit`.
+You do not need to reorganize half the repository because you wanted to fix one button. Likewise, unrelated cleanup is usually better as a separate change.
 
-Ideally, each commit contains an isolated, complete change. This makes it easy to revert your changes if you decide to take a different approach. For example, if you want to rename a variable and add some tests, put the variable rename in one commit and the tests in another commit. Later, if you want to keep the tests but revert the variable rename, you can revert the specific commit that contained the variable rename. If you put the variable rename and tests in the same commit or spread the variable rename across multiple commits, you would spend more effort reverting your changes.
+Perfect consistency is not required. Making the codebase slightly less haunted is enough.
 
-By committing and pushing your changes, you back up your work to remote storage. This means that you can access your work from any device. It also means that your collaborators can see your work, answer questions, and make suggestions or contributions.
+## Tests and checks
 
-Continue to make, commit, and push changes to your branch until you are ready to ask for feedback.
+You are not expected to summon every CI workflow in existence after correcting a typo.
 
-> \[!TIP]
-> Make a separate branch for each set of unrelated changes. This makes it easier for reviewers to give feedback. It also makes it easier for you and future collaborators to understand the changes and to revert or build on them. Additionally, if there is a delay in one set of changes, your other changes aren't also delayed.
+If something fails and you do not know why, say so. A failing check with context is much more useful than quietly abandoning the contribution in a ditch.
 
-### Create a pull request
+## AI-assisted contributions
 
-Create a pull request to ask collaborators for feedback on your changes. Pull request review is so valuable that some repositories require an approving review before pull requests can be merged. If you want early feedback or advice before you complete your changes, you can mark your pull request as a draft. For more information, see [Creating a pull request](/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).
+Using AI tools is fine.
 
-When you create a pull request, include a summary of the changes and what problem they solve. You can include images, links, and tables to help convey this information. If your pull request addresses an issue, link the issue so that issue stakeholders are aware of the pull request and vice versa. If you link with a keyword, the issue will close automatically when the pull request merges. For more information, see [Basic writing and formatting syntax](/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) and [Linking a pull request to an issue](/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue).
+The same rule applies as with code copied from Stack Overflow, ancient forum posts, your past self, or messages revealed to you in a dream: **you are responsible for what you submit**.
 
-In addition to filling out the body of the pull request, you can add comments to specific lines of the pull request to explicitly point something out to the reviewers.
+Please review generated changes, make sure they actually solve the problem, and avoid submitting enormous unexplained blobs you have not looked at yourself.
 
-Your repository may be configured to automatically request a review from specific teams or users when a pull request is created. You can also manually @mention or request a review from specific people or teams.
+## Feedback and disagreements
 
-If your repository has checks configured to run on pull requests, you will see any checks that failed on your pull request. This helps you catch errors before merging your branch. For more information, see [About status checks](/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/about-status-checks).
+Technical disagreement is normal.
 
-### Address review comments
+Nobody wins a prize for turning a dependency update into a blood feud.
 
-Reviewers should leave questions, comments, and suggestions. Reviewers can comment on the whole pull request or add comments to specific lines or files. You and reviewers can insert images or code suggestions to clarify comments. For more information, see [Reviewing changes in pull requests](/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests).
+## Don't be afraid to contribute
 
-You can continue to commit and push changes in response to the reviews. Your pull request will update automatically.
+This is probably the most important part.
 
-### Merge your pull request
+If you're hesitating because your change feels too small, you're new to the project, you're not sure whether your approach is perfect, or you think somebody else could do it better: submit it anyway.
 
-Once your pull request is approved, merge your pull request. This will automatically merge your branch so that your changes appear on the default branch. GitHub retains the history of comments and commits in the pull request to help future contributors understand your changes. For more information, see [Merging a pull request](/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request).
+Worst case, we discuss it and change something.
 
-GitHub will tell you if your pull request has conflicts that must be resolved before merging. For more information, see [Addressing merge conflicts](/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts).
+Best case, the project gets better.
 
-Branch protection settings may block merging if your pull request does not meet certain requirements. For example, you need a certain number of approving reviews or an approving review from a specific team. For more information, see [About protected branches](/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches).
+Either way, I will genuinely be happy that somebody cared enough to get involved.
 
-### Delete your branch
-
-After you merge your pull request, delete your branch. This indicates that the work on the branch is complete and prevents you or others from accidentally using old branches. For more information, see [Deleting and restoring branches in a pull request](/en/repositories/configuring-branches-and-merges-in-your-repository/managing-branches-in-your-repository/deleting-and-restoring-branches-in-a-pull-request).
-
-Don't worry about losing information. Your pull request and commit history will not be deleted. You can always restore your deleted branch or revert your pull request if needed.
+Thanks. 💚
