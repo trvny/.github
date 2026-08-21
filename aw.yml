@@ -1,4 +1,0 @@
-name: trvny agentics
-description: Shared GitHub Agentic Workflows for trvny repositories.
-includes:
-  - workflows/docs-updater.md
