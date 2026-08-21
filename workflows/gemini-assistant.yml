@@ -69,7 +69,7 @@ jobs:
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           gemini_cli_version: ${{ vars.GEMINI_CLI_VERSION }}
-          gemini_model: ${{ vars.GEMINI_MODEL }}
+          gemini_model: gemini-3.7-flash
           gemini_debug: ${{ fromJSON(vars.GEMINI_DEBUG || vars.ACTIONS_STEP_DEBUG || false) }}
           workflow_name: gemini-assistant
           github_pr_number: ${{ inputs.is_pull_request && inputs.issue_number || '' }}
