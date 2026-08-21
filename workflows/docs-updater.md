@@ -6,6 +6,8 @@ permissions:
   contents: read
   pull-requests: read
 
+engine: gemini
+
 safe-outputs:
   create-pull-request:
     branch: docs/automation
