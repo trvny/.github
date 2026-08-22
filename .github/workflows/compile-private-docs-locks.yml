@@ -59,15 +59,15 @@ jobs:
           publish() {
             local path="$1" file="$2"
             local api="https://api.github.com/repos/trvny/trvny/contents/$path"
-            local sha content
+            local sha
             sha="$(curl -fsSL \
               -H "Authorization: Bearer $GH_PAT" \
               -H "Accept: application/vnd.github+json" \
               "$api?ref=gh-aw/docs-flash-lite" | jq -r .sha)"
-            content="$(base64 -w0 "$file")"
+            base64 -w0 "$file" > /tmp/content.b64
             jq -n \
+              --rawfile content /tmp/content.b64 \
               --arg message "chore: compile docs workflows" \
-              --arg content "$content" \
               --arg sha "$sha" \
               --arg branch "gh-aw/docs-flash-lite" \
               '{message:$message,content:$content,sha:$sha,branch:$branch}' > /tmp/payload.json
@@ -82,6 +82,7 @@ jobs:
           publish .github/workflows/docs-worker.lock.yml .github/workflows/docs-worker.lock.yml
 
       - name: Upload generated locks
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: gh-aw-docs-locks
