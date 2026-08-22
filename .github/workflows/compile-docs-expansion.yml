@@ -46,3 +46,35 @@ jobs:
           path: |
             .github/workflows/docs-worker.lock.yml
             .github/workflows/docs-orchestrator.lock.yml
+      - name: Publish locks to control-plane branch
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          publish() {
+            path="$1"
+            file="$2"
+            sha="$(curl -fsSL \
+              -H "Authorization: Bearer ${GH_PAT}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/trvny/trvny/contents/${path}?ref=ci%2Fexpand-docs-control" | jq -r .sha)"
+            python3 - "$file" "$sha" > payload.json <<'PY'
+          import base64, json, pathlib, sys
+          file_path = pathlib.Path(sys.argv[1])
+          sha = sys.argv[2]
+          json.dump({
+              "message": "ci: refresh expanded docs locks",
+              "content": base64.b64encode(file_path.read_bytes()).decode(),
+              "sha": sha,
+              "branch": "ci/expand-docs-control",
+          }, sys.stdout)
+          PY
+            curl -fsSL -X PUT \
+              -H "Authorization: Bearer ${GH_PAT}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Content-Type: application/json" \
+              --data-binary @payload.json \
+              "https://api.github.com/repos/trvny/trvny/contents/${path}" >/dev/null
+          }
+          publish ".github/workflows/docs-worker.lock.yml" ".github/workflows/docs-worker.lock.yml"
+          publish ".github/workflows/docs-orchestrator.lock.yml" ".github/workflows/docs-orchestrator.lock.yml"
