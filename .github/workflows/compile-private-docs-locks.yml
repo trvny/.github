@@ -1,0 +1,61 @@
+name: Compile private docs locks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/compile-private-docs-locks.yml
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Fetch private gh-aw sources
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_PAT"
+          mkdir -p .github/workflows .github/aw
+          fetch() {
+            local src="$1" dst="$2"
+            curl -fsSL \
+              -H "Authorization: Bearer $GH_PAT" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/trvny/trvny/contents/$src?ref=gh-aw/docs-flash-lite" \
+              | jq -r .content | base64 -d > "$dst"
+          }
+          fetch .github/workflows/docs-orchestrator.md .github/workflows/docs-orchestrator.md
+          fetch .github/workflows/docs-worker.md .github/workflows/docs-worker.md
+          fetch .github/aw/actions-lock.json .github/aw/actions-lock.json
+
+      - name: Install gh-aw v0.87.0
+        run: |
+          curl -sL https://raw.githubusercontent.com/github/gh-aw/main/install-gh-aw.sh -o /tmp/install-gh-aw.sh
+          bash /tmp/install-gh-aw.sh v0.87.0
+          ~/.local/share/gh/extensions/gh-aw/gh-aw version
+
+      - name: Compile docs workflows
+        run: >-
+          ~/.local/share/gh/extensions/gh-aw/gh-aw compile
+          docs-orchestrator docs-worker
+          --strict --approve --no-check-update
+          --logical-repo trvny/trvny
+
+      - name: Upload generated locks
+        uses: actions/upload-artifact@v7
+        with:
+          name: gh-aw-docs-locks
+          path: |
+            .github/workflows/docs-orchestrator.lock.yml
+            .github/workflows/docs-worker.lock.yml
+          if-no-files-found: error
