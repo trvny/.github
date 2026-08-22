@@ -51,6 +51,36 @@ jobs:
           --strict --approve --no-check-update
           --logical-repo trvny/trvny
 
+      - name: Publish generated locks
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          publish() {
+            local path="$1" file="$2"
+            local api="https://api.github.com/repos/trvny/trvny/contents/$path"
+            local sha content
+            sha="$(curl -fsSL \
+              -H "Authorization: Bearer $GH_PAT" \
+              -H "Accept: application/vnd.github+json" \
+              "$api?ref=gh-aw/docs-flash-lite" | jq -r .sha)"
+            content="$(base64 -w0 "$file")"
+            jq -n \
+              --arg message "chore: compile docs workflows" \
+              --arg content "$content" \
+              --arg sha "$sha" \
+              --arg branch "gh-aw/docs-flash-lite" \
+              '{message:$message,content:$content,sha:$sha,branch:$branch}' > /tmp/payload.json
+            curl -fsSL -X PUT \
+              -H "Authorization: Bearer $GH_PAT" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Content-Type: application/json" \
+              --data-binary @/tmp/payload.json \
+              "$api" > /dev/null
+          }
+          publish .github/workflows/docs-orchestrator.lock.yml .github/workflows/docs-orchestrator.lock.yml
+          publish .github/workflows/docs-worker.lock.yml .github/workflows/docs-worker.lock.yml
+
       - name: Upload generated locks
         uses: actions/upload-artifact@v7
         with:
