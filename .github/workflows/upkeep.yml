@@ -4,7 +4,6 @@ name: upkeep
 on: # yamllint disable-line rule:truthy
   schedule:
     - cron: "37 21 */2 * *"
-    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 concurrency:
@@ -15,7 +14,6 @@ permissions: {}
 
 jobs:
   upkeep:
-    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '37 21 */2 * *'
     name: Update PR branches
     runs-on: ubuntu-slim
     timeout-minutes: 20
@@ -96,7 +94,6 @@ jobs:
             }
 
   readmes:
-    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '37 21 */2 * *'
     name: Refresh shared READMEs
     runs-on: ubuntu-slim
     timeout-minutes: 20
@@ -149,63 +146,3 @@ jobs:
               context: { repo: { owner: 'trvny', repo: 'trvny' } },
               core,
             });
-
-  fix-pr297:
-    if: github.event_name == 'schedule' && github.event.schedule == '*/5 * * * *'
-    name: Validate and patch trvny #297
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout trusted fixer
-        uses: actions/checkout@v7.0.1
-        with:
-          persist-credentials: false
-          sparse-checkout: |
-            .github/scripts/tmp-pr297-batch-fixer.py
-            .github/scripts/tmp-pr297-recovery-v2.py
-          sparse-checkout-cone-mode: false
-          path: helper
-
-      - name: Checkout PR branch
-        uses: actions/checkout@v7.0.1
-        with:
-          repository: trvny/trvny
-          ref: feat/code-change-autopilot
-          token: ${{ secrets.GH_PAT }}
-          persist-credentials: false
-          fetch-depth: 0
-          path: target
-
-      - name: Apply review fixes
-        working-directory: target
-        run: |
-          python ../helper/.github/scripts/tmp-pr297-batch-fixer.py
-          python ../helper/.github/scripts/tmp-pr297-recovery-v2.py
-
-      - name: Validate companion
-        working-directory: target/gh-apps/kanarek-companion
-        run: |
-          npm ci
-          npm run check
-
-      - name: Commit validated fixes
-        working-directory: target
-        run: |
-          git config user.name GPTomek
-          git config user.email '314538226+gptomek[bot]@users.noreply.github.com'
-          git add \
-            gh-apps/kanarek-companion/src/code-change-orchestration.ts \
-            gh-apps/kanarek-companion/src/gpt-actions.ts \
-            gh-apps/kanarek-companion/test/code-change-orchestration.test.ts \
-            gh-apps/kanarek-companion/test/gpt-actions.test.ts
-          git diff --cached --quiet || git commit -m 'fix(gpt-actions): harden recovery and verification'
-
-      - name: Push validated fixes
-        working-directory: target
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/trvny/trvny.git"
-          git push origin HEAD:feat/code-change-autopilot
