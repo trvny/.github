@@ -1,0 +1,185 @@
+name: One-shot PR 297 fixer
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  fix:
+    if: >-
+      github.event.pull_request.head.repo.full_name == 'trvny/.github' &&
+      github.event.pull_request.head.ref == 'tmp/pr297-trigger'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out target branch
+        uses: actions/checkout@v4
+        with:
+          repository: trvny/trvny
+          ref: feat/code-change-autopilot
+          token: ${{ secrets.GH_PAT }}
+          persist-credentials: false
+          fetch-depth: 0
+          path: target
+
+      - name: Apply review fixes
+        working-directory: target
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('gh-apps/kanarek-companion/src/code-change-orchestration.ts')
+          text = path.read_text()
+
+          marker = '\nasync function branchHead('
+          helper = r'''
+async function targetFileSnapshots(
+  source: Request,
+  invoke: Invoke,
+  core: CoreInput,
+  ref: string,
+): Promise<Array<{ path: string; exists: boolean; content: string | null }>> {
+  return Promise.all(core.targetPaths.map(async (path) => {
+    const { response, payload } = await invokePayload(
+      source,
+      invoke,
+      READ_PATH,
+      { path: `/repos/${repoPath(core.repository)}/contents/${contentPath(path)}?ref=${encodeURIComponent(ref)}` },
+      true,
+    );
+    if (response.status === 404) return { path, exists: false, content: null };
+    if (!response.ok || payload.ok !== true) {
+      throw new CodeChangeError(
+        typeof payload.error === 'string' ? payload.error : 'target_file_read_failed',
+        response.status,
+        { path },
+      );
+    }
+    const content = decodeContent(payload.data);
+    if (content === null) throw new CodeChangeError('target_file_not_decodable', 502, { path });
+    if (content.length > MAX_FILE_CONTENT) {
+      throw new CodeChangeError('file_content_too_large', 413, { path });
+    }
+    return { path, exists: true, content };
+  }));
+}
+'''
+          if marker not in text:
+              raise SystemExit('branchHead marker missing')
+          text = text.replace(marker, helper + marker, 1)
+
+          old = '''  const guidance = await targetGuidance(source, invoke, core, progress.branchHead);\n  const investigated = await investigationContext(source, invoke, core, progress.branchHead);'''
+          new = '''  const [guidance, investigated, targetFiles] = await Promise.all([\n    targetGuidance(source, invoke, core, progress.branchHead),\n    investigationContext(source, invoke, core, progress.branchHead),\n    targetFileSnapshots(source, invoke, core, progress.branchHead),\n  ]);'''
+          if old not in text:
+              raise SystemExit('editingResponse reads missing')
+          text = text.replace(old, new, 1)
+
+          old = '''    agentGuidance: guidance,\n    ...investigated,'''
+          new = '''    agentGuidance: guidance,\n    targetFiles,\n    ...investigated,'''
+          if old not in text:
+              raise SystemExit('editingResponse body marker missing')
+          text = text.replace(old, new, 1)
+
+          old = '''  const investigated = await investigationContext(source, invoke, core, progress.branchHead);'''
+          new = '''  const [investigated, targetFiles] = await Promise.all([\n    investigationContext(source, invoke, core, progress.branchHead),\n    targetFileSnapshots(source, invoke, core, progress.branchHead),\n  ]);'''
+          if old not in text:
+              raise SystemExit('initial investigation marker missing')
+          text = text.replace(old, new, 1)
+
+          old = '''      preparation: prepared,\n      ...investigated,'''
+          new = '''      preparation: prepared,\n      targetFiles,\n      ...investigated,'''
+          if old not in text:
+              raise SystemExit('initial body marker missing')
+          text = text.replace(old, new, 1)
+
+          old_note = "note: 'Submit complete contents only for declared targetPaths. Semantic code choices stay with the model.'"
+          new_note = "note: 'Use targetFiles as the authoritative full snapshot. Submit complete replacement contents only for declared targetPaths; missing targets are marked exists:false.'"
+          if text.count(old_note) != 2:
+              raise SystemExit(f'expected 2 edit notes, got {text.count(old_note)}')
+          text = text.replace(old_note, new_note)
+
+          cleanup_marker = 'async function cleanup(\n'
+          guards = r'''function validateMergedPullRequest(raw: JsonObject, progress: Progress): void {
+  const head = isObject(raw.head) ? raw.head : {};
+  const base = isObject(raw.base) ? raw.base : {};
+  const headSha = stringValue(head.sha);
+  const baseRef = stringValue(base.ref);
+  if (!headSha || headSha.toLowerCase() !== progress.branchHead) {
+    throw new CodeChangeError('pull_request_head_changed', 409, { expected: progress.branchHead, current: headSha });
+  }
+  if (baseRef !== progress.defaultBranch) {
+    throw new CodeChangeError('pull_request_base_changed', 409, { expected: progress.defaultBranch, current: baseRef });
+  }
+}
+
+async function assertPullRequestEditable(
+  source: Request,
+  invoke: Invoke,
+  core: CoreInput,
+  progress: Progress,
+): Promise<void> {
+  if (!progress.pullRequest) throw new CodeChangeError('missing_pull_request_progress', 500);
+  const raw = await readData(source, invoke, `/repos/${repoPath(core.repository)}/pulls/${progress.pullRequest.number}`);
+  if (!isObject(raw)) throw new CodeChangeError('invalid_pull_request_response', 502);
+  const head = isObject(raw.head) ? raw.head : {};
+  const base = isObject(raw.base) ? raw.base : {};
+  const state = stringValue(raw.state);
+  const headRef = stringValue(head.ref);
+  const headSha = stringValue(head.sha);
+  const baseRef = stringValue(base.ref);
+  if (state !== 'open' || typeof raw.merged_at === 'string') throw new CodeChangeError('pull_request_not_open', 409, { state });
+  if (headRef !== core.branch) throw new CodeChangeError('pull_request_branch_changed', 409, { expected: core.branch, current: headRef });
+  if (!headSha || headSha.toLowerCase() !== progress.branchHead) throw new CodeChangeError('pull_request_head_changed', 409, { expected: progress.branchHead, current: headSha });
+  if (baseRef !== progress.defaultBranch) throw new CodeChangeError('pull_request_base_changed', 409, { expected: progress.defaultBranch, current: baseRef });
+}
+
+'''
+          if cleanup_marker not in text:
+              raise SystemExit('cleanup marker missing')
+          text = text.replace(cleanup_marker, guards + cleanup_marker, 1)
+
+          old = "      const newHead = await commitEdit(request, invoke, core, progress, submitted);"
+          new = "      if (progress.stage === 'waiting_ci_review') {\n        await assertPullRequestEditable(request, invoke, core, progress);\n      }\n      const newHead = await commitEdit(request, invoke, core, progress, submitted);"
+          if old not in text:
+              raise SystemExit('commit edit marker missing')
+          text = text.replace(old, new, 1)
+
+          start = """      if (alreadyMerged) {\n        const mergedHead = isObject(alreadyMerged.head) ? stringValue(alreadyMerged.head.sha) : null;\n        const mergedBase = isObject(alreadyMerged.base) ? stringValue(alreadyMerged.base.ref) : null;\n        if (!mergedHead || mergedHead.toLowerCase() !== progress.branchHead) {\n          throw new CodeChangeError('pull_request_head_changed', 409, {\n            expected: progress.branchHead,\n            current: mergedHead,\n          });\n        }\n        if (mergedBase !== progress.defaultBranch) {\n          throw new CodeChangeError('pull_request_base_changed', 409, {\n            expected: progress.defaultBranch,\n            current: mergedBase,\n          });\n        }\n        const cleanupResult = await cleanup(request, invoke, core, progress.pullRequest);"""
+          replacement = """      if (alreadyMerged) {\n        validateMergedPullRequest(alreadyMerged, progress);\n        const cleanupResult = await cleanup(request, invoke, core, progress.pullRequest);"""
+          if start not in text:
+              raise SystemExit('already merged validation block missing')
+          text = text.replace(start, replacement, 1)
+
+          old = """      const merged = await mergedPullRequest(request, invoke, core, progress.pullRequest.number);\n      if (!merged) throw new CodeChangeError('merge_not_confirmed', 502);\n      const cleanupResult = await cleanup(request, invoke, core, progress.pullRequest);"""
+          new = """      const merged = await mergedPullRequest(request, invoke, core, progress.pullRequest.number);\n      if (!merged) throw new CodeChangeError('merge_not_confirmed', 502);\n      validateMergedPullRequest(merged, progress);\n      const cleanupResult = await cleanup(request, invoke, core, progress.pullRequest);"""
+          if old not in text:
+              raise SystemExit('final merged validation marker missing')
+          text = text.replace(old, new, 1)
+
+          path.write_text(text)
+          PY
+
+      - name: Validate companion
+        working-directory: target/gh-apps/kanarek-companion
+        run: |
+          npm ci
+          npm run check
+
+      - name: Commit review fixes
+        working-directory: target
+        run: |
+          git config user.name trvny
+          git config user.email 120686325+trvny@users.noreply.github.com
+          git add gh-apps/kanarek-companion/src/code-change-orchestration.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(gpt-actions): harden edit and merge recovery"
+
+      - name: Push review fixes
+        working-directory: target
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/trvny/trvny.git"
+          git push origin HEAD:feat/code-change-autopilot
