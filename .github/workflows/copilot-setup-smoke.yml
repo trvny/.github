@@ -43,14 +43,8 @@ jobs:
           path: target
           persist-credentials: false
 
-      - name: Prepare target workspace
-        shell: bash
-        run: |
-          shopt -s dotglob nullglob
-          mv target/* .
-          rmdir target
-
       - name: Run shared Copilot setup
         uses: ./_shared/.github/actions/copilot-setup
         with:
           repository: ${{ matrix.repository }}
+          root: target
