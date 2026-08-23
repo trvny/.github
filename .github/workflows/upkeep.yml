@@ -1,148 +1,210 @@
----
-name: upkeep
+name: Fix PR 297 review findings
 
-on: # yamllint disable-line rule:truthy
-  schedule:
-    - cron: "37 21 */2 * *"
-  workflow_dispatch:
+on:
+  pull_request:
+    paths:
+      - .github/workflows/upkeep.yml
 
-concurrency:
-  group: upkeep-${{ github.repository }}
-  cancel-in-progress: true
-
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
-  upkeep:
-    name: Update PR branches
-    runs-on: ubuntu-slim
-    timeout-minutes: 20
-    permissions:
-      actions: read
-      checks: read
-      contents: read
-      pull-requests: read
-      statuses: read
+  fix:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout trusted workflow script
-        uses: actions/checkout@v7.0.1
+      - name: Check out target branch
+        uses: actions/checkout@v4
         with:
+          repository: trvny/trvny
+          ref: feat/code-change-autopilot
+          token: ${{ secrets.GH_PAT }}
           persist-credentials: false
-          sparse-checkout: .github/scripts/pr-upkeep.cjs
-          sparse-checkout-cone-mode: false
+          fetch-depth: 0
+          path: target
 
-      - name: Require event-producing token
+      - name: Apply review fixes
+        working-directory: target
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('gh-apps/kanarek-companion/src/code-change-orchestration.ts')
+          text = path.read_text()
+
+          marker = '\nasync function branchHead('
+          helper = r'''
+async function targetFileSnapshots(
+  source: Request,
+  invoke: Invoke,
+  core: CoreInput,
+  ref: string,
+): Promise<Array<{ path: string; exists: boolean; content: string | null }>> {
+  return Promise.all(core.targetPaths.map(async (path) => {
+    const { response, payload } = await invokePayload(
+      source,
+      invoke,
+      READ_PATH,
+      { path: `/repos/${repoPath(core.repository)}/contents/${contentPath(path)}?ref=${encodeURIComponent(ref)}` },
+      true,
+    );
+    if (response.status === 404) return { path, exists: false, content: null };
+    if (!response.ok || payload.ok !== true) {
+      throw new CodeChangeError(
+        typeof payload.error === 'string' ? payload.error : 'target_file_read_failed',
+        response.status,
+        { path },
+      );
+    }
+    const content = decodeContent(payload.data);
+    if (content === null) throw new CodeChangeError('target_file_not_decodable', 502, { path });
+    if (content.length > MAX_FILE_CONTENT) {
+      throw new CodeChangeError('file_content_too_large', 413, { path });
+    }
+    return { path, exists: true, content };
+  }));
+}
+'''
+          if marker not in text:
+              raise SystemExit('branchHead marker missing')
+          text = text.replace(marker, helper + marker, 1)
+
+          old = '''  const guidance = await targetGuidance(source, invoke, core, progress.branchHead);\n  const investigated = await investigationContext(source, invoke, core, progress.branchHead);'''
+          new = '''  const [guidance, investigated, targetFiles] = await Promise.all([\n    targetGuidance(source, invoke, core, progress.branchHead),\n    investigationContext(source, invoke, core, progress.branchHead),\n    targetFileSnapshots(source, invoke, core, progress.branchHead),\n  ]);'''
+          if old not in text:
+              raise SystemExit('editingResponse reads missing')
+          text = text.replace(old, new, 1)
+
+          old = '''    agentGuidance: guidance,\n    ...investigated,'''
+          new = '''    agentGuidance: guidance,\n    targetFiles,\n    ...investigated,'''
+          if old not in text:
+              raise SystemExit('editingResponse body marker missing')
+          text = text.replace(old, new, 1)
+
+          old = '''  const investigated = await investigationContext(source, invoke, core, progress.branchHead);'''
+          new = '''  const [investigated, targetFiles] = await Promise.all([\n    investigationContext(source, invoke, core, progress.branchHead),\n    targetFileSnapshots(source, invoke, core, progress.branchHead),\n  ]);'''
+          if old not in text:
+              raise SystemExit('initial investigation marker missing')
+          text = text.replace(old, new, 1)
+
+          old = '''      preparation: prepared,\n      ...investigated,'''
+          new = '''      preparation: prepared,\n      targetFiles,\n      ...investigated,'''
+          if old not in text:
+              raise SystemExit('initial body marker missing')
+          text = text.replace(old, new, 1)
+
+          old_note = "note: 'Submit complete contents only for declared targetPaths. Semantic code choices stay with the model.'"
+          new_note = "note: 'Use targetFiles as the authoritative full snapshot. Submit complete replacement contents only for declared targetPaths; missing targets are marked exists:false.'"
+          if text.count(old_note) != 2:
+              raise SystemExit(f'expected 2 edit notes, got {text.count(old_note)}')
+          text = text.replace(old_note, new_note)
+
+          merged_marker = '''async function cleanup(\n'''
+          guards = r'''function validateMergedPullRequest(raw: JsonObject, progress: Progress): void {
+  const head = isObject(raw.head) ? raw.head : {};
+  const base = isObject(raw.base) ? raw.base : {};
+  const headSha = stringValue(head.sha);
+  const baseRef = stringValue(base.ref);
+  if (!headSha || headSha.toLowerCase() !== progress.branchHead) {
+    throw new CodeChangeError('pull_request_head_changed', 409, {
+      expected: progress.branchHead,
+      current: headSha,
+    });
+  }
+  if (baseRef !== progress.defaultBranch) {
+    throw new CodeChangeError('pull_request_base_changed', 409, {
+      expected: progress.defaultBranch,
+      current: baseRef,
+    });
+  }
+}
+
+async function assertPullRequestEditable(
+  source: Request,
+  invoke: Invoke,
+  core: CoreInput,
+  progress: Progress,
+): Promise<void> {
+  if (!progress.pullRequest) throw new CodeChangeError('missing_pull_request_progress', 500);
+  const raw = await readData(
+    source,
+    invoke,
+    `/repos/${repoPath(core.repository)}/pulls/${progress.pullRequest.number}`,
+  );
+  if (!isObject(raw)) throw new CodeChangeError('invalid_pull_request_response', 502);
+  const head = isObject(raw.head) ? raw.head : {};
+  const state = stringValue(raw.state);
+  const headRef = stringValue(head.ref);
+  const headSha = stringValue(head.sha);
+  if (state !== 'open' || typeof raw.merged_at === 'string') {
+    throw new CodeChangeError('pull_request_not_open', 409, { state });
+  }
+  if (headRef !== core.branch) {
+    throw new CodeChangeError('pull_request_branch_changed', 409, {
+      expected: core.branch,
+      current: headRef,
+    });
+  }
+  if (!headSha || headSha.toLowerCase() !== progress.branchHead) {
+    throw new CodeChangeError('pull_request_head_changed', 409, {
+      expected: progress.branchHead,
+      current: headSha,
+    });
+  }
+  const base = isObject(raw.base) ? raw.base : {};
+  const baseRef = stringValue(base.ref);
+  if (baseRef !== progress.defaultBranch) {
+    throw new CodeChangeError('pull_request_base_changed', 409, {
+      expected: progress.defaultBranch,
+      current: baseRef,
+    });
+  }
+}
+
+'''
+          if merged_marker not in text:
+              raise SystemExit('cleanup marker missing')
+          text = text.replace(merged_marker, guards + merged_marker, 1)
+
+          old = '''      const newHead = await commitEdit(request, invoke, core, progress, submitted);'''
+          new = '''      if (progress.stage === 'waiting_ci_review') {\n        await assertPullRequestEditable(request, invoke, core, progress);\n      }\n      const newHead = await commitEdit(request, invoke, core, progress, submitted);'''
+          if old not in text:
+              raise SystemExit('commit edit marker missing')
+          text = text.replace(old, new, 1)
+
+          old = '''      if (alreadyMerged) {\n        const mergedHead = isObject(alreadyMerged.head) ? stringValue(alreadyMerged.head.sha) : null;\n        const mergedBase = isObject(alreadyMerged.base) ? stringValue(alreadyMerged.base.ref) : null;\n        if (!mergedHead || mergedHead.toLowerCase() !== progress.branchHead) {\n          throw new CodeChangeError('pull_request_head_changed', 409, {\n            expected: progress.branchHead,\n            current: mergedHead,\n          });\n        }\n        if (mergedBase !== progress.defaultBranch) {\n          throw new CodeChangeError('pull_request_base_changed', 409, {\n            expected: progress.defaultBranch,\n            current: mergedBase,\n          });\n        }\n        const cleanupResult = await cleanup(request, invoke, core, progress.pullRequest);'''
+          new = '''      if (alreadyMerged) {\n        validateMergedPullRequest(alreadyMerged, progress);\n        const cleanupResult = await cleanup(request, invoke, core, progress.pullRequest);'''
+          if old not in text:
+              raise SystemExit('already merged validation block missing')
+          text = text.replace(old, new, 1)
+
+          old = '''      const merged = await mergedPullRequest(request, invoke, core, progress.pullRequest.number);\n      if (!merged) throw new CodeChangeError('merge_not_confirmed', 502);\n      const cleanupResult = await cleanup(request, invoke, core, progress.pullRequest);'''
+          new = '''      const merged = await mergedPullRequest(request, invoke, core, progress.pullRequest.number);\n      if (!merged) throw new CodeChangeError('merge_not_confirmed', 502);\n      validateMergedPullRequest(merged, progress);\n      const cleanupResult = await cleanup(request, invoke, core, progress.pullRequest);'''
+          if old not in text:
+              raise SystemExit('final merged validation marker missing')
+          text = text.replace(old, new, 1)
+
+          path.write_text(text)
+          PY
+
+      - name: Validate companion
+        working-directory: target/gh-apps/kanarek-companion
+        run: |
+          npm ci
+          npm run check
+
+      - name: Commit review fixes
+        working-directory: target
+        run: |
+          git config user.name trvny
+          git config user.email 120686325+trvny@users.noreply.github.com
+          git add gh-apps/kanarek-companion/src/code-change-orchestration.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(gpt-actions): harden edit and merge recovery"
+
+      - name: Push review fixes
+        working-directory: target
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          if [ -z "$GH_PAT" ]; then
-            echo "::error::Add the repository secret GH_PAT."
-            exit 1
-          fi
-
-      - name: Process open PRs
-        uses: actions/github-script@v9
-        env:
-          AUTOMERGE_ALLOW_NO_CHECKS: >-
-            ${{ vars.PR_AUTOMERGE_ALLOW_NO_CHECKS || 'false' }}
-          AUTOMERGE_ENABLED: "false"
-          AUTOMERGE_IDLE_HOURS: ${{ vars.PR_AUTOMERGE_IDLE_HOURS || '4' }}
-          AUTOMERGE_LABEL: ${{ vars.PR_AUTOMERGE_LABEL || 'automerge' }}
-          AUTOMERGE_METHOD: ${{ vars.PR_AUTOMERGE_METHOD || 'squash' }}
-          PR_UPKEEP_TARGET_REPOS: >-
-            trvny/trvny,
-            trvny/.github,
-            trvny/feedseek,
-            trvny/kanarek,
-            trvny/tvpi,
-            trvny/autka,
-            trvny/wambridge
-        with:
-          github-token: ${{ secrets.GH_PAT }}
-          script: |
-            const run = require('./.github/scripts/pr-upkeep.cjs');
-            const failures = [];
-            const repositories = process.env.PR_UPKEEP_TARGET_REPOS
-              .split(/[\n,]+/)
-              .map((item) => item.trim())
-              .filter(Boolean);
-
-            for (const repository of [...new Set(repositories)]) {
-              const [owner, repo] = repository.split('/');
-              core.startGroup(`Update ${repository}`);
-              try {
-                const result = await run({
-                  github,
-                  context: { repo: { owner, repo } },
-                  core,
-                });
-                failures.push(
-                  ...(result.failures ?? []).map(
-                    (failure) => `${repository}: ${failure}`,
-                  ),
-                );
-              } catch (error) {
-                failures.push(`${repository}: ${error.message}`);
-                core.error(failures.at(-1));
-              } finally {
-                core.endGroup();
-              }
-            }
-
-            if (failures.length > 0) {
-              core.setFailed(failures.join('\n'));
-            }
-
-  readmes:
-    name: Refresh shared READMEs
-    runs-on: ubuntu-slim
-    timeout-minutes: 20
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout workflow scripts
-        uses: actions/checkout@v7.0.1
-        with:
-          persist-credentials: false
-          sparse-checkout: |
-            .github/scripts/update-readme-quote.cjs
-            .github/scripts/update-shared-readmes.cjs
-          sparse-checkout-cone-mode: false
-
-      - name: Require cross-repository token
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          if [ -z "$GH_PAT" ]; then
-            echo "::error::Add the repository secret GH_PAT."
-            exit 1
-          fi
-
-      - name: Update READMEs
-        uses: actions/github-script@v9
-        env:
-          GIST_ID: 167d2271e3cf7d21e118aa7d906a7d2c
-          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
-          README_FEED_URLS: >-
-            ${{ vars.README_FEED_URLS || 'https://raw.githubusercontent.com/trvny/feedseek/main/feeds/feed_daily_digest.xml' }},
-            https://news.google.com/atom/topics/CAAqHAgKIhZDQklTQ2pvSWJHOWpZV3hmZGpJb0FBUAE/sections/CAQiUENCSVNOam9JYkc5allXeGZkakpDRUd4dlkyRnNYM1l5WDNObFkzUnBiMjV5Q3hJSkwyMHZNREl5WW5OdWVnc0tDUzl0THpBeU1tSnpiaWdBKjEIACotCAoiJ0NCSVNGem9JYkc5allXeGZkako2Q3dvSkwyMHZNREl5WW5OdUtBQVABUAE?hl=pl&gl=PL&ceid=PL%3Apl&oc=11,
-            https://raw.githubusercontent.com/trvny/feedseek/main/feeds/feed_aibridge.xml,
-            https://raw.githubusercontent.com/trvny/feedseek/main/feeds/feed_github.xml,
-            https://antyweb.pl/feed/,
-            https://trvny.github.io/feedseek/feed_geopolitics.xml,
-            https://trvny.github.io/feedseek/feed_reuters.xml,
-            https://weather.travny.workers.dev/feed.atom
-          README_FEED_MAX_ENTRIES: ${{ vars.README_FEED_MAX_ENTRIES || '6' }}
-          README_PATH: README.md
-          README_TARGET_REPOS: >-
-            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,trvny/kanarek:both,trvny/tvpi:both,trvny/autka:both,trvny/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
-            trvny/.ai:both
-        with:
-          github-token: ${{ secrets.GH_PAT }}
-          script: |
-            const run = require('./.github/scripts/update-shared-readmes.cjs');
-            await run({
-              github,
-              context: { repo: { owner: 'trvny', repo: 'trvny' } },
-              core,
-            });
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/trvny/trvny.git"
+          git push origin HEAD:feat/code-change-autopilot
