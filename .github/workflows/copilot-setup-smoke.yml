@@ -27,7 +27,6 @@ jobs:
           - trvny/kanarek
           - trvny/Autka
           - trvny/tvpi
-          - trvny/trvny
           - trvny/WiFi-Automatic
     steps:
       - name: Checkout shared setup
