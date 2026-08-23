@@ -162,7 +162,9 @@ jobs:
         uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-          sparse-checkout: .github/scripts/tmp-pr297-batch-fixer.py
+          sparse-checkout: |
+            .github/scripts/tmp-pr297-batch-fixer.py
+            .github/scripts/tmp-pr297-recovery-v2.py
           sparse-checkout-cone-mode: false
           path: helper
 
@@ -178,7 +180,9 @@ jobs:
 
       - name: Apply review fixes
         working-directory: target
-        run: python ../helper/.github/scripts/tmp-pr297-batch-fixer.py
+        run: |
+          python ../helper/.github/scripts/tmp-pr297-batch-fixer.py
+          python ../helper/.github/scripts/tmp-pr297-recovery-v2.py
 
       - name: Validate companion
         working-directory: target/gh-apps/kanarek-companion
