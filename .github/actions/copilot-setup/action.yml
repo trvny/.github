@@ -5,6 +5,10 @@ inputs:
   repository:
     description: Repository profile to prepare.
     required: true
+  root:
+    description: Target repository workspace root.
+    required: false
+    default: "."
 
 runs:
   using: composite
@@ -33,6 +37,7 @@ runs:
     - name: Install feedseek Python dependencies
       if: ${{ inputs.repository == 'trvny/feedseek' }}
       shell: bash
+      working-directory: ${{ inputs.root }}
       run: uv sync --locked
 
     - name: Set up feedseek Node.js
@@ -41,12 +46,12 @@ runs:
       with:
         node-version: "24"
         cache: npm
-        cache-dependency-path: feeds-proxy/package-lock.json
+        cache-dependency-path: ${{ inputs.root }}/feeds-proxy/package-lock.json
 
     - name: Install feedseek Worker dependencies
       if: ${{ inputs.repository == 'trvny/feedseek' }}
       shell: bash
-      working-directory: feeds-proxy
+      working-directory: ${{ inputs.root }}/feeds-proxy
       run: npm ci
 
     - name: Set up Kanarek Java
@@ -60,6 +65,7 @@ runs:
       if: ${{ inputs.repository == 'trvny/kanarek' }}
       id: kanarek-gradle
       shell: bash
+      working-directory: ${{ inputs.root }}
       run: .github/scripts/gradle-version.sh
 
     - name: Set up Kanarek Gradle
@@ -71,6 +77,7 @@ runs:
     - name: Prepare Kanarek Gradle project
       if: ${{ inputs.repository == 'trvny/kanarek' }}
       shell: bash
+      working-directory: ${{ inputs.root }}
       env:
         GRADLE_VERSION: ${{ steps.kanarek-gradle.outputs.version }}
       run: |
@@ -85,12 +92,12 @@ runs:
       with:
         node-version: "24"
         cache: npm
-        cache-dependency-path: worker/package-lock.json
+        cache-dependency-path: ${{ inputs.root }}/worker/package-lock.json
 
     - name: Install Kanarek Worker dependencies
       if: ${{ inputs.repository == 'trvny/kanarek' }}
       shell: bash
-      working-directory: worker
+      working-directory: ${{ inputs.root }}/worker
       run: npm ci
 
     - name: Set up Autka Java
@@ -107,6 +114,7 @@ runs:
     - name: Prepare Autka Gradle project
       if: ${{ inputs.repository == 'trvny/Autka' }}
       shell: bash
+      working-directory: ${{ inputs.root }}
       run: ./gradlew --no-daemon help
 
     - name: Set up Autka Node.js
@@ -115,12 +123,12 @@ runs:
       with:
         node-version: "24"
         cache: npm
-        cache-dependency-path: backend/package-lock.json
+        cache-dependency-path: ${{ inputs.root }}/backend/package-lock.json
 
     - name: Install Autka backend dependencies
       if: ${{ inputs.repository == 'trvny/Autka' }}
       shell: bash
-      working-directory: backend
+      working-directory: ${{ inputs.root }}/backend
       run: npm ci
 
     - name: Set up tvpi Python
@@ -135,12 +143,12 @@ runs:
       with:
         node-version: "24"
         cache: npm
-        cache-dependency-path: worker/package-lock.json
+        cache-dependency-path: ${{ inputs.root }}/worker/package-lock.json
 
     - name: Install tvpi Worker dependencies
       if: ${{ inputs.repository == 'trvny/tvpi' }}
       shell: bash
-      working-directory: worker
+      working-directory: ${{ inputs.root }}/worker
       run: npm ci
 
     - name: Set up trvny Node.js
@@ -150,15 +158,16 @@ runs:
         node-version: "24"
         cache: npm
         cache-dependency-path: |
-          codebench/package-lock.json
-          streambench/package-lock.json
-          gh-apps/kanarek-companion/package-lock.json
-          mcp/status-mcp/package-lock.json
-          weather-feed/package-lock.json
+          ${{ inputs.root }}/codebench/package-lock.json
+          ${{ inputs.root }}/streambench/package-lock.json
+          ${{ inputs.root }}/gh-apps/kanarek-companion/package-lock.json
+          ${{ inputs.root }}/mcp/status-mcp/package-lock.json
+          ${{ inputs.root }}/weather-feed/package-lock.json
 
     - name: Install trvny Node dependencies
       if: ${{ inputs.repository == 'trvny/trvny' }}
       shell: bash
+      working-directory: ${{ inputs.root }}
       run: |
         for dir in \
           codebench \
@@ -189,6 +198,7 @@ runs:
     - name: Prepare Xiaomi ADB Tools
       if: ${{ inputs.repository == 'trvny/trvny' }}
       shell: bash
+      working-directory: ${{ inputs.root }}
       run: |
         chmod +x xiaomi-adb-tools/gradlew
         ./xiaomi-adb-tools/gradlew -p xiaomi-adb-tools --no-daemon help
@@ -207,6 +217,7 @@ runs:
     - name: Prepare WiFi Automatic Gradle project
       if: ${{ inputs.repository == 'trvny/WiFi-Automatic' }}
       shell: bash
+      working-directory: ${{ inputs.root }}
       run: |
         chmod +x gradlew
         ./gradlew --no-daemon help
