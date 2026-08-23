@@ -1,0 +1,212 @@
+name: Copilot repository setup
+description: Shared Copilot setup for trvny repositories.
+
+inputs:
+  repository:
+    description: Repository profile to prepare.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Validate repository profile
+      shell: bash
+      env:
+        REPOSITORY: ${{ inputs.repository }}
+      run: |
+        case "$REPOSITORY" in
+          trvny/feedseek|trvny/kanarek|trvny/Autka|trvny/tvpi|trvny/trvny|trvny/WiFi-Automatic) ;;
+          *)
+            echo "::error::Unsupported Copilot setup profile: $REPOSITORY"
+            exit 1
+            ;;
+        esac
+
+    - name: Set up uv
+      if: ${{ inputs.repository == 'trvny/feedseek' }}
+      uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d
+      with:
+        python-version: "3.14"
+        enable-cache: true
+        cache-python: true
+
+    - name: Install feedseek Python dependencies
+      if: ${{ inputs.repository == 'trvny/feedseek' }}
+      shell: bash
+      run: uv sync --locked
+
+    - name: Set up feedseek Node.js
+      if: ${{ inputs.repository == 'trvny/feedseek' }}
+      uses: actions/setup-node@v7
+      with:
+        node-version: "24"
+        cache: npm
+        cache-dependency-path: feeds-proxy/package-lock.json
+
+    - name: Install feedseek Worker dependencies
+      if: ${{ inputs.repository == 'trvny/feedseek' }}
+      shell: bash
+      working-directory: feeds-proxy
+      run: npm ci
+
+    - name: Set up Kanarek Java
+      if: ${{ inputs.repository == 'trvny/kanarek' }}
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: "17"
+
+    - name: Read Kanarek Gradle version
+      if: ${{ inputs.repository == 'trvny/kanarek' }}
+      id: kanarek-gradle
+      shell: bash
+      run: .github/scripts/gradle-version.sh
+
+    - name: Set up Kanarek Gradle
+      if: ${{ inputs.repository == 'trvny/kanarek' }}
+      uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+      with:
+        gradle-version: ${{ steps.kanarek-gradle.outputs.version }}
+
+    - name: Prepare Kanarek Gradle project
+      if: ${{ inputs.repository == 'trvny/kanarek' }}
+      shell: bash
+      env:
+        GRADLE_VERSION: ${{ steps.kanarek-gradle.outputs.version }}
+      run: |
+        if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+          gradle wrapper --gradle-version "$GRADLE_VERSION"
+        fi
+        ./gradlew --no-daemon help
+
+    - name: Set up Kanarek Node.js
+      if: ${{ inputs.repository == 'trvny/kanarek' }}
+      uses: actions/setup-node@v7
+      with:
+        node-version: "24"
+        cache: npm
+        cache-dependency-path: worker/package-lock.json
+
+    - name: Install Kanarek Worker dependencies
+      if: ${{ inputs.repository == 'trvny/kanarek' }}
+      shell: bash
+      working-directory: worker
+      run: npm ci
+
+    - name: Set up Autka Java
+      if: ${{ inputs.repository == 'trvny/Autka' }}
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: "17"
+
+    - name: Set up Autka Gradle
+      if: ${{ inputs.repository == 'trvny/Autka' }}
+      uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+
+    - name: Prepare Autka Gradle project
+      if: ${{ inputs.repository == 'trvny/Autka' }}
+      shell: bash
+      run: ./gradlew --no-daemon help
+
+    - name: Set up Autka Node.js
+      if: ${{ inputs.repository == 'trvny/Autka' }}
+      uses: actions/setup-node@v7
+      with:
+        node-version: "24"
+        cache: npm
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Install Autka backend dependencies
+      if: ${{ inputs.repository == 'trvny/Autka' }}
+      shell: bash
+      working-directory: backend
+      run: npm ci
+
+    - name: Set up tvpi Python
+      if: ${{ inputs.repository == 'trvny/tvpi' }}
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.13"
+
+    - name: Set up tvpi Node.js
+      if: ${{ inputs.repository == 'trvny/tvpi' }}
+      uses: actions/setup-node@v7
+      with:
+        node-version: "24"
+        cache: npm
+        cache-dependency-path: worker/package-lock.json
+
+    - name: Install tvpi Worker dependencies
+      if: ${{ inputs.repository == 'trvny/tvpi' }}
+      shell: bash
+      working-directory: worker
+      run: npm ci
+
+    - name: Set up trvny Node.js
+      if: ${{ inputs.repository == 'trvny/trvny' }}
+      uses: actions/setup-node@v7
+      with:
+        node-version: "24"
+        cache: npm
+        cache-dependency-path: |
+          codebench/package-lock.json
+          streambench/package-lock.json
+          gh-apps/kanarek-companion/package-lock.json
+          mcp/status-mcp/package-lock.json
+          weather-feed/package-lock.json
+
+    - name: Install trvny Node dependencies
+      if: ${{ inputs.repository == 'trvny/trvny' }}
+      shell: bash
+      run: |
+        for dir in \
+          codebench \
+          streambench \
+          gh-apps/kanarek-companion \
+          mcp/status-mcp \
+          weather-feed; do
+          (cd "$dir" && npm ci)
+        done
+
+    - name: Set up trvny Python
+      if: ${{ inputs.repository == 'trvny/trvny' }}
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.13"
+
+    - name: Set up trvny Java
+      if: ${{ inputs.repository == 'trvny/trvny' }}
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: "21"
+
+    - name: Set up trvny Gradle
+      if: ${{ inputs.repository == 'trvny/trvny' }}
+      uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+
+    - name: Prepare Xiaomi ADB Tools
+      if: ${{ inputs.repository == 'trvny/trvny' }}
+      shell: bash
+      run: |
+        chmod +x xiaomi-adb-tools/gradlew
+        ./xiaomi-adb-tools/gradlew -p xiaomi-adb-tools --no-daemon help
+
+    - name: Set up WiFi Automatic Java
+      if: ${{ inputs.repository == 'trvny/WiFi-Automatic' }}
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: "17"
+
+    - name: Set up WiFi Automatic Gradle
+      if: ${{ inputs.repository == 'trvny/WiFi-Automatic' }}
+      uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+
+    - name: Prepare WiFi Automatic Gradle project
+      if: ${{ inputs.repository == 'trvny/WiFi-Automatic' }}
+      shell: bash
+      run: |
+        chmod +x gradlew
+        ./gradlew --no-daemon help
