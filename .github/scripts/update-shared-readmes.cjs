@@ -7,7 +7,7 @@ const QUOTE_END_MARKER = '<!--ENDS_HERE_QUOTE_README-->';
 const FEED_START_MARKER = '<!--README_FEED:START-->';
 const FEED_END_MARKER = '<!--README_FEED:END-->';
 const README_MODES = new Set(['both', 'feed', 'quote']);
-const README_PATHS = ['README.md', 'README_pl.md'];
+const README_PATHS = ['README.md', 'README_pl.md', 'README_zh.md'];
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
