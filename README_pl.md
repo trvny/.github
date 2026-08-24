@@ -5,7 +5,7 @@
 <div align="center">
 <sub>consolidation over fragmentation · po kolei, na spokojnie</sub></div>
 
-**Polski** · [English](README.md)
+**Polski** · [English](README.md) · [简体中文](README_zh.md)
 
 [![feedseek](https://img.shields.io/badge/feed-seek-ff7a18?style=for-the-badge&logo=rss&logoColor=white)](https://trvny.github.io/feedseek) [![tvpi](https://img.shields.io/badge/tvpi-IPTV-2563eb?style=for-the-badge&logo=jellyfin&logoColor=white)](https://travny.pages.dev/tv/)
 [![wambridge](https://img.shields.io/badge/wambridge-Samsung_M5-1428a0?style=for-the-badge&logo=samsung&logoColor=white)](https://github.com/trvny/wambridge)
