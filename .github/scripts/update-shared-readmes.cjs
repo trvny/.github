@@ -1,6 +1,11 @@
 'use strict';
 
 const updateSourceReadme = require('./update-readme-quote.cjs');
+const {
+  listOpenPrs,
+  renderOpenPrBlock,
+  replaceOpenPrBlock,
+} = require('./open-prs.cjs');
 
 const QUOTE_START_MARKER = '<!--STARTS_HERE_QUOTE_README-->';
 const QUOTE_END_MARKER = '<!--ENDS_HERE_QUOTE_README-->';
@@ -137,6 +142,9 @@ module.exports = async function updateSharedReadmes({ github, context, core }) {
     QUOTE_START_MARKER,
     QUOTE_END_MARKER,
   );
+  const openPrs = await listOpenPrs({ github, owner: context.repo.owner });
+  const openPrBlock = renderOpenPrBlock(openPrs);
+  const mainRepository = `${context.repo.owner}/trvny`;
   const failures = [];
 
   for (const target of parseTargets(process.env.README_TARGET_REPOS)) {
@@ -162,12 +170,17 @@ module.exports = async function updateSharedReadmes({ github, context, core }) {
           continue;
         }
 
-        const updated = syncBlocks(
+        let updated = syncBlocks(
           readme.content,
           feedBlock,
           quoteBlock,
           target.mode,
         );
+
+        if (target.repository === mainRepository && path === 'README.md') {
+          updated = replaceOpenPrBlock(updated, openPrBlock);
+        }
+
         if (updated === readme.content) {
           core.info(`${target.repository}/${path}: dynamic content is unchanged.`);
           continue;
