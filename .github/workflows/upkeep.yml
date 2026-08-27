@@ -93,6 +93,53 @@ jobs:
               core.setFailed(failures.join('\n'));
             }
 
+      - name: Summarize open PRs
+        if: ${{ always() }}
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          script: |
+            const owner = context.repo.owner;
+            const items = await github.paginate(
+              github.rest.search.issuesAndPullRequests,
+              {
+                q: `user:${owner} is:pr is:open`,
+                per_page: 100,
+              },
+            );
+
+            const prs = items
+              .map((item) => ({
+                ...item,
+                repository: item.repository_url.split('/').slice(-2).join('/'),
+              }))
+              .sort((a, b) =>
+                a.repository.localeCompare(b.repository) || a.number - b.number,
+              );
+            const cell = (value) =>
+              String(value ?? '')
+                .replace(/\r?\n/g, ' ')
+                .replace(/\|/g, '\\|');
+
+            const lines = [
+              `## Open pull requests (${prs.length})`,
+              '',
+            ];
+
+            if (prs.length === 0) {
+              lines.push('No open pull requests. 🎉');
+            } else {
+              lines.push(
+                '| Repository | PR | Title | Author | State | Updated |',
+                '| --- | ---: | --- | --- | --- | --- |',
+                ...prs.map((pr) =>
+                  `| ${cell(pr.repository)} | [#${pr.number}](${pr.html_url}) | ${cell(pr.title)} | @${cell(pr.user?.login)} | ${pr.draft ? 'draft' : 'ready'} | ${pr.updated_at.slice(0, 10)} |`,
+                ),
+              );
+            }
+
+            await core.summary.addRaw(lines.join('\n')).write();
+
   readmes:
     name: Refresh shared READMEs
     runs-on: ubuntu-slim
