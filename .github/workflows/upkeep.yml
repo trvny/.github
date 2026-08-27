@@ -24,11 +24,13 @@ jobs:
       pull-requests: read
       statuses: read
     steps:
-      - name: Checkout trusted workflow script
+      - name: Checkout trusted workflow scripts
         uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-          sparse-checkout: .github/scripts/pr-upkeep.cjs
+          sparse-checkout: |
+            .github/scripts/open-prs.cjs
+            .github/scripts/pr-upkeep.cjs
           sparse-checkout-cone-mode: false
 
       - name: Require event-producing token
@@ -99,46 +101,19 @@ jobs:
         with:
           github-token: ${{ secrets.GH_PAT }}
           script: |
-            const owner = context.repo.owner;
-            const items = await github.paginate(
-              github.rest.search.issuesAndPullRequests,
-              {
-                q: `user:${owner} is:pr is:open`,
-                per_page: 100,
-              },
-            );
-
-            const prs = items
-              .map((item) => ({
-                ...item,
-                repository: item.repository_url.split('/').slice(-2).join('/'),
-              }))
-              .sort((a, b) =>
-                a.repository.localeCompare(b.repository) || a.number - b.number,
-              );
-            const cell = (value) =>
-              String(value ?? '')
-                .replace(/\r?\n/g, ' ')
-                .replace(/\|/g, '\\|');
-
-            const lines = [
-              `## Open pull requests (${prs.length})`,
-              '',
-            ];
-
-            if (prs.length === 0) {
-              lines.push('No open pull requests. 🎉');
-            } else {
-              lines.push(
-                '| Repository | PR | Title | Author | State | Updated |',
-                '| --- | ---: | --- | --- | --- | --- |',
-                ...prs.map((pr) =>
-                  `| ${cell(pr.repository)} | [#${pr.number}](${pr.html_url}) | ${cell(pr.title)} | @${cell(pr.user?.login)} | ${pr.draft ? 'draft' : 'ready'} | ${pr.updated_at.slice(0, 10)} |`,
-                ),
-              );
-            }
-
-            await core.summary.addRaw(lines.join('\n')).write();
+            const {
+              listOpenPrs,
+              renderOpenPrTable,
+            } = require('./.github/scripts/open-prs.cjs');
+            const prs = await listOpenPrs({
+              github,
+              owner: context.repo.owner,
+            });
+            await core.summary
+              .addRaw(
+                `## Open pull requests (${prs.length})\n\n${renderOpenPrTable(prs)}`,
+              )
+              .write();
 
   readmes:
     name: Refresh shared READMEs
@@ -152,6 +127,7 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: |
+            .github/scripts/open-prs.cjs
             .github/scripts/update-readme-quote.cjs
             .github/scripts/update-shared-readmes.cjs
           sparse-checkout-cone-mode: false
