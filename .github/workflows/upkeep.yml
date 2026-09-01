@@ -55,10 +55,10 @@ jobs:
             trvny/trvny,
             trvny/.github,
             trvny/feedseek,
-            trvny/kanarek,
+            twojstar/kanarek,
             trvny/tvpi,
-            trvny/autka,
-            trvny/wambridge
+            twojstar/Autka,
+            twojstar/wambridge
         with:
           github-token: ${{ secrets.GH_PAT }}
           script: |
@@ -158,7 +158,7 @@ jobs:
           README_FEED_MAX_ENTRIES: ${{ vars.README_FEED_MAX_ENTRIES || '6' }}
           README_PATH: README.md
           README_TARGET_REPOS: >-
-            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,trvny/kanarek:both,trvny/tvpi:both,trvny/autka:both,trvny/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
+            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,twojstar/kanarek:both,trvny/tvpi:both,twojstar/Autka:both,twojstar/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
             trvny/.ai:both
         with:
           github-token: ${{ secrets.GH_PAT }}
