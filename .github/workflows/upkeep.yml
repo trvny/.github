@@ -12,6 +12,11 @@ concurrency:
 
 permissions: {}
 
+env:
+  OWNERS: |
+    trvny
+    twojstar
+
 jobs:
   upkeep:
     name: Update PR branches
@@ -51,25 +56,31 @@ jobs:
           AUTOMERGE_IDLE_HOURS: ${{ vars.PR_AUTOMERGE_IDLE_HOURS || '4' }}
           AUTOMERGE_LABEL: ${{ vars.PR_AUTOMERGE_LABEL || 'automerge' }}
           AUTOMERGE_METHOD: ${{ vars.PR_AUTOMERGE_METHOD || 'squash' }}
-          PR_UPKEEP_TARGET_REPOS: >-
-            trvny/trvny,
-            trvny/.github,
-            trvny/feedseek,
-            twojstar/kanarek,
-            trvny/tvpi,
-            twojstar/Autka,
-            twojstar/wambridge
         with:
           github-token: ${{ secrets.GH_PAT }}
           script: |
             const run = require('./.github/scripts/pr-upkeep.cjs');
             const failures = [];
-            const repositories = process.env.PR_UPKEEP_TARGET_REPOS
-              .split(/[\n,]+/)
-              .map((item) => item.trim())
-              .filter(Boolean);
+            const owners = new Set(process.env.OWNERS.trim().split(/\s+/));
+            const visible = await github.paginate(
+              github.rest.repos.listForAuthenticatedUser,
+              {
+                affiliation: 'owner,organization_member',
+                visibility: 'all',
+                sort: 'full_name',
+                direction: 'asc',
+                per_page: 100,
+              },
+            );
+            const repositories = [...new Set(
+              visible
+                .filter((repository) => owners.has(repository.owner.login))
+                .filter((repository) => !repository.archived && !repository.disabled)
+                .map((repository) => repository.full_name),
+            )].sort((left, right) => left.localeCompare(right));
 
-            for (const repository of [...new Set(repositories)]) {
+            core.info(`Discovered ${repositories.length} active repositories.`);
+            for (const repository of repositories) {
               const [owner, repo] = repository.split('/');
               core.startGroup(`Update ${repository}`);
               try {
@@ -105,10 +116,20 @@ jobs:
               listOpenPrs,
               renderOpenPrTable,
             } = require('./.github/scripts/open-prs.cjs');
-            const prs = await listOpenPrs({
-              github,
-              owner: context.repo.owner,
-            });
+            const owners = process.env.OWNERS.trim().split(/\s+/);
+            const prs = [];
+            for (const owner of owners) {
+              prs.push(...await listOpenPrs({
+                github,
+                owner,
+                qualifier: owner === context.repo.owner ? 'user' : 'org',
+              }));
+            }
+            prs.sort(
+              (left, right) =>
+                left.repository.localeCompare(right.repository) ||
+                left.number - right.number,
+            );
             await core.summary
               .addRaw(
                 `## Open pull requests (${prs.length})\n\n${renderOpenPrTable(prs)}`,
