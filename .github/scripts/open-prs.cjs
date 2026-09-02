@@ -17,11 +17,11 @@ function cell(value) {
     .replace(/\|/g, '\\|');
 }
 
-async function listOpenPrs({ github, owner }) {
+async function listOpenPrs({ github, owner, qualifier = 'user' }) {
   const items = await github.paginate(
     github.rest.search.issuesAndPullRequests,
     {
-      q: `user:${owner} is:pr is:open`,
+      q: `${qualifier}:${owner} is:pr is:open`,
       per_page: 100,
     },
   );
