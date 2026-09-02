@@ -12,22 +12,17 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  REPOSITORIES: |
-    trvny/trvny
-    trvny/.github
-    trvny/feedseek
-    twojstar/kanarek
-    trvny/tvpi
-    twojstar/Autka
-    twojstar/wambridge
-    trvny/.ai
-    trvny/WiFi-Automatic
+  OWNERS: |
+    trvny
+    twojstar
 
 jobs:
-  delete-runs:
+  discover-repositories:
     runs-on: ubuntu-slim
-    timeout-minutes: 20
+    timeout-minutes: 10
     permissions: {}
+    outputs:
+      repositories: ${{ steps.discover.outputs.repositories }}
     steps:
       - name: Require cross-repository token
         env:
@@ -38,6 +33,56 @@ jobs:
             exit 1
           fi
 
+      - name: Discover repositories
+        id: discover
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
+          script: |
+            const owners = new Set(process.env.OWNERS.trim().split(/\s+/));
+            const visible = await github.paginate(
+              github.rest.repos.listForAuthenticatedUser,
+              {
+                affiliation: 'owner,organization_member',
+                visibility: 'all',
+                sort: 'full_name',
+                direction: 'asc',
+                per_page: 100,
+              },
+            );
+
+            const repositories = [...new Set(
+              visible
+                .filter((repo) => owners.has(repo.owner.login))
+                .filter((repo) => !repo.archived && !repo.disabled)
+                .map((repo) => repo.full_name),
+            )].sort((left, right) => left.localeCompare(right));
+
+            if (repositories.length === 0) {
+              core.setFailed(`No active repositories found for: ${[...owners].join(', ')}`);
+              return;
+            }
+
+            core.info(`Discovered ${repositories.length} repositories:`);
+            for (const repository of repositories) core.info(`- ${repository}`);
+            core.setOutput('repositories', JSON.stringify(repositories));
+
+            await core.summary
+              .addHeading('Repository discovery')
+              .addRaw(`Owners: ${[...owners].join(', ')}. Active repositories: ${repositories.length}.`)
+              .addList(repositories)
+              .write();
+
+  delete-runs:
+    needs: discover-repositories
+    runs-on: ubuntu-slim
+    timeout-minutes: 20
+    permissions: {}
+    env:
+      REPOSITORIES_JSON: ${{ needs.discover-repositories.outputs.repositories }}
+    steps:
       - name: Delete old workflow runs
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -45,7 +90,12 @@ jobs:
           retries: 3
           retry-exempt-status-codes: 400,401,404,422
           script: |
-            const repositories = process.env.REPOSITORIES.trim().split(/\s+/);
+            const repositories = JSON.parse(process.env.REPOSITORIES_JSON || '[]');
+            if (repositories.length === 0) {
+              core.setFailed('Repository discovery returned an empty list.');
+              return;
+            }
+
             const retainDays = 3;
             const keepMinimumRuns = 3;
             const deleteBatchSize = 5;
@@ -90,23 +140,18 @@ jobs:
                   const minimum = activeWorkflowIds.has(workflowId) ? keepMinimumRuns : 0;
 
                   for (const run of workflowRuns.slice(minimum)) {
-                    if (Date.parse(run.created_at) < cutoff) {
-                      runsToDelete.push(run);
-                    }
+                    if (Date.parse(run.created_at) < cutoff) runsToDelete.push(run);
                   }
                 }
 
                 matched = runsToDelete.length;
                 core.info(`${repository}: ${matched} run(s) to delete from ${before}`);
+
                 for (let offset = 0; offset < runsToDelete.length; offset += deleteBatchSize) {
                   const batch = runsToDelete.slice(offset, offset + deleteBatchSize);
                   const results = await Promise.allSettled(
                     batch.map((run) =>
-                      github.rest.actions.deleteWorkflowRun({
-                        owner,
-                        repo,
-                        run_id: run.id,
-                      }),
+                      github.rest.actions.deleteWorkflowRun({ owner, repo, run_id: run.id }),
                     ),
                   );
 
@@ -161,19 +206,13 @@ jobs:
             }
 
   delete-caches:
+    needs: discover-repositories
     runs-on: ubuntu-slim
     timeout-minutes: 20
     permissions: {}
+    env:
+      REPOSITORIES_JSON: ${{ needs.discover-repositories.outputs.repositories }}
     steps:
-      - name: Require cross-repository token
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          if [ -z "$GH_PAT" ]; then
-            echo "::error::Add the repository secret GH_PAT."
-            exit 1
-          fi
-
       - name: Delete stale Actions caches
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -181,7 +220,12 @@ jobs:
           retries: 3
           retry-exempt-status-codes: 400,401,404,422
           script: |
-            const repositories = process.env.REPOSITORIES.trim().split(/\s+/);
+            const repositories = JSON.parse(process.env.REPOSITORIES_JSON || '[]');
+            if (repositories.length === 0) {
+              core.setFailed('Repository discovery returned an empty list.');
+              return;
+            }
+
             const retainDays = 5;
             const keepMinimumCaches = 3;
             const budgetMinimumAgeHours = 24;
@@ -226,9 +270,7 @@ jobs:
                     { owner, repo, per_page: 100, page },
                   );
                   const pageCaches = response.data.actions_caches ?? [];
-                  for (const cache of pageCaches) {
-                    cachesById.set(cache.id, cache);
-                  }
+                  for (const cache of pageCaches) cachesById.set(cache.id, cache);
                   if (pageCaches.length < 100) break;
                 }
 
@@ -239,10 +281,7 @@ jobs:
                     Date.parse(left.last_accessed_at ?? left.created_at),
                 );
                 before = caches.length;
-                beforeBytes = caches.reduce(
-                  (total, cache) => total + cacheSize(cache),
-                  0,
-                );
+                beforeBytes = caches.reduce((total, cache) => total + cacheSize(cache), 0);
                 staleMatched = 0;
                 budgetMatched = 0;
 
@@ -250,6 +289,7 @@ jobs:
                   caches.slice(0, keepMinimumCaches).map((cache) => cache.id),
                 );
                 const selected = new Map();
+
                 for (const cache of caches.slice(keepMinimumCaches)) {
                   if (Date.parse(cache.last_accessed_at ?? cache.created_at) < cutoff) {
                     selected.set(cache.id, cache);
@@ -266,9 +306,7 @@ jobs:
                   for (const cache of [...caches].reverse()) {
                     if (projectedBytes <= budgetTargetBytes) break;
                     if (protectedIds.has(cache.id) || selected.has(cache.id)) continue;
-                    if (Date.parse(cache.last_accessed_at ?? cache.created_at) >= budgetCutoff) {
-                      continue;
-                    }
+                    if (Date.parse(cache.last_accessed_at ?? cache.created_at) >= budgetCutoff) continue;
                     const size = cacheSize(cache);
                     if (size === 0) continue;
                     selected.set(cache.id, cache);
