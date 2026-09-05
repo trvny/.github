@@ -178,6 +178,8 @@ jobs:
             https://weather.travny.workers.dev/feed.atom
           README_FEED_MAX_ENTRIES: ${{ vars.README_FEED_MAX_ENTRIES || '6' }}
           README_PATH: README.md
+          README_PROFILE_TARGET_REPOS: >-
+            ${{ vars.README_PROFILE_TARGET_REPOS || 'twojstar/.github:both' }}
           README_TARGET_REPOS: >-
             ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,twojstar/kanarek:both,trvny/tvpi:both,twojstar/Autka:both,twojstar/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
             trvny/.ai:both
