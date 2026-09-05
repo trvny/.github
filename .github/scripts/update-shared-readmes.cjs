@@ -2,8 +2,10 @@
 
 const updateSourceReadme = require('./update-readme-quote.cjs');
 const {
+  DEFAULT_OPEN_PR_LABELS,
   OPEN_PRS_START_MARKER,
   listOpenPrs,
+  listPublicOrgOpenPrs,
   renderOpenPrBlock,
   replaceOpenPrBlock,
 } = require('./open-prs.cjs');
@@ -14,7 +16,14 @@ const FEED_START_MARKER = '<!--README_FEED:START-->';
 const FEED_END_MARKER = '<!--README_FEED:END-->';
 const README_MODES = new Set(['both', 'feed', 'quote']);
 const README_PATHS = ['README.md', 'README_pl.md', 'README_zh.md'];
+const PROFILE_README_PATHS = [
+  'README.md',
+  'profile/README.md',
+  'profile/README_pl.md',
+  'profile/README_zh.md',
+];
 const OPEN_PR_LABELS = {
+  'README.md': DEFAULT_OPEN_PR_LABELS,
   'README_pl.md': {
     repository: 'Repozytorium',
     title: 'Tytuł',
@@ -35,6 +44,11 @@ const OPEN_PR_LABELS = {
     ready: '就绪',
     empty: '没有开放的拉取请求。🎉',
   },
+};
+const PROFILE_OPEN_PR_LABELS = {
+  'profile/README.md': DEFAULT_OPEN_PR_LABELS,
+  'profile/README_pl.md': OPEN_PR_LABELS['README_pl.md'],
+  'profile/README_zh.md': OPEN_PR_LABELS['README_zh.md'],
 };
 
 function escapeRegExp(value) {
@@ -155,6 +169,59 @@ async function fetchReadme(github, owner, repo, path = 'README.md') {
   };
 }
 
+async function updateReadme({
+  github,
+  core,
+  owner,
+  repo,
+  path,
+  mode,
+  feedBlock,
+  quoteBlock,
+  openPrs,
+  openPrLabels,
+}) {
+  let readme;
+  try {
+    readme = await fetchReadme(github, owner, repo, path);
+  } catch (error) {
+    if (path !== 'README.md' && error.status === 404) {
+      core.info(`${owner}/${repo}/${path}: file does not exist, skipping.`);
+      return;
+    }
+    throw error;
+  }
+
+  if (path !== 'README.md' && !hasRequestedBlocks(readme.content, mode)) {
+    core.info(`${owner}/${repo}/${path}: dynamic blocks not present, skipping.`);
+    return;
+  }
+
+  let updated = syncBlocks(readme.content, feedBlock, quoteBlock, mode);
+  if (openPrs && openPrLabels && updated.includes(OPEN_PRS_START_MARKER)) {
+    updated = replaceOpenPrBlock(
+      updated,
+      renderOpenPrBlock(openPrs, openPrLabels),
+    );
+  }
+
+  if (updated === readme.content) {
+    core.info(`${owner}/${repo}/${path}: dynamic content is unchanged.`);
+    return;
+  }
+
+  await github.rest.repos.createOrUpdateFileContents({
+    owner,
+    repo,
+    path,
+    branch: readme.branch,
+    message: 'chore(readme): refresh shared content [skip ci]',
+    content: Buffer.from(updated, 'utf8').toString('base64'),
+    sha: readme.sha,
+  });
+  core.info(`${owner}/${repo}/${path}: README updated.`);
+}
+
 module.exports = async function updateSharedReadmes({ github, context, core }) {
   await updateSourceReadme({ github, context, core });
 
@@ -174,56 +241,46 @@ module.exports = async function updateSharedReadmes({ github, context, core }) {
     core.startGroup(`Update ${target.repository} (${target.mode})`);
     try {
       for (const path of README_PATHS) {
-        let readme;
-        try {
-          readme = await fetchReadme(github, owner, repo, path);
-        } catch (error) {
-          if (path !== 'README.md' && error.status === 404) {
-            core.info(`${target.repository}/${path}: file does not exist, skipping.`);
-            continue;
-          }
-          throw error;
-        }
-
-        if (path !== 'README.md' && !hasRequestedBlocks(readme.content, target.mode)) {
-          core.info(
-            `${target.repository}/${path}: dynamic blocks not present, skipping.`,
-          );
-          continue;
-        }
-
-        let updated = syncBlocks(
-          readme.content,
-          feedBlock,
-          quoteBlock,
-          target.mode,
-        );
-
-        if (
-          target.repository === mainRepository &&
-          updated.includes(OPEN_PRS_START_MARKER)
-        ) {
-          updated = replaceOpenPrBlock(
-            updated,
-            renderOpenPrBlock(openPrs, OPEN_PR_LABELS[path]),
-          );
-        }
-
-        if (updated === readme.content) {
-          core.info(`${target.repository}/${path}: dynamic content is unchanged.`);
-          continue;
-        }
-
-        await github.rest.repos.createOrUpdateFileContents({
+        await updateReadme({
+          github,
+          core,
           owner,
           repo,
           path,
-          branch: readme.branch,
-          message: 'chore(readme): refresh shared content [skip ci]',
-          content: Buffer.from(updated, 'utf8').toString('base64'),
-          sha: readme.sha,
+          mode: target.mode,
+          feedBlock,
+          quoteBlock,
+          openPrs: target.repository === mainRepository ? openPrs : null,
+          openPrLabels:
+            target.repository === mainRepository ? OPEN_PR_LABELS[path] : null,
         });
-        core.info(`${target.repository}/${path}: README updated.`);
+      }
+    } catch (error) {
+      failures.push(`${target.repository}: ${error.message}`);
+      core.error(failures.at(-1));
+    } finally {
+      core.endGroup();
+    }
+  }
+
+  for (const target of parseTargets(process.env.README_PROFILE_TARGET_REPOS)) {
+    const [owner, repo] = target.repository.split('/');
+    core.startGroup(`Update organization profile ${target.repository} (${target.mode})`);
+    try {
+      const profileOpenPrs = await listPublicOrgOpenPrs({ github, org: owner });
+      for (const path of PROFILE_README_PATHS) {
+        await updateReadme({
+          github,
+          core,
+          owner,
+          repo,
+          path,
+          mode: target.mode,
+          feedBlock,
+          quoteBlock,
+          openPrs: profileOpenPrs,
+          openPrLabels: PROFILE_OPEN_PR_LABELS[path],
+        });
       }
     } catch (error) {
       failures.push(`${target.repository}: ${error.message}`);
