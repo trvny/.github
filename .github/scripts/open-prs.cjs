@@ -2,6 +2,16 @@
 
 const OPEN_PRS_START_MARKER = '<!--OPEN_PRS:START-->';
 const OPEN_PRS_END_MARKER = '<!--OPEN_PRS:END-->';
+const DEFAULT_OPEN_PR_LABELS = {
+  repository: 'Repository',
+  title: 'Title',
+  author: 'Author',
+  state: 'State',
+  updated: 'Updated',
+  draft: 'draft',
+  ready: 'ready',
+  empty: 'No open pull requests. 🎉',
+};
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -37,25 +47,25 @@ async function listOpenPrs({ github, owner, qualifier = 'user' }) {
     );
 }
 
-function renderOpenPrTable(prs) {
+function renderOpenPrTable(prs, labels = DEFAULT_OPEN_PR_LABELS) {
   if (prs.length === 0) {
-    return 'No open pull requests. 🎉';
+    return labels.empty;
   }
 
   return [
-    '| Repository | PR | Title | Author | State | Updated |',
+    `| ${labels.repository} | PR | ${labels.title} | ${labels.author} | ${labels.state} | ${labels.updated} |`,
     '| --- | ---: | --- | --- | --- | --- |',
     ...prs.map(
       (pr) =>
-        `| ${cell(pr.repository)} | [#${pr.number}](${pr.html_url}) | ${cell(pr.title)} | @${cell(pr.user?.login)} | ${pr.draft ? 'draft' : 'ready'} | ${pr.updated_at.slice(0, 10)} |`,
+        `| ${cell(pr.repository)} | [#${pr.number}](${pr.html_url}) | ${cell(pr.title)} | @${cell(pr.user?.login)} | ${pr.draft ? labels.draft : labels.ready} | ${pr.updated_at.slice(0, 10)} |`,
     ),
   ].join('\n');
 }
 
-function renderOpenPrBlock(prs) {
+function renderOpenPrBlock(prs, labels = DEFAULT_OPEN_PR_LABELS) {
   return [
     OPEN_PRS_START_MARKER,
-    renderOpenPrTable(prs),
+    renderOpenPrTable(prs, labels),
     OPEN_PRS_END_MARKER,
   ].join('\n');
 }
@@ -69,6 +79,7 @@ function replaceOpenPrBlock(readme, block) {
 }
 
 module.exports = {
+  DEFAULT_OPEN_PR_LABELS,
   OPEN_PRS_END_MARKER,
   OPEN_PRS_START_MARKER,
   listOpenPrs,
