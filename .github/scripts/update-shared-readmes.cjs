@@ -2,6 +2,7 @@
 
 const updateSourceReadme = require('./update-readme-quote.cjs');
 const {
+  OPEN_PRS_START_MARKER,
   listOpenPrs,
   renderOpenPrBlock,
   replaceOpenPrBlock,
@@ -13,6 +14,28 @@ const FEED_START_MARKER = '<!--README_FEED:START-->';
 const FEED_END_MARKER = '<!--README_FEED:END-->';
 const README_MODES = new Set(['both', 'feed', 'quote']);
 const README_PATHS = ['README.md', 'README_pl.md', 'README_zh.md'];
+const OPEN_PR_LABELS = {
+  'README_pl.md': {
+    repository: 'Repozytorium',
+    title: 'Tytuł',
+    author: 'Autor',
+    state: 'Stan',
+    updated: 'Aktualizacja',
+    draft: 'wersja robocza',
+    ready: 'gotowy',
+    empty: 'Brak otwartych pull requestów. 🎉',
+  },
+  'README_zh.md': {
+    repository: '仓库',
+    title: '标题',
+    author: '作者',
+    state: '状态',
+    updated: '更新',
+    draft: '草稿',
+    ready: '就绪',
+    empty: '没有开放的拉取请求。🎉',
+  },
+};
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -143,7 +166,6 @@ module.exports = async function updateSharedReadmes({ github, context, core }) {
     QUOTE_END_MARKER,
   );
   const openPrs = await listOpenPrs({ github, owner: context.repo.owner });
-  const openPrBlock = renderOpenPrBlock(openPrs);
   const mainRepository = `${context.repo.owner}/trvny`;
   const failures = [];
 
@@ -177,8 +199,14 @@ module.exports = async function updateSharedReadmes({ github, context, core }) {
           target.mode,
         );
 
-        if (target.repository === mainRepository && path === 'README.md') {
-          updated = replaceOpenPrBlock(updated, openPrBlock);
+        if (
+          target.repository === mainRepository &&
+          updated.includes(OPEN_PRS_START_MARKER)
+        ) {
+          updated = replaceOpenPrBlock(
+            updated,
+            renderOpenPrBlock(openPrs, OPEN_PR_LABELS[path]),
+          );
         }
 
         if (updated === readme.content) {
