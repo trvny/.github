@@ -35,7 +35,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ffeedseek&theme=great-gatsby&description_lines_count=1
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=twojstar%2Ffeedseek&theme=great-gatsby&description_lines_count=1
           path: assets/profile/pin-feeds.svg
           token: ${{ github.token }}
 
@@ -43,7 +43,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fkanarek&theme=shades-of-purple&description_lines_count=1
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=twojstar%2Fkanarek&theme=shades-of-purple&description_lines_count=1
           path: assets/profile/pin-kanarek.svg
           token: ${{ github.token }}
 
@@ -59,7 +59,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fwambridge&theme=blue_navy&description_lines_count=1
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=twojstar%2Fwambridge&theme=blue_navy&description_lines_count=1
           path: assets/profile/pin-wambridge.svg
           token: ${{ github.token }}
 
@@ -67,7 +67,7 @@ jobs:
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Fautka&theme=synthwave&description_lines_count=1
+          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=twojstar%2Fautka&theme=synthwave&description_lines_count=1
           path: assets/profile/pin-autka.svg
           token: ${{ github.token }}
   
