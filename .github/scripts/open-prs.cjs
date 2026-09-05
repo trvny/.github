@@ -27,6 +27,13 @@ function cell(value) {
     .replace(/\|/g, '\\|');
 }
 
+function sortOpenPrs(prs) {
+  return prs.sort(
+    (a, b) =>
+      a.repository.localeCompare(b.repository) || a.number - b.number,
+  );
+}
+
 async function listOpenPrs({ github, owner, qualifier = 'user' }) {
   const items = await github.paginate(
     github.rest.search.issuesAndPullRequests,
@@ -36,15 +43,41 @@ async function listOpenPrs({ github, owner, qualifier = 'user' }) {
     },
   );
 
-  return items
-    .map((item) => ({
+  return sortOpenPrs(
+    items.map((item) => ({
       ...item,
       repository: item.repository_url.split('/').slice(-2).join('/'),
-    }))
-    .sort(
-      (a, b) =>
-        a.repository.localeCompare(b.repository) || a.number - b.number,
+    })),
+  );
+}
+
+async function listPublicOrgOpenPrs({ github, org }) {
+  const repositories = await github.paginate(github.rest.repos.listForOrg, {
+    org,
+    type: 'public',
+    per_page: 100,
+  });
+  const prs = [];
+
+  for (const repository of repositories) {
+    if (repository.archived || repository.disabled) continue;
+    const items = await github.paginate(github.rest.pulls.list, {
+      owner: org,
+      repo: repository.name,
+      state: 'open',
+      sort: 'updated',
+      direction: 'desc',
+      per_page: 100,
+    });
+    prs.push(
+      ...items.map((item) => ({
+        ...item,
+        repository: repository.full_name,
+      })),
     );
+  }
+
+  return sortOpenPrs(prs);
 }
 
 function renderOpenPrTable(prs, labels = DEFAULT_OPEN_PR_LABELS) {
@@ -83,6 +116,7 @@ module.exports = {
   OPEN_PRS_END_MARKER,
   OPEN_PRS_START_MARKER,
   listOpenPrs,
+  listPublicOrgOpenPrs,
   renderOpenPrBlock,
   renderOpenPrTable,
   replaceOpenPrBlock,
