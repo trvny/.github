@@ -14,7 +14,7 @@ concurrency:
 env:
   OWNERS: |
     trvny
-    2137x
+    enclaro
 
 jobs:
   discover-repositories:
