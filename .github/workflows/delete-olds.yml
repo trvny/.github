@@ -14,7 +14,7 @@ concurrency:
 env:
   OWNERS: |
     trvny
-    enclaro
+    travnie
 
 jobs:
   discover-repositories:
