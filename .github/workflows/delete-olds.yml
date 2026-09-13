@@ -14,7 +14,7 @@ concurrency:
 env:
   OWNERS: |
     trvny
-    twojstar
+    2137x
 
 jobs:
   discover-repositories:
