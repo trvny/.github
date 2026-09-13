@@ -15,7 +15,7 @@ permissions: {}
 env:
   OWNERS: |
     trvny
-    twojstar
+    2137x
 
 jobs:
   upkeep:
@@ -179,9 +179,9 @@ jobs:
           README_FEED_MAX_ENTRIES: ${{ vars.README_FEED_MAX_ENTRIES || '6' }}
           README_PATH: README.md
           README_PROFILE_TARGET_REPOS: >-
-            ${{ vars.README_PROFILE_TARGET_REPOS || 'twojstar/.github:both' }}
+            ${{ vars.README_PROFILE_TARGET_REPOS || '2137x/.github:both' }}
           README_TARGET_REPOS: >-
-            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,twojstar/kanarek:both,trvny/tvpi:both,twojstar/Autka:both,twojstar/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
+            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,2137x/kanarek:both,trvny/tvpi:both,2137x/Autka:both,2137x/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
             trvny/.ai:both
         with:
           github-token: ${{ secrets.GH_PAT }}
