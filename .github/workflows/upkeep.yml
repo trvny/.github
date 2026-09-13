@@ -15,7 +15,7 @@ permissions: {}
 env:
   OWNERS: |
     trvny
-    enclaro
+    travnie
 
 jobs:
   upkeep:
@@ -179,9 +179,9 @@ jobs:
           README_FEED_MAX_ENTRIES: ${{ vars.README_FEED_MAX_ENTRIES || '6' }}
           README_PATH: README.md
           README_PROFILE_TARGET_REPOS: >-
-            ${{ vars.README_PROFILE_TARGET_REPOS || 'enclaro/.github:both' }}
+            ${{ vars.README_PROFILE_TARGET_REPOS || 'travnie/.github:both' }}
           README_TARGET_REPOS: >-
-            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,enclaro/kanarek:both,trvny/tvpi:both,enclaro/Autka:both,enclaro/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
+            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,travnie/kanarek:both,trvny/tvpi:both,travnie/Autka:both,travnie/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
             trvny/.ai:both
         with:
           github-token: ${{ secrets.GH_PAT }}
