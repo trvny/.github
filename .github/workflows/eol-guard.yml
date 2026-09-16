@@ -1,0 +1,190 @@
+---
+name: EOL guard
+
+# Fails when a repository stores a blob whose line endings contradict its own
+# .gitattributes. That state is invisible in normal use: the file shows as
+# permanently modified in every clone, `git checkout` and `git stash` cannot
+# clear it (re-checkout rewrites the working tree, which normalizes straight
+# back to the same mismatch), and `git status` under-reports which files are
+# affected after a merge. Only a renormalize commit fixes it.
+#
+# It gets there because .gitattributes is not applied server-side: a commit
+# through the web UI or the REST API stores exactly the bytes it is handed, so
+# a tool that reads a file out of a Windows checkout and pushes it back through
+# the Contents API can store CRLF where the attributes require LF. A local
+# `git add` cannot produce this - the clean filter always runs.
+#
+# Scheduled rather than per-repository on purpose. The commit that prompted this
+# (travnie/twojstar 2db45d9) went straight to main, so a push-triggered check in
+# that repo would not have prevented it either - it would only have reported
+# sooner. Running here covers every repo under both owners, including ones that
+# do not exist yet, from one file.
+
+on: # yamllint disable-line rule:truthy
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: eol-guard
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  OWNERS: |
+    trvny
+    travnie
+
+jobs:
+  discover-repositories:
+    name: Discover repositories
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
+    permissions: {}
+    outputs:
+      repositories: ${{ steps.discover.outputs.repositories }}
+    steps:
+      - name: Require cross-repository token
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "::error::Add the repository secret GH_PAT."
+            exit 1
+          fi
+
+      - name: Discover repositories
+        id: discover
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
+          script: |
+            const owners = new Set(process.env.OWNERS.trim().split(/\s+/));
+            const visible = await github.paginate(
+              github.rest.repos.listForAuthenticatedUser,
+              {
+                affiliation: 'owner,organization_member',
+                visibility: 'all',
+                sort: 'full_name',
+                direction: 'asc',
+                per_page: 100,
+              },
+            );
+
+            const active = visible
+              .filter((repo) => owners.has(repo.owner.login))
+              .filter((repo) => !repo.archived && !repo.disabled);
+
+            // The check job clones anonymously and holds no token, so a private
+            // repository cannot be reached. Skip those loudly rather than
+            // failing on a clone error that looks like an outage.
+            const skipped = [...new Set(
+              active.filter((repo) => repo.private).map((repo) => repo.full_name),
+            )].sort((left, right) => left.localeCompare(right));
+
+            const repositories = [...new Set(
+              active.filter((repo) => !repo.private).map((repo) => repo.full_name),
+            )].sort((left, right) => left.localeCompare(right));
+
+            if (repositories.length === 0) {
+              core.setFailed(`No active public repositories found for: ${[...owners].join(', ')}`);
+              return;
+            }
+
+            if (skipped.length > 0) {
+              core.notice(
+                `Not checked, private and unreachable without a token: ${skipped.join(', ')}`,
+              );
+            }
+
+            core.info(`Discovered ${repositories.length} repositories:`);
+            for (const repository of repositories) core.info(`- ${repository}`);
+            core.setOutput('repositories', repositories.join('\n'));
+
+            await core.summary
+              .addHeading('Repository discovery')
+              .addRaw(
+                `Owners: ${[...owners].join(', ')}. ` +
+                `Public: ${repositories.length}. Skipped as private: ${skipped.length}.`,
+              )
+              .addList(repositories)
+              .write();
+
+  check:
+    name: Stored blobs match .gitattributes
+    needs: discover-repositories
+    runs-on: ubuntu-slim
+    timeout-minutes: 20
+    permissions: {}
+    env:
+      REPOSITORIES: ${{ needs.discover-repositories.outputs.repositories }}
+    steps:
+      - name: Check every repository
+        shell: bash
+        run: |
+          set -uo pipefail
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          failed=0
+          checked=0
+
+          # Never let a global config decide line endings for us; .gitattributes
+          # in each repository is the only thing that may. Passed per command
+          # rather than written with `git config --global`, so running this
+          # script by hand cannot modify the caller's own git configuration.
+          noautocrlf=(-c core.autocrlf=false)
+
+          while IFS= read -r repository; do
+            [ -n "$repository" ] || continue
+            checked=$((checked + 1))
+            target="$workdir/${repository//\//_}"
+
+            # Ask before cloning. A repository with no .gitattributes has nothing
+            # to enforce, and some of these are hundreds of megabytes.
+            probe="https://raw.githubusercontent.com/$repository/HEAD/.gitattributes"
+            if [ "$(curl -sS -o /dev/null -w '%{http_code}' -I "$probe")" != "200" ]; then
+              echo "$repository - no .gitattributes, nothing to enforce"
+              continue
+            fi
+
+            if ! git "${noautocrlf[@]}" clone --quiet --depth 1 \
+                "https://github.com/$repository.git" "$target"; then
+              echo "::error::$repository - clone failed"
+              failed=1
+              continue
+            fi
+
+            git "${noautocrlf[@]}" -C "$target" add --renormalize .
+            if git -C "$target" diff --cached --quiet; then
+              echo "$repository - ok"
+              continue
+            fi
+
+            failed=1
+            echo "::error::$repository stores line endings that contradict its .gitattributes"
+            git -C "$target" diff --cached --name-only | sed 's/^/    /'
+            {
+              echo "### $repository"
+              echo
+              echo '```'
+              git -C "$target" diff --cached --name-only
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          done <<< "$REPOSITORIES"
+
+          echo
+          echo "Checked $checked repositories."
+          if [ "$failed" -ne 0 ]; then
+            echo
+            echo "Fix each listed repository in a clone:"
+            echo "  git add --renormalize ."
+            echo "  git diff --cached --ignore-cr-at-eol --stat  # empty == EOL-only, safe"
+            echo "  git commit -m 'chore: renormalize line endings'"
+            echo
+            echo "If a listed file is meant to keep its bytes verbatim, give it -text"
+            echo "or binary in .gitattributes rather than excluding it here."
+            exit 1
+          fi
