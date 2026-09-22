@@ -45,9 +45,6 @@ concurrency:
   group: instruction-rot-${{ github.repository }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 env:
   BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
   HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -57,6 +54,8 @@ jobs:
   rotcheck:
     name: rotcheck
     runs-on: ubuntu-slim
+    permissions:
+      contents: read
     steps:
       - name: Checkout target
         uses: actions/checkout@v7
@@ -76,6 +75,8 @@ jobs:
   yaplint:
     name: yaplint
     runs-on: ubuntu-slim
+    permissions:
+      contents: read
     steps:
       - name: Checkout target
         uses: actions/checkout@v7
@@ -95,6 +96,8 @@ jobs:
   rickcheck:
     name: Never Gonna Deploy You
     runs-on: ubuntu-slim
+    permissions:
+      contents: read
     steps:
       - name: Checkout target
         uses: actions/checkout@v7
@@ -137,6 +140,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
     steps:
       - name: Comment Instruction Rot result
         continue-on-error: true
