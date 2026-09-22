@@ -134,7 +134,9 @@ jobs:
 
   report:
     name: PR report
-    if: always() && github.event_name == 'pull_request'
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     needs: [rotcheck, yaplint, rickcheck]
     runs-on: ubuntu-slim
     permissions:
