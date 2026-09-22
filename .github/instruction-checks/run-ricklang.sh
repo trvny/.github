@@ -8,11 +8,11 @@ commit="5595a607ba782bd027e8d4102aa36f556e648015"
 rick="$tmp/rickroll-lang-$commit"
 manifest="$tmp/instruction-files.txt"
 
-"$checks_root/instruction-files.sh" "$repo_root" > "$manifest"
+"$checks_root/changed-files.sh" "$repo_root" > "$manifest"
 export INSTRUCTION_MANIFEST="$manifest"
 
 if [[ ! -s "$manifest" ]]; then
-  echo "rickcheck: no supported instruction files found"
+  echo "rickcheck: no supported instruction files changed"
   exit 0
 fi
 

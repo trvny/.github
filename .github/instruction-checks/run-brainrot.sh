@@ -35,10 +35,10 @@ if [[ -z "$brainrot" ]]; then
 fi
 
 manifest="$tmp/instruction-files.txt"
-"$checks_root/instruction-files.sh" "$repo_root" > "$manifest"
+"$checks_root/changed-files.sh" "$repo_root" > "$manifest"
 
 if [[ ! -s "$manifest" ]]; then
-  echo "$program: no supported instruction files found"
+  echo "$program: no supported instruction files changed"
   exit 0
 fi
 

@@ -1,131 +1,130 @@
 ---
-name: Instruction Rot Fleet
+name: Instruction Rot
 
 on: # yamllint disable-line rule:truthy
-  schedule:
-    - cron: "23 */6 * * *"
+  workflow_call:
+  pull_request:
+    paths:
+      - AGENTS.md
+      - CLAUDE.md
+      - GEMINI.md
+      - CODEX.md
+      - "**/AGENTS.md"
+      - "**/CLAUDE.md"
+      - "**/GEMINI.md"
+      - "**/CODEX.md"
+      - "**/copilot-instructions.md"
+      - ".github/instructions/**"
+      - "**/.cursor/rules/**"
+      - "**/.cursorrules"
+      - "**/.windsurfrules"
+      - "**/.clinerules"
+      - ".github/instruction-checks/**"
+      - ".github/workflows/instruction-rot.yml"
+  push:
+    paths:
+      - AGENTS.md
+      - CLAUDE.md
+      - GEMINI.md
+      - CODEX.md
+      - "**/AGENTS.md"
+      - "**/CLAUDE.md"
+      - "**/GEMINI.md"
+      - "**/CODEX.md"
+      - "**/copilot-instructions.md"
+      - ".github/instructions/**"
+      - "**/.cursor/rules/**"
+      - "**/.cursorrules"
+      - "**/.windsurfrules"
+      - "**/.clinerules"
+      - ".github/instruction-checks/**"
+      - ".github/workflows/instruction-rot.yml"
   workflow_dispatch:
-    inputs:
-      repository:
-        description: Optional owner/repo target; blank scans the whole fleet
-        required: false
-        type: string
-  repository_dispatch:
-    types: [instruction-rot]
 
 concurrency:
-  group: instruction-rot-fleet
+  group: instruction-rot-${{ github.repository }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 env:
-  OWNERS: |
-    trvny
-    travnie
+  BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+  HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  HARNESS_REF: ${{ github.repository == 'trvny/.github' && github.sha || 'main' }}
 
 jobs:
-  discover:
-    name: Discover repositories
+  rotcheck:
+    name: rotcheck
     runs-on: ubuntu-slim
-    timeout-minutes: 5
-    outputs:
-      repositories: ${{ steps.discover.outputs.repositories }}
     steps:
-      - name: Require cross-repository token
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          if [ -z "$GH_PAT" ]; then
-            echo "::error::Add the repository secret GH_PAT."
-            exit 1
-          fi
-
-      - id: discover
-        name: Build repository matrix
-        uses: actions/github-script@v9
-        env:
-          TARGET_REPOSITORY: ${{ inputs.repository || github.event.client_payload.repository || '' }}
+      - name: Checkout target
+        uses: actions/checkout@v7
         with:
-          github-token: ${{ secrets.GH_PAT }}
-          script: |
-            const owners = new Set(process.env.OWNERS.trim().split(/\s+/));
-            const requested = process.env.TARGET_REPOSITORY.trim();
-
-            if (requested) {
-              const [owner, repo, extra] = requested.split('/');
-              if (!owner || !repo || extra || !owners.has(owner)) {
-                core.setFailed(`Target must be trvny/<repo> or travnie/<repo>, got: ${requested}`);
-                return;
-              }
-              const { data } = await github.rest.repos.get({ owner, repo });
-              if (data.archived || data.disabled) {
-                core.setFailed(`Target repository is inactive: ${requested}`);
-                return;
-              }
-              core.setOutput('repositories', JSON.stringify([data.full_name]));
-              return;
-            }
-
-            const visible = await github.paginate(
-              github.rest.repos.listForAuthenticatedUser,
-              {
-                affiliation: 'owner,organization_member',
-                visibility: 'all',
-                sort: 'full_name',
-                direction: 'asc',
-                per_page: 100,
-              },
-            );
-
-            const repositories = [...new Set(
-              visible
-                .filter((repository) => owners.has(repository.owner.login))
-                .filter((repository) => !repository.archived && !repository.disabled)
-                .map((repository) => repository.full_name),
-            )].sort((left, right) => left.localeCompare(right));
-
-            if (repositories.length === 0) {
-              core.setFailed('No active repositories discovered.');
-              return;
-            }
-
-            core.info(`Discovered ${repositories.length} active repositories.`);
-            core.setOutput('repositories', JSON.stringify(repositories));
-
-  check:
-    name: ${{ matrix.repository }}
-    needs: discover
-    runs-on: ubuntu-slim
-    timeout-minutes: 12
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        repository: ${{ fromJSON(needs.discover.outputs.repositories) }}
-    steps:
+          fetch-depth: 0
+          persist-credentials: false
       - name: Checkout Instruction Rot harness
         uses: actions/checkout@v7
         with:
           repository: trvny/.github
-          path: harness
+          ref: ${{ env.HARNESS_REF }}
+          path: .instruction-rot
           persist-credentials: false
+      - name: Run Brainrot structural check
+        run: .instruction-rot/.github/instruction-checks/run-brainrot.sh rotcheck "$GITHUB_WORKSPACE"
 
-      - name: Checkout target repository
+  yaplint:
+    name: yaplint
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout target
         uses: actions/checkout@v7
         with:
-          repository: ${{ matrix.repository }}
-          path: target
-          token: ${{ secrets.GH_PAT }}
-          fetch-depth: 1
+          fetch-depth: 0
           persist-credentials: false
+      - name: Checkout Instruction Rot harness
+        uses: actions/checkout@v7
+        with:
+          repository: trvny/.github
+          ref: ${{ env.HARNESS_REF }}
+          path: .instruction-rot
+          persist-credentials: false
+      - name: Run Brainrot yap budget
+        run: .instruction-rot/.github/instruction-checks/run-brainrot.sh yaplint "$GITHUB_WORKSPACE"
 
-      - name: rotcheck
-        run: harness/.github/instruction-checks/run-brainrot.sh rotcheck "$GITHUB_WORKSPACE/target"
-
-      - name: yaplint
-        run: harness/.github/instruction-checks/run-brainrot.sh yaplint "$GITHUB_WORKSPACE/target"
-
-      - name: Never Gonna Deploy You
-        run: harness/.github/instruction-checks/run-ricklang.sh "$GITHUB_WORKSPACE/target"
+  rickcheck:
+    name: Never Gonna Deploy You
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout target
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout Instruction Rot harness
+        uses: actions/checkout@v7
+        with:
+          repository: trvny/.github
+          ref: ${{ env.HARNESS_REF }}
+          path: .instruction-rot
+          persist-credentials: false
+      - id: rickcheck
+        name: Run RickLang reference guard
+        continue-on-error: true
+        run: .instruction-rot/.github/instruction-checks/run-ricklang.sh "$GITHUB_WORKSPACE"
+      - name: Render RickLang failure WAV
+        if: steps.rickcheck.outcome == 'failure'
+        run: >-
+          .instruction-rot/.github/instruction-checks/make-ricklang-wav.sh
+          "${{ runner.temp }}/never-gonna-deploy-you.wav"
+      - name: Upload RickLang failure WAV
+        if: steps.rickcheck.outcome == 'failure'
+        uses: actions/upload-artifact@v7
+        with:
+          name: never-gonna-deploy-you-${{ github.event.repository.name }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/never-gonna-deploy-you.wav
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Propagate RickLang failure
+        if: steps.rickcheck.outcome == 'failure'
+        run: exit 1
