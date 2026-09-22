@@ -71,7 +71,7 @@ jobs:
           path: .instruction-rot
           persist-credentials: false
       - name: Run Brainrot structural check
-        run: .instruction-rot/.github/instruction-checks/run-brainrot.sh rotcheck "$GITHUB_WORKSPACE"
+        run: bash .instruction-rot/.github/instruction-checks/run-brainrot.sh rotcheck "$GITHUB_WORKSPACE"
 
   yaplint:
     name: yaplint
@@ -90,7 +90,7 @@ jobs:
           path: .instruction-rot
           persist-credentials: false
       - name: Run Brainrot yap budget
-        run: .instruction-rot/.github/instruction-checks/run-brainrot.sh yaplint "$GITHUB_WORKSPACE"
+        run: bash .instruction-rot/.github/instruction-checks/run-brainrot.sh yaplint "$GITHUB_WORKSPACE"
 
   rickcheck:
     name: Never Gonna Deploy You
@@ -111,11 +111,11 @@ jobs:
       - id: rickcheck
         name: Run RickLang reference guard
         continue-on-error: true
-        run: .instruction-rot/.github/instruction-checks/run-ricklang.sh "$GITHUB_WORKSPACE"
+        run: bash .instruction-rot/.github/instruction-checks/run-ricklang.sh "$GITHUB_WORKSPACE"
       - name: Render RickLang failure WAV
         if: steps.rickcheck.outcome == 'failure'
         run: >-
-          .instruction-rot/.github/instruction-checks/make-ricklang-wav.sh
+          bash .instruction-rot/.github/instruction-checks/make-ricklang-wav.sh
           "${{ runner.temp }}/never-gonna-deploy-you.wav"
       - name: Upload RickLang failure WAV
         if: steps.rickcheck.outcome == 'failure'
