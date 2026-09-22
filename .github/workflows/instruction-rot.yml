@@ -112,13 +112,13 @@ jobs:
         name: Run RickLang reference guard
         continue-on-error: true
         run: bash .instruction-rot/.github/instruction-checks/run-ricklang.sh "$GITHUB_WORKSPACE"
-      - name: Render RickLang WAV
-        if: steps.rickcheck.outcome == 'success' || steps.rickcheck.outcome == 'failure'
+      - name: Render RickLang failure WAV
+        if: steps.rickcheck.outcome == 'failure'
         run: >-
           bash .instruction-rot/.github/instruction-checks/make-ricklang-wav.sh
           "${{ runner.temp }}/never-gonna-deploy-you.wav"
-      - name: Upload RickLang WAV
-        if: steps.rickcheck.outcome == 'success' || steps.rickcheck.outcome == 'failure'
+      - name: Upload RickLang failure WAV
+        if: steps.rickcheck.outcome == 'failure'
         uses: actions/upload-artifact@v7
         with:
           name: never-gonna-deploy-you-${{ github.event.repository.name }}-${{ github.run_id }}
@@ -154,6 +154,9 @@ jobs:
               `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const artifactName =
               `never-gonna-deploy-you-${context.payload.repository.name}-${context.runId}`;
+            const audioLine = process.env.RICKCHECK === 'success'
+              ? '🎧 RickLang WAV: generated only when the RickLang guard fails.'
+              : `🎧 RickLang WAV: artifact **${artifactName}** in [this run](${runUrl}).`;
             const body = [
               marker,
               '### Instruction Rot 🧠',
@@ -164,7 +167,7 @@ jobs:
               `| yaplint | ${icon(process.env.YAPLINT)} ${process.env.YAPLINT} |`,
               `| Never Gonna Deploy You | ${icon(process.env.RICKCHECK)} ${process.env.RICKCHECK} |`,
               '',
-              `🎧 RickLang WAV: artifact **${artifactName}** in [this run](${runUrl}).`,
+              audioLine,
             ].join('\n');
 
             const comments = await github.paginate(github.rest.issues.listComments, {
