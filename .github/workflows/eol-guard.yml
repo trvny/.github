@@ -22,7 +22,7 @@ name: EOL guard
 
 on: # yamllint disable-line rule:truthy
   schedule:
-    - cron: "17 4 * * *"
+    - cron: "20 4 */4 * *"
   workflow_dispatch:
 
 concurrency:
