@@ -1,0 +1,55 @@
+skibidi main {
+    SAUCE *f = crackopen("/tmp/instruction-check.md", "r");
+    edgy (!f) {
+        yapping("L: instruction file got negative aura");
+        bussin 1;
+    }
+
+    rizz lines = 0;
+    rizz bytes = 0;
+    rizz nonblank = 0;
+    rizz maxline = 0;
+    rizz conflicts = 0;
+
+    goon (!itsjoever(f)) {
+        rant line = skim(f);
+        rizz n = yaplen(line);
+
+        lines = lines + 1;
+        bytes = bytes + n + 1;
+
+        edgy (n > 0) {
+            nonblank = nonblank + 1;
+        }
+        edgy (n > maxline) {
+            maxline = n;
+        }
+        edgy (yapidx(line, "<<<<<<<") >= 0 || yapidx(line, ">>>>>>>") >= 0 || yapcmp(line, "=======") == 0) {
+            conflicts = conflicts + 1;
+        }
+    }
+
+    peaceout(f);
+
+    yapping("rotcheck: %d lines, %d bytes, max line %d", lines, bytes, maxline);
+
+    edgy (nonblank == 0) {
+        yapping("L: empty instruction file");
+        bussin 1;
+    }
+    edgy (bytes > 65536) {
+        yapping("L: instruction file exceeds the 64 KiB sanity cap");
+        bussin 1;
+    }
+    edgy (maxline > 500) {
+        yapping("L: line exceeds 500 bytes");
+        bussin 1;
+    }
+    edgy (conflicts > 0) {
+        yapping("L: unresolved conflict marker detected");
+        bussin 1;
+    }
+
+    yapping("W: structure not cooked");
+    bussin 0;
+}

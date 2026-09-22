@@ -1,0 +1,56 @@
+rizz words_in(rant line) {
+    rizz count = 0;
+    rizz i = 0;
+    cap in_word = L;
+
+    goon (i < yaplen(line)) {
+        cap space = line[i] == 32 || line[i] == 9;
+        edgy (!space && !in_word) {
+            count = count + 1;
+            in_word = W;
+        }
+        edgy (space) {
+            in_word = L;
+        }
+        i = i + 1;
+    }
+
+    bussin count;
+}
+
+skibidi main {
+    SAUCE *f = crackopen("/tmp/instruction-check.md", "r");
+    edgy (!f) {
+        yapping("L: yaplint cannot open instruction file");
+        bussin 1;
+    }
+
+    rizz lines = 0;
+    rizz words = 0;
+    rizz bytes = 0;
+
+    goon (!itsjoever(f)) {
+        rant line = skim(f);
+        lines = lines + 1;
+        bytes = bytes + yaplen(line) + 1;
+        words = words + words_in(line);
+    }
+
+    peaceout(f);
+
+    rizz score = (bytes / 80) + (lines * 2);
+    yapping("yaplint: %d lines, %d words, %d bytes, yap score %d", lines, words, bytes, score);
+
+    edgy (bytes > 16384 || lines > 180) {
+        yapping("L: industrial-grade yapping detected (hard cap: 16 KiB / 180 lines)");
+        bussin 1;
+    }
+
+    edgy (bytes > 8192 || lines > 100) {
+        yapping("mid: getting verbose; consider compressing repeated guidance");
+    } amogus {
+        yapping("W: yap budget healthy");
+    }
+
+    bussin 0;
+}
