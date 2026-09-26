@@ -180,7 +180,7 @@ jobs:
           README_PROFILE_TARGET_REPOS: >-
             ${{ vars.README_PROFILE_TARGET_REPOS || 'travnie/.github:both' }}
           README_TARGET_REPOS: >-
-            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,travnie/kanarek:both,trvny/tvpi:both,travnie/Autka:both,travnie/wambridge:both,trvny/.github:both,trvny/trvny:both' }},
+            ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,travnie/kanarek:both,trvny/tvpi:both,travnie/Autka:both,travnie/wambridge:both,trvny/.github:both,trvny/trvny:both,travnie/aistee:both,travnie/twojstar:both' }},
             trvny/.ai:both
         with:
           github-token: ${{ secrets.GH_PAT }}
