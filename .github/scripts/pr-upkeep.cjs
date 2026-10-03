@@ -110,7 +110,11 @@ module.exports = async function keepPullRequestsCurrent({
   core,
 }) {
   const { owner, repo } = context.repo;
-  const repository = await github.rest.repos.get({ owner, repo });
+  const repository = await github.rest.repos.get({
+    owner,
+    repo,
+    request: { timeout: 30_000 },
+  });
   const defaultBranch = repository.data.default_branch;
   const automergeEnabled =
     (process.env.AUTOMERGE_ENABLED || 'false').toLowerCase() === 'true';

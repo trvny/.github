@@ -120,6 +120,8 @@ jobs:
           AUTOMERGE_METHOD: ${{ vars.PR_AUTOMERGE_METHOD || 'squash' }}
         with:
           github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
           script: |
             const run = require('./.github/scripts/pr-upkeep.cjs');
             const failures = [];
@@ -159,6 +161,8 @@ jobs:
         uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
           script: |
             const {
               listOpenPrs,
@@ -235,6 +239,8 @@ jobs:
             ${{ vars.README_TARGET_REPOS || 'trvny/feedseek:both,travnie/kanarek:both,trvny/tvpi:both,travnie/Autka:both,travnie/wambridge:both,trvny/.github:both,trvny/trvny:both,travnie/aistee:both,travnie/twojstar:both,trvny/.ai:both' }}
         with:
           github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
           script: |
             const run = require('./.github/scripts/update-shared-readmes.cjs');
             await run({
