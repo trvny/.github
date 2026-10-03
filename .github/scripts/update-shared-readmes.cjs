@@ -14,6 +14,10 @@ const QUOTE_START_MARKER = '<!--STARTS_HERE_QUOTE_README-->';
 const QUOTE_END_MARKER = '<!--ENDS_HERE_QUOTE_README-->';
 const FEED_START_MARKER = '<!--README_FEED:START-->';
 const FEED_END_MARKER = '<!--README_FEED:END-->';
+const README_COMMIT_IDENTITY = Object.freeze({
+  name: 'github-actions[bot]',
+  email: '41898282+github-actions[bot]@users.noreply.github.com',
+});
 const README_MODES = new Set(['both', 'feed', 'quote']);
 const README_PATHS = ['README.md', 'README_pl.md', 'README_zh.md'];
 const PROFILE_README_PATHS = [
@@ -218,12 +222,19 @@ async function updateReadme({
     message: 'chore(readme): refresh shared content [skip ci]',
     content: Buffer.from(updated, 'utf8').toString('base64'),
     sha: readme.sha,
+    author: README_COMMIT_IDENTITY,
+    committer: README_COMMIT_IDENTITY,
   });
   core.info(`${owner}/${repo}/${path}: README updated.`);
 }
 
 module.exports = async function updateSharedReadmes({ github, context, core }) {
-  await updateSourceReadme({ github, context, core });
+  await updateSourceReadme({
+    github,
+    context,
+    core,
+    commitIdentity: README_COMMIT_IDENTITY,
+  });
 
   const source = await fetchReadme(github, context.repo.owner, context.repo.repo);
   const feedBlock = extractBlock(source.content, FEED_START_MARKER, FEED_END_MARKER);

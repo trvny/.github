@@ -361,7 +361,12 @@ async function loadFeedEntries(urls, core) {
   return entries;
 }
 
-module.exports = async function updateReadme({ github, context, core }) {
+module.exports = async function updateReadme({
+  github,
+  context,
+  core,
+  commitIdentity,
+}) {
   const { owner, repo } = context.repo;
   const gistId = process.env.GIST_ID || DEFAULT_GIST_ID;
   const readmePath = process.env.README_PATH || 'README.md';
@@ -449,6 +454,8 @@ module.exports = async function updateReadme({ github, context, core }) {
     message: 'chore(readme): refresh dynamic content',
     content: Buffer.from(updated, 'utf8').toString('base64'),
     sha: response.data.sha,
+    author: commitIdentity,
+    committer: commitIdentity,
   });
 
   core.info(
