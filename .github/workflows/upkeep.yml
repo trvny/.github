@@ -37,12 +37,21 @@ jobs:
       inputs.task != 'readmes'
     runs-on: ubuntu-slim
     timeout-minutes: 20
-    permissions: {}
+    permissions:
+      contents: read
     outputs:
       repositories: ${{ steps.discover.outputs.repositories }}
       public_repositories: ${{ steps.discover.outputs.public_repositories }}
       run_eol: ${{ steps.discover.outputs.run_eol }}
     steps:
+      - name: Checkout workflow script
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/discover-repositories.cjs
+          sparse-checkout-cone-mode: false
+
       - name: Require cross-repository token
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
@@ -62,62 +71,8 @@ jobs:
           retries: 3
           retry-exempt-status-codes: 400,401,404,422
           script: |
-            const owners = new Set(process.env.OWNERS.trim().split(/\s+/));
-            const visible = await github.paginate(
-              github.rest.repos.listForAuthenticatedUser,
-              {
-                affiliation: 'owner,organization_member',
-                visibility: 'all',
-                sort: 'full_name',
-                direction: 'asc',
-                per_page: 100,
-              },
-            );
-
-            const active = visible
-              .filter((repo) => owners.has(repo.owner.login))
-              .filter((repo) => !repo.archived && !repo.disabled);
-            const repositories = [...new Set(active.map((repo) => repo.full_name))]
-              .sort((left, right) => left.localeCompare(right));
-            const publicRepositories = [...new Set(
-              active.filter((repo) => !repo.private).map((repo) => repo.full_name),
-            )].sort((left, right) => left.localeCompare(right));
-            const privateRepositories = [...new Set(
-              active.filter((repo) => repo.private).map((repo) => repo.full_name),
-            )].sort((left, right) => left.localeCompare(right));
-
-            if (repositories.length === 0) {
-              core.setFailed(`No active repositories found for: ${[...owners].join(', ')}`);
-              return;
-            }
-
-            const dayOfMonth = Number(new Date().toISOString().slice(8, 10));
-            const scheduledEol = (dayOfMonth - 1) % 4 === 0;
-            const manualEol =
-              context.eventName === 'workflow_dispatch' &&
-              ['all', 'eol'].includes(process.env.MAINTENANCE_TASK);
-            const runEol = manualEol || (context.eventName === 'schedule' && scheduledEol);
-
-            core.setOutput('repositories', JSON.stringify(repositories));
-            core.setOutput('public_repositories', publicRepositories.join('\n'));
-            core.setOutput('run_eol', String(runEol));
-
-            if (privateRepositories.length > 0) {
-              core.notice(
-                `EOL guard skips private repositories: ${privateRepositories.join(', ')}`,
-              );
-            }
-
-            await core.summary
-              .addHeading('Repository discovery')
-              .addRaw(
-                `Owners: ${[...owners].join(', ')}. Active: ${repositories.length}. ` +
-                `Public for EOL guard: ${publicRepositories.length}. ` +
-                `EOL due this run: ${runEol}.`,
-              )
-              .addList(repositories)
-              .write();
-
+            const run = require('./.github/scripts/discover-repositories.cjs');
+            await run({ github, context, core });
   upkeep:
     name: Update PR branches
     needs: discover-repositories
@@ -296,10 +251,19 @@ jobs:
       inputs.task == 'cleanup'
     runs-on: ubuntu-slim
     timeout-minutes: 20
-    permissions: {}
+    permissions:
+      contents: read
     env:
       REPOSITORIES_JSON: ${{ needs.discover-repositories.outputs.repositories }}
     steps:
+      - name: Checkout workflow script
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/delete-workflow-runs.cjs
+          sparse-checkout-cone-mode: false
+
       - name: Delete old workflow runs
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -307,121 +271,8 @@ jobs:
           retries: 3
           retry-exempt-status-codes: 400,401,404,422
           script: |
-            const repositories = JSON.parse(process.env.REPOSITORIES_JSON || '[]');
-            if (repositories.length === 0) {
-              core.setFailed('Repository discovery returned an empty list.');
-              return;
-            }
-
-            const retainDays = 3;
-            const keepMinimumRuns = 3;
-            const deleteBatchSize = 5;
-            const cutoff = Date.now() - retainDays * 24 * 60 * 60 * 1000;
-            const failures = [];
-            const summaries = [];
-
-            for (const repository of repositories) {
-              const [owner, repo] = repository.split('/');
-              let before = null;
-              let matched = null;
-              let deleted = 0;
-              let failed = 0;
-
-              try {
-                const [workflows, runs] = await Promise.all([
-                  github.paginate(
-                    github.rest.actions.listRepoWorkflows,
-                    { owner, repo, per_page: 100 },
-                  ),
-                  github.paginate(
-                    github.rest.actions.listWorkflowRunsForRepo,
-                    { owner, repo, per_page: 100 },
-                  ),
-                ]);
-                const completedRuns = runs.filter((run) => run.status === 'completed');
-                before = completedRuns.length;
-                const activeWorkflowIds = new Set(workflows.map((workflow) => workflow.id));
-                const runsByWorkflow = new Map();
-
-                for (const run of completedRuns) {
-                  const workflowRuns = runsByWorkflow.get(run.workflow_id) ?? [];
-                  workflowRuns.push(run);
-                  runsByWorkflow.set(run.workflow_id, workflowRuns);
-                }
-
-                const runsToDelete = [];
-                for (const [workflowId, workflowRuns] of runsByWorkflow) {
-                  workflowRuns.sort(
-                    (left, right) => Date.parse(right.created_at) - Date.parse(left.created_at),
-                  );
-                  const minimum = activeWorkflowIds.has(workflowId) ? keepMinimumRuns : 0;
-
-                  for (const run of workflowRuns.slice(minimum)) {
-                    if (Date.parse(run.created_at) < cutoff) runsToDelete.push(run);
-                  }
-                }
-
-                matched = runsToDelete.length;
-                core.info(`${repository}: ${matched} run(s) to delete from ${before}`);
-
-                for (let offset = 0; offset < runsToDelete.length; offset += deleteBatchSize) {
-                  const batch = runsToDelete.slice(offset, offset + deleteBatchSize);
-                  const results = await Promise.allSettled(
-                    batch.map((run) =>
-                      github.rest.actions.deleteWorkflowRun({ owner, repo, run_id: run.id }),
-                    ),
-                  );
-
-                  for (let index = 0; index < results.length; index += 1) {
-                    const result = results[index];
-                    const run = batch[index];
-                    if (result.status === 'fulfilled') {
-                      deleted += 1;
-                    } else {
-                      failed += 1;
-                      failures.push(
-                        `${repository}#${run.id}: ${result.reason?.message ?? result.reason}`,
-                      );
-                      core.error(failures.at(-1));
-                    }
-                  }
-                }
-              } catch (error) {
-                failed += 1;
-                failures.push(`${repository}: ${error.message}`);
-                core.error(failures.at(-1));
-              }
-
-              summaries.push([
-                repository,
-                before === null ? 'N/A' : String(before),
-                matched === null ? 'N/A' : String(matched),
-                String(deleted),
-                String(failed),
-                before === null ? 'N/A' : String(Math.max(0, before - deleted)),
-              ]);
-            }
-
-            await core.summary
-              .addHeading('Workflow run cleanup')
-              .addRaw(`Retention: ${retainDays} days; minimum kept per active workflow: ${keepMinimumRuns}.`)
-              .addTable([
-                [
-                  { data: 'Repository', header: true },
-                  { data: 'Completed before', header: true },
-                  { data: 'Matched', header: true },
-                  { data: 'Deleted', header: true },
-                  { data: 'Failed', header: true },
-                  { data: 'Completed remaining', header: true },
-                ],
-                ...summaries,
-              ])
-              .write();
-
-            if (failures.length > 0) {
-              core.setFailed(`${failures.length} workflow run(s) could not be deleted`);
-            }
-
+            const run = require('./.github/scripts/delete-workflow-runs.cjs');
+            await run({ github, core });
   delete-caches:
     needs: discover-repositories
     if: >-
@@ -430,10 +281,19 @@ jobs:
       inputs.task == 'cleanup'
     runs-on: ubuntu-slim
     timeout-minutes: 20
-    permissions: {}
+    permissions:
+      contents: read
     env:
       REPOSITORIES_JSON: ${{ needs.discover-repositories.outputs.repositories }}
     steps:
+      - name: Checkout workflow script
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/delete-actions-caches.cjs
+          sparse-checkout-cone-mode: false
+
       - name: Delete stale Actions caches
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -441,249 +301,28 @@ jobs:
           retries: 3
           retry-exempt-status-codes: 400,401,404,422
           script: |
-            const repositories = JSON.parse(process.env.REPOSITORIES_JSON || '[]');
-            if (repositories.length === 0) {
-              core.setFailed('Repository discovery returned an empty list.');
-              return;
-            }
-
-            const retainDays = 5;
-            const keepMinimumCaches = 3;
-            const budgetMinimumAgeHours = 24;
-            const budgetTriggerBytes = 5 * 1024 ** 3;
-            const budgetTargetBytes = 4.5 * 1024 ** 3;
-            const deleteBatchSize = 5;
-            const cutoff = Date.now() - retainDays * 24 * 60 * 60 * 1000;
-            const budgetCutoff = Date.now() - budgetMinimumAgeHours * 60 * 60 * 1000;
-            const failures = [];
-            const summaries = [];
-
-            const cacheSize = (cache) => {
-              const size = Number(cache.size_in_bytes);
-              return Number.isFinite(size) && size > 0 ? size : 0;
-            };
-
-            const formatBytes = (bytes) => {
-              if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
-              const units = ['B', 'KiB', 'MiB', 'GiB'];
-              const exponent = Math.min(
-                Math.floor(Math.log(bytes) / Math.log(1024)),
-                units.length - 1,
-              );
-              return `${(bytes / 1024 ** exponent).toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`;
-            };
-
-            for (const repository of repositories) {
-              const [owner, repo] = repository.split('/');
-              let before = null;
-              let beforeBytes = null;
-              let staleMatched = null;
-              let budgetMatched = null;
-              let deleted = 0;
-              let deletedBytes = 0;
-              let failed = 0;
-
-              try {
-                const cachesById = new Map();
-                for (let page = 1; ; page += 1) {
-                  const response = await github.request(
-                    'GET /repos/{owner}/{repo}/actions/caches',
-                    { owner, repo, per_page: 100, page },
-                  );
-                  const pageCaches = response.data.actions_caches ?? [];
-                  for (const cache of pageCaches) cachesById.set(cache.id, cache);
-                  if (pageCaches.length < 100) break;
-                }
-
-                const caches = [...cachesById.values()];
-                caches.sort(
-                  (left, right) =>
-                    Date.parse(right.last_accessed_at ?? right.created_at) -
-                    Date.parse(left.last_accessed_at ?? left.created_at),
-                );
-                before = caches.length;
-                beforeBytes = caches.reduce((total, cache) => total + cacheSize(cache), 0);
-                staleMatched = 0;
-                budgetMatched = 0;
-
-                const protectedIds = new Set(
-                  caches.slice(0, keepMinimumCaches).map((cache) => cache.id),
-                );
-                const selected = new Map();
-
-                for (const cache of caches.slice(keepMinimumCaches)) {
-                  if (Date.parse(cache.last_accessed_at ?? cache.created_at) < cutoff) {
-                    selected.set(cache.id, cache);
-                    staleMatched += 1;
-                  }
-                }
-
-                let projectedBytes = beforeBytes - [...selected.values()].reduce(
-                  (total, cache) => total + cacheSize(cache),
-                  0,
-                );
-
-                if (projectedBytes > budgetTriggerBytes) {
-                  for (const cache of [...caches].reverse()) {
-                    if (projectedBytes <= budgetTargetBytes) break;
-                    if (protectedIds.has(cache.id) || selected.has(cache.id)) continue;
-                    if (Date.parse(cache.last_accessed_at ?? cache.created_at) >= budgetCutoff) continue;
-                    const size = cacheSize(cache);
-                    if (size === 0) continue;
-                    selected.set(cache.id, cache);
-                    projectedBytes -= size;
-                    budgetMatched += 1;
-                  }
-                }
-
-                const cachesToDelete = [...selected.values()];
-                core.info(
-                  `${repository}: ${staleMatched} stale + ${budgetMatched} budget cache(s) from ${before}`,
-                );
-
-                for (let offset = 0; offset < cachesToDelete.length; offset += deleteBatchSize) {
-                  const batch = cachesToDelete.slice(offset, offset + deleteBatchSize);
-                  const results = await Promise.allSettled(
-                    batch.map((cache) =>
-                      github.request(
-                        'DELETE /repos/{owner}/{repo}/actions/caches/{cache_id}',
-                        { owner, repo, cache_id: cache.id },
-                      ),
-                    ),
-                  );
-
-                  for (let index = 0; index < results.length; index += 1) {
-                    const result = results[index];
-                    const cache = batch[index];
-                    if (result.status === 'fulfilled') {
-                      deleted += 1;
-                      deletedBytes += cacheSize(cache);
-                    } else {
-                      failed += 1;
-                      failures.push(
-                        `${repository} cache #${cache.id}: ${result.reason?.message ?? result.reason}`,
-                      );
-                      core.error(failures.at(-1));
-                    }
-                  }
-                }
-              } catch (error) {
-                failed += 1;
-                failures.push(`${repository}: ${error.message}`);
-                core.error(failures.at(-1));
-              }
-
-              summaries.push([
-                repository,
-                before === null ? 'N/A' : String(before),
-                beforeBytes === null ? 'N/A' : formatBytes(beforeBytes),
-                staleMatched === null ? 'N/A' : String(staleMatched),
-                budgetMatched === null ? 'N/A' : String(budgetMatched),
-                String(deleted),
-                formatBytes(deletedBytes),
-                beforeBytes === null ? 'N/A' : formatBytes(Math.max(0, beforeBytes - deletedBytes)),
-                String(failed),
-              ]);
-            }
-
-            await core.summary
-              .addHeading('Actions cache cleanup')
-              .addRaw(
-                `Stale after ${retainDays} days without access. Above ${formatBytes(budgetTriggerBytes)}, least-recently-used caches older than ${budgetMinimumAgeHours}h are pruned toward ${formatBytes(budgetTargetBytes)}. At least ${keepMinimumCaches} newest caches are always kept.`,
-              )
-              .addTable([
-                [
-                  { data: 'Repository', header: true },
-                  { data: 'Before', header: true },
-                  { data: 'Size', header: true },
-                  { data: 'Stale', header: true },
-                  { data: 'Budget', header: true },
-                  { data: 'Deleted', header: true },
-                  { data: 'Freed', header: true },
-                  { data: 'After', header: true },
-                  { data: 'Failed', header: true },
-                ],
-                ...summaries,
-              ])
-              .write();
-
-            if (failures.length > 0) {
-              core.setFailed(`${failures.length} Actions cache operation(s) failed`);
-            }
-
+            const run = require('./.github/scripts/delete-actions-caches.cjs');
+            await run({ github, core });
   eol-guard:
     name: Stored blobs match .gitattributes
     needs: discover-repositories
     if: needs.discover-repositories.outputs.run_eol == 'true'
     runs-on: ubuntu-slim
     timeout-minutes: 20
-    permissions: {}
+    permissions:
+      contents: read
     env:
       REPOSITORIES: ${{ needs.discover-repositories.outputs.public_repositories }}
     steps:
+      - name: Checkout workflow script
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/eol-guard.sh
+          sparse-checkout-cone-mode: false
+
       - name: Check every repository
         shell: bash
         run: |
-          set -uo pipefail
-          workdir="$(mktemp -d)"
-          trap 'rm -rf "$workdir"' EXIT
-          failed=0
-          checked=0
-
-          # Never let a global config decide line endings for us; .gitattributes
-          # in each repository is the only thing that may. Passed per command
-          # rather than written with `git config --global`, so running this
-          # script by hand cannot modify the caller's own git configuration.
-          noautocrlf=(-c core.autocrlf=false)
-
-          while IFS= read -r repository; do
-            [ -n "$repository" ] || continue
-            checked=$((checked + 1))
-            target="$workdir/${repository//\//_}"
-
-            # Ask before cloning. A repository with no .gitattributes has nothing
-            # to enforce, and some of these are hundreds of megabytes.
-            probe="https://raw.githubusercontent.com/$repository/HEAD/.gitattributes"
-            if [ "$(curl -sS -o /dev/null -w '%{http_code}' -I "$probe")" != "200" ]; then
-              echo "$repository - no .gitattributes, nothing to enforce"
-              continue
-            fi
-
-            if ! git "${noautocrlf[@]}" clone --quiet --depth 1 \
-                "https://github.com/$repository.git" "$target"; then
-              echo "::error::$repository - clone failed"
-              failed=1
-              continue
-            fi
-
-            git "${noautocrlf[@]}" -C "$target" add --renormalize .
-            if git -C "$target" diff --cached --quiet; then
-              echo "$repository - ok"
-              continue
-            fi
-
-            failed=1
-            echo "::error::$repository stores line endings that contradict its .gitattributes"
-            git -C "$target" diff --cached --name-only | sed 's/^/    /'
-            {
-              echo "### $repository"
-              echo
-              echo '```'
-              git -C "$target" diff --cached --name-only
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
-          done <<< "$REPOSITORIES"
-
-          echo
-          echo "Checked $checked repositories."
-          if [ "$failed" -ne 0 ]; then
-            echo
-            echo "Fix each listed repository in a clone:"
-            echo "  git add --renormalize ."
-            echo "  git diff --cached --ignore-cr-at-eol --stat  # empty == EOL-only, safe"
-            echo "  git commit -m 'chore: renormalize line endings'"
-            echo
-            echo "If a listed file is meant to keep its bytes verbatim, give it -text"
-            echo "or binary in .gitattributes rather than excluding it here."
-            exit 1
-          fi
+          bash --noprofile --norc -e -o pipefail .github/scripts/eol-guard.sh
