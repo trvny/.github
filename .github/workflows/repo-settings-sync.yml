@@ -2,17 +2,8 @@
 name: Repo Settings Sync
 
 on: # yamllint disable-line rule:truthy
-  pull_request:
-    paths:
-      - ".github/workflows/repo-settings-sync.yml"
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/repo-settings-sync.yml"
   repository_dispatch:
     types: [repository-created]
-  schedule:
-    - cron: "17 22 * * 0"
   workflow_dispatch:
     inputs:
       repository:
@@ -32,14 +23,11 @@ concurrency:
 permissions: {}
 
 env:
-  DRY_RUN: ${{ github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
 
 jobs:
   prepare:
     name: Select repositories
-    if: >-
-      github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-slim
     timeout-minutes: 5
     outputs:
