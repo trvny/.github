@@ -1,0 +1,162 @@
+---
+name: Repo Settings Sync
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    paths:
+      - ".github/workflows/repo-settings-sync.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/repo-settings-sync.yml"
+  repository_dispatch:
+    types: [repository-created]
+  schedule:
+    - cron: "17 22 * * 0"
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: Optional owner/repo target; empty means all repositories
+        required: false
+        type: string
+      dry_run:
+        description: Preview changes without applying them
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: repo-settings-sync-${{ github.event.client_payload.repository || inputs.repository || 'all' }}
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  DRY_RUN: ${{ github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+
+jobs:
+  prepare:
+    name: Select repositories
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
+    steps:
+      - id: targets
+        name: Build target matrix
+        env:
+          TARGET_REPOSITORY: ${{ github.event.client_payload.repository || inputs.repository || '' }}
+        shell: bash
+        run: |
+          if [ -z "$TARGET_REPOSITORY" ]; then
+            echo 'matrix={"include":[{"owner":"trvny","repositories":"all"},{"owner":"travnie","repositories":"all"}]}' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          case "$TARGET_REPOSITORY" in
+            trvny/*)
+              owner=trvny
+              ;;
+            travnie/*)
+              owner=travnie
+              ;;
+            *)
+              echo "::error::Repository must belong to trvny or travnie."
+              exit 1
+              ;;
+          esac
+
+          printf 'matrix={"include":[{"owner":"%s","repositories":"%s"}]}\n' \
+            "$owner" "$TARGET_REPOSITORY" >> "$GITHUB_OUTPUT"
+
+  sync:
+    name: Sync ${{ matrix.repositories }}
+    needs: prepare
+    runs-on: ubuntu-slim
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Require cross-repository token
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "::error::Add the repository secret GH_PAT."
+            exit 1
+          fi
+
+      - id: settings
+        name: Sync repository settings
+        uses: joshjohanning/bulk-github-repo-settings-sync-action@f4c247dd32d37e0ffdb0f728e7c90bbe0b67d5f6 # v2.12.0
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          repositories: ${{ matrix.repositories }}
+          owner: ${{ matrix.owner }}
+          allow-squash-merge: true
+          allow-merge-commit: true
+          allow-rebase-merge: true
+          allow-auto-merge: true
+          delete-branch-on-merge: true
+          allow-update-branch: true
+          wiki: false
+          code-scanning: true
+          dependabot-alerts: true
+          dependabot-security-updates: true
+          dry-run: ${{ env.DRY_RUN }}
+          write-job-summary: true
+          summary-heading: "Repo settings: ${{ matrix.owner }}"
+
+      - name: Disable Discussions
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          RESULTS_JSON: ${{ steps.settings.outputs.results }}
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
+          script: |
+            const dryRun = process.env.DRY_RUN === 'true';
+            const results = JSON.parse(process.env.RESULTS_JSON || '[]');
+            const repositories = results
+              .filter((result) => result.success)
+              .map((result) => result.repository);
+
+            for (const repository of repositories) {
+              const [owner, name] = repository.split('/');
+              const data = await github.graphql(
+                `query($owner: String!, $name: String!) {
+                  repository(owner: $owner, name: $name) {
+                    id
+                    hasDiscussionsEnabled
+                  }
+                }`,
+                { owner, name },
+              );
+
+              if (!data.repository.hasDiscussionsEnabled) continue;
+              if (dryRun) {
+                core.info(`Would disable Discussions for ${repository}`);
+                continue;
+              }
+
+              await github.graphql(
+                `mutation($repositoryId: ID!) {
+                  updateRepository(input: {
+                    repositoryId: $repositoryId
+                    hasDiscussionsEnabled: false
+                  }) {
+                    repository {
+                      id
+                    }
+                  }
+                }`,
+                { repositoryId: data.repository.id },
+              );
+              core.info(`Disabled Discussions for ${repository}`);
+            }
