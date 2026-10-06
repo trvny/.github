@@ -1,0 +1,61 @@
+---
+name: Repo Settings Sync
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/repo-settings-sync.yml"
+  schedule:
+    - cron: "17 22 * * 0"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Preview changes without applying them
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: repo-settings-sync
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  sync:
+    name: Sync ${{ matrix.owner }}
+    runs-on: ubuntu-slim
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        owner:
+          - trvny
+          - travnie
+
+    steps:
+      - name: Require cross-repository token
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "::error::Add the repository secret GH_PAT."
+            exit 1
+          fi
+
+      - name: Sync repository settings
+        uses: joshjohanning/bulk-github-repo-settings-sync-action@f4c247dd32d37e0ffdb0f728e7c90bbe0b67d5f6 # v2.12.0
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          repositories: all
+          owner: ${{ matrix.owner }}
+          allow-squash-merge: true
+          allow-rebase-merge: true
+          allow-auto-merge: true
+          delete-branch-on-merge: true
+          allow-update-branch: true
+          wiki: false
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+          write-job-summary: true
+          summary-heading: Repo settings: ${{ matrix.owner }}
