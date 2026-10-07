@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "members": [
+    {
+      "id": 120686325,
+      "login": "trvny",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/120686325?v=4",
+      "profileUrl": "https://github.com/trvny",
+      "type": "User"
+    },
+    {
+      "id": 41898282,
+      "login": "github-actions[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/15368?v=4",
+      "profileUrl": "https://github.com/apps/github-actions",
+      "type": "Bot"
+    },
+    {
+      "id": 49699333,
+      "login": "dependabot[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/29110?v=4",
+      "profileUrl": "https://github.com/apps/dependabot",
+      "type": "Bot"
+    },
+    {
+      "id": 37929162,
+      "login": "mergify[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/10562?v=4",
+      "profileUrl": "https://github.com/apps/mergify",
+      "type": "Bot"
+    },
+    {
+      "id": 314538226,
+      "login": "gptomek[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/4524407?v=4",
+      "profileUrl": "https://github.com/apps/gptomek",
+      "type": "Bot"
+    },
+    {
+      "id": 81847,
+      "login": "claude",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/81847?v=4",
+      "profileUrl": "https://github.com/claude",
+      "type": "User"
+    },
+    {
+      "id": 311718492,
+      "login": "claudiusz69[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/4454097?v=4",
+      "profileUrl": "https://github.com/apps/claudiusz69",
+      "type": "Bot"
+    },
+    {
+      "id": 62050782,
+      "login": "deepsource-autofix[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/57168?v=4",
+      "profileUrl": "https://github.com/apps/deepsource-autofix",
+      "type": "Bot"
+    },
+    {
+      "id": 158243242,
+      "login": "devin-ai-integration[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/811515?v=4",
+      "profileUrl": "https://github.com/apps/devin-ai-integration",
+      "type": "Bot"
+    },
+    {
+      "id": 65916846,
+      "login": "actions-user",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/65916846?v=4",
+      "profileUrl": "https://github.com/actions-user",
+      "type": "User"
+    },
+    {
+      "id": 136622811,
+      "login": "coderabbitai[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/347564?v=4",
+      "profileUrl": "https://github.com/apps/coderabbitai",
+      "type": "Bot"
+    }
+  ]
+}
