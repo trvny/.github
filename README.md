@@ -11,6 +11,8 @@
 [![codebench](https://img.shields.io/badge/codebench-barcodes-111827?style=for-the-badge&logo=qrcode&logoColor=white)](https://codebench.trfny.com) [![streambench](https://img.shields.io/badge/streambench-media-7c3aed?style=for-the-badge&logo=vlcmediaplayer&logoColor=white)](https://streambench.trfny.com) [![docbench](https://img.shields.io/badge/docbench-docs_%26_PDF-b45309?style=for-the-badge&logo=googledocs&logoColor=white)](https://docbench.travny.workers.dev)
 
 ![GitHub Stats](./assets/profile/top-langs.svg)
+
+![Contributors](./assets/profile/contributors.svg)
 </div>
   
 [![feedseek](./assets/profile/pin-feeds.svg)](https://github.com/trvny/feedseek) [![kanarek](./assets/profile/pin-kanarek.svg)](https://github.com/travnie/kanarek) [![tvpi](./assets/profile/pin-tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin-wambridge.svg)](https://github.com/travnie/wambridge)
