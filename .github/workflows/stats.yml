@@ -1,10 +1,27 @@
 name: stats
 
 on:
-#  schedule:
-#    - cron: "37 21 * */6 *"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/scripts/generate-contributors.cjs"
+      - ".github/workflows/stats.yml"
+  schedule:
+    - cron: "17 4 1 */3 *"
   workflow_dispatch:
+    inputs:
+      force_contributors:
+        description: Regenerate the contributor card even when membership is unchanged
+        required: false
+        type: boolean
+        default: false
   workflow_call:
+    inputs:
+      force_contributors:
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: stats-${{ github.repository }}
@@ -12,9 +29,14 @@ concurrency:
 
 permissions: {}
 
+env:
+  OWNERS: |
+    trvny
+    travnie
+
 jobs:
   stats:
-    name: Refresh pins
+    name: Refresh profile assets
     runs-on: ubuntu-slim
     timeout-minutes: 20
     permissions:
@@ -23,7 +45,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: contributors card
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          FORCE_CONTRIBUTORS: ${{ inputs.force_contributors }}
+        with:
+          github-token: ${{ github.token }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
+          script: |
+            const run = require("./.github/scripts/generate-contributors.cjs");
+            await run({ github, core });
+
       - name: top languages card
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: top-langs
@@ -32,6 +67,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: feedseek card
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
@@ -40,6 +76,7 @@ jobs:
           token: ${{ github.token }}
 
       - name: kanarek card
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
@@ -48,6 +85,7 @@ jobs:
           token: ${{ github.token }}
 
       - name: tvpi card
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
@@ -56,6 +94,7 @@ jobs:
           token: ${{ github.token }}
 
       - name: wambridge card
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
@@ -64,14 +103,16 @@ jobs:
           token: ${{ github.token }}
 
       - name: autka card
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
           options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=travnie%2Fautka&theme=synthwave&description_lines_count=1
           path: assets/profile/pin-autka.svg
           token: ${{ github.token }}
-  
+
       - name: gist card
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         uses: stats-organization/github-readme-stats-action@v2
         with:
           card: gist
@@ -79,12 +120,12 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: assets/profile/gist.svg
 
-      - name: Commit pins
+      - name: Commit profile assets
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/profile/*.svg
+          git add assets/profile/*.svg assets/profile/contributors.json
           git diff --cached --quiet && exit 0
-          git commit -m "chore(readme): refresh pins [skip ci]"
-          git pull --rebase origin main
-          git push
+          git commit -m "chore(readme): refresh profile assets [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
