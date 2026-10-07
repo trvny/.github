@@ -17,8 +17,8 @@ on: # yamllint disable-line rule:truthy
         type: boolean
 
 concurrency:
-  group: repo-settings-sync-${{ github.event.client_payload.repository || inputs.repository || 'all' }}
-  cancel-in-progress: true
+  group: repo-settings-sync
+  cancel-in-progress: false
 
 permissions: {}
 
@@ -62,7 +62,10 @@ jobs:
 
   sync:
     name: Sync ${{ matrix.repositories }}
+    if: github.ref == 'refs/heads/main'
     needs: prepare
+    permissions:
+      contents: read
     runs-on: ubuntu-slim
     timeout-minutes: 20
     strategy:
@@ -100,51 +103,19 @@ jobs:
           write-job-summary: true
           summary-heading: "Repo settings: ${{ matrix.owner }}"
 
-      - name: Disable Discussions
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Sync additional repository settings
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           RESULTS_JSON: ${{ steps.settings.outputs.results }}
         with:
           github-token: ${{ secrets.GH_PAT }}
           retries: 3
-          retry-exempt-status-codes: 400,401,404,422
+          retry-exempt-status-codes: 400,401,403,404,409,422
           script: |
-            const dryRun = process.env.DRY_RUN === 'true';
-            const results = JSON.parse(process.env.RESULTS_JSON || '[]');
-            const repositories = results
-              .filter((result) => result.success)
-              .map((result) => result.repository);
-
-            for (const repository of repositories) {
-              const [owner, name] = repository.split('/');
-              const data = await github.graphql(
-                `query($owner: String!, $name: String!) {
-                  repository(owner: $owner, name: $name) {
-                    id
-                    hasDiscussionsEnabled
-                  }
-                }`,
-                { owner, name },
-              );
-
-              if (!data.repository.hasDiscussionsEnabled) continue;
-              if (dryRun) {
-                core.info(`Would disable Discussions for ${repository}`);
-                continue;
-              }
-
-              await github.graphql(
-                `mutation($repositoryId: ID!) {
-                  updateRepository(input: {
-                    repositoryId: $repositoryId
-                    hasDiscussionsEnabled: false
-                  }) {
-                    repository {
-                      id
-                    }
-                  }
-                }`,
-                { repositoryId: data.repository.id },
-              );
-              core.info(`Disabled Discussions for ${repository}`);
-            }
+            const run = require("./.github/scripts/sync-repo-settings.cjs");
+            await run({ github, core });
