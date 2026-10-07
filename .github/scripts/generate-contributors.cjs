@@ -13,7 +13,7 @@ const TITLE_HEIGHT = 66;
 const FOOTER_GAP = 20;
 
 function keyFor(member) {
-  return member.id ? `id:${member.id}` : `login:${member.login.toLowerCase()}`;
+  return `login:${member.login.toLowerCase()}`;
 }
 
 function stableMember(member) {
@@ -33,6 +33,17 @@ function sameMembers(previous, current) {
     const next = currentByKey.get(keyFor(member));
     return next && JSON.stringify(stableMember(member)) === JSON.stringify(next);
   });
+}
+
+function normalizeActor(actor) {
+  if (!actor?.login) return null;
+  return {
+    id: actor.id || null,
+    login: actor.login,
+    avatarUrl: actor.avatar_url || actor.avatarUrl || null,
+    profileUrl: actor.html_url || actor.url || `https://github.com/${actor.login}`,
+    type: actor.type || actor.__typename || "User",
+  };
 }
 
 function escapeXml(value) {
@@ -88,6 +99,284 @@ async function listContributors(github, repo) {
     if (error?.status === 204 || error?.status === 409) return [];
     throw error;
   }
+}
+
+async function pullRequestReviewPages(github, pullId, cursor) {
+  const data = await github.graphql(
+    `query($id: ID!, $cursor: String) {
+      node(id: $id) {
+        ... on PullRequest {
+          reviews(first: 100, after: $cursor) {
+            nodes {
+              author {
+                login
+                avatarUrl
+                url
+                __typename
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }
+    }`,
+    { id: pullId, cursor },
+  );
+
+  return data.node?.reviews;
+}
+
+async function collectPullRequestActors(github, repo, addActor) {
+  let cursor = null;
+
+  do {
+    const data = await github.graphql(
+      `query($owner: String!, $name: String!, $cursor: String) {
+        repository(owner: $owner, name: $name) {
+          pullRequests(
+            first: 100
+            after: $cursor
+            states: [OPEN, CLOSED, MERGED]
+            orderBy: { field: CREATED_AT, direction: DESC }
+          ) {
+            nodes {
+              id
+              author {
+                login
+                avatarUrl
+                url
+                __typename
+              }
+              reviews(first: 100) {
+                nodes {
+                  author {
+                    login
+                    avatarUrl
+                    url
+                    __typename
+                  }
+                }
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }`,
+      {
+        owner: repo.owner.login,
+        name: repo.name,
+        cursor,
+      },
+    );
+
+    const page = data.repository?.pullRequests;
+    if (!page) break;
+
+    for (const pull of page.nodes) {
+      addActor(pull.author, 2);
+      for (const review of pull.reviews.nodes) addActor(review.author, 1);
+
+      let reviewCursor = pull.reviews.pageInfo.hasNextPage
+        ? pull.reviews.pageInfo.endCursor
+        : null;
+      while (reviewCursor) {
+        const reviews = await pullRequestReviewPages(github, pull.id, reviewCursor);
+        if (!reviews) break;
+        for (const review of reviews.nodes) addActor(review.author, 1);
+        reviewCursor = reviews.pageInfo.hasNextPage ? reviews.pageInfo.endCursor : null;
+      }
+    }
+
+    cursor = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null;
+  } while (cursor);
+}
+
+async function discussionReplyPages(github, commentId, cursor) {
+  const data = await github.graphql(
+    `query($id: ID!, $cursor: String) {
+      node(id: $id) {
+        ... on DiscussionComment {
+          replies(first: 50, after: $cursor) {
+            nodes {
+              author {
+                login
+                avatarUrl
+                url
+                __typename
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }
+    }`,
+    { id: commentId, cursor },
+  );
+
+  const page = data.node?.replies;
+  if (!page) throw new Error(`Missing replies page for discussion comment ${commentId}`);
+  return page;
+}
+
+async function addDiscussionCommentPage(github, comments, addActor) {
+  for (const comment of comments.nodes) {
+    addActor(comment.author, 1);
+    for (const reply of comment.replies.nodes) addActor(reply.author, 1);
+
+    let replyCursor = comment.replies.pageInfo.hasNextPage
+      ? comment.replies.pageInfo.endCursor
+      : null;
+    while (replyCursor) {
+      const replies = await discussionReplyPages(github, comment.id, replyCursor);
+      for (const reply of replies.nodes) addActor(reply.author, 1);
+      replyCursor = replies.pageInfo.hasNextPage ? replies.pageInfo.endCursor : null;
+    }
+  }
+}
+
+async function discussionCommentPages(github, discussionId, cursor) {
+  const data = await github.graphql(
+    `query($id: ID!, $cursor: String) {
+      node(id: $id) {
+        ... on Discussion {
+          comments(first: 50, after: $cursor) {
+            nodes {
+              id
+              author {
+                login
+                avatarUrl
+                url
+                __typename
+              }
+              replies(first: 50) {
+                nodes {
+                  author {
+                    login
+                    avatarUrl
+                    url
+                    __typename
+                  }
+                }
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }
+    }`,
+    { id: discussionId, cursor },
+  );
+
+  const page = data.node?.comments;
+  if (!page) throw new Error(`Missing comments page for discussion ${discussionId}`);
+  return page;
+}
+
+async function collectDiscussionActors(github, repo, addActor) {
+  let cursor = null;
+
+  do {
+    const data = await github.graphql(
+      `query($owner: String!, $name: String!, $cursor: String) {
+        repository(owner: $owner, name: $name) {
+          discussions(first: 25, after: $cursor) {
+            nodes {
+              id
+              author {
+                login
+                avatarUrl
+                url
+                __typename
+              }
+              comments(first: 50) {
+                nodes {
+                  id
+                  author {
+                    login
+                    avatarUrl
+                    url
+                    __typename
+                  }
+                  replies(first: 50) {
+                    nodes {
+                      author {
+                        login
+                        avatarUrl
+                        url
+                        __typename
+                      }
+                    }
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                    }
+                  }
+                }
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }`,
+      {
+        owner: repo.owner.login,
+        name: repo.name,
+        cursor,
+      },
+    );
+
+    const page = data.repository?.discussions;
+    if (!page) throw new Error(`Missing discussions page for ${repo.full_name}`);
+
+    for (const discussion of page.nodes) {
+      addActor(discussion.author, 2);
+      await addDiscussionCommentPage(github, discussion.comments, addActor);
+
+      let commentCursor = discussion.comments.pageInfo.hasNextPage
+        ? discussion.comments.pageInfo.endCursor
+        : null;
+      while (commentCursor) {
+        const comments = await discussionCommentPages(
+          github,
+          discussion.id,
+          commentCursor,
+        );
+        await addDiscussionCommentPage(github, comments, addActor);
+        commentCursor = comments.pageInfo.hasNextPage
+          ? comments.pageInfo.endCursor
+          : null;
+      }
+    }
+
+    cursor = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null;
+  } while (cursor);
 }
 
 async function avatarDataUri(avatarUrl) {
@@ -162,7 +451,7 @@ function buildSvg(members, avatars) {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
 <title id="title">Contributors</title>
-<desc id="desc">${members.length} unique contributors across public non-fork trvny and travnie repositories.</desc>
+<desc id="desc">${members.length} unique contributors from commits, pull requests, reviews, and discussions across public non-fork trvny and travnie repositories.</desc>
 <style>
   .bg { fill: #ffffff; stroke: #d0d7de; }
   .heading { fill: #1f2328; font: 700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
@@ -196,33 +485,38 @@ module.exports = async ({ github, core }) => {
   const repositories = await listRepositories(github);
   const aggregate = new Map();
 
+  const addActor = (actor, score = 1) => {
+    const member = normalizeActor(actor);
+    if (!member) return;
+
+    const key = keyFor(member);
+    const previous = aggregate.get(key);
+    if (previous) {
+      previous.score += score;
+      if (!previous.id && member.id) previous.id = member.id;
+      if (member.avatarUrl) previous.avatarUrl = member.avatarUrl;
+      if (member.profileUrl) previous.profileUrl = member.profileUrl;
+      if (member.type) previous.type = member.type;
+      return;
+    }
+
+    aggregate.set(key, { ...member, score });
+  };
+
   for (const repo of repositories) {
     const contributors = await listContributors(github, repo);
     for (const contributor of contributors) {
-      if (!contributor?.login) continue;
-
-      const member = {
-        id: contributor.id || null,
-        login: contributor.login,
-        avatarUrl: contributor.avatar_url || null,
-        profileUrl: contributor.html_url || `https://github.com/${contributor.login}`,
-        type: contributor.type || "User",
-        contributions: Number(contributor.contributions) || 0,
-      };
-      const key = keyFor(member);
-      const previous = aggregate.get(key);
-      if (previous) {
-        previous.contributions += member.contributions;
-      } else {
-        aggregate.set(key, member);
-      }
+      addActor(contributor, Number(contributor.contributions) || 1);
     }
+
+    await collectPullRequestActors(github, repo, addActor);
+    await collectDiscussionActors(github, repo, addActor);
   }
 
   const previousState = readState();
   const previousKeys = new Set(previousState.members.map(keyFor));
   const currentKeys = new Set(aggregate.keys());
-  const currentMembers = [...aggregate.values()].map(({ contributions, ...member }) => member);
+  const currentMembers = [...aggregate.values()].map(({ score, ...member }) => member);
   const outputsExist = fs.existsSync(STATE_PATH) && fs.existsSync(SVG_PATH);
 
   if (!force && outputsExist && sameMembers(previousState.members, currentMembers)) {
@@ -237,7 +531,7 @@ module.exports = async ({ github, core }) => {
   const newcomers = [...aggregate.entries()]
     .filter(([key]) => !previousOrderSet.has(key))
     .sort(([, left], [, right]) =>
-      right.contributions - left.contributions || left.login.localeCompare(right.login),
+      right.score - left.score || left.login.localeCompare(right.login),
     )
     .map(([key]) => key);
 
@@ -245,12 +539,12 @@ module.exports = async ({ github, core }) => {
     ? [...previousOrder, ...newcomers]
     : [...aggregate.entries()]
         .sort(([, left], [, right]) =>
-          right.contributions - left.contributions || left.login.localeCompare(right.login),
+          right.score - left.score || left.login.localeCompare(right.login),
         )
         .map(([key]) => key);
 
   const members = orderedKeys.map((key) => {
-    const { contributions, ...member } = aggregate.get(key);
+    const { score, ...member } = aggregate.get(key);
     return member;
   });
 
