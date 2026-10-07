@@ -45,7 +45,7 @@
     },
     {
       "id": 311718492,
-      "login": "claudiusz69[bot]",
+      "login": "claudiusz69",
       "avatarUrl": "https://avatars.githubusercontent.com/in/4454097?v=4",
       "profileUrl": "https://github.com/apps/claudiusz69",
       "type": "Bot"
@@ -59,7 +59,7 @@
     },
     {
       "id": 158243242,
-      "login": "devin-ai-integration[bot]",
+      "login": "devin-ai-integration",
       "avatarUrl": "https://avatars.githubusercontent.com/in/811515?v=4",
       "profileUrl": "https://github.com/apps/devin-ai-integration",
       "type": "Bot"
@@ -73,16 +73,9 @@
     },
     {
       "id": 136622811,
-      "login": "coderabbitai[bot]",
+      "login": "coderabbitai",
       "avatarUrl": "https://avatars.githubusercontent.com/in/347564?v=4",
       "profileUrl": "https://github.com/apps/coderabbitai",
-      "type": "Bot"
-    },
-    {
-      "id": null,
-      "login": "devin-ai-integration",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/811515?v=4",
-      "profileUrl": "https://github.com/apps/devin-ai-integration",
       "type": "Bot"
     },
     {
@@ -94,30 +87,9 @@
     },
     {
       "id": null,
-      "login": "dependabot",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/29110?v=4",
-      "profileUrl": "https://github.com/apps/dependabot",
-      "type": "Bot"
-    },
-    {
-      "id": null,
       "login": "sourcery-ai",
       "avatarUrl": "https://avatars.githubusercontent.com/in/48477?v=4",
       "profileUrl": "https://github.com/apps/sourcery-ai",
-      "type": "Bot"
-    },
-    {
-      "id": null,
-      "login": "coderabbitai",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/347564?v=4",
-      "profileUrl": "https://github.com/apps/coderabbitai",
-      "type": "Bot"
-    },
-    {
-      "id": null,
-      "login": "gptomek",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/4524407?v=4",
-      "profileUrl": "https://github.com/apps/gptomek",
       "type": "Bot"
     },
     {
@@ -136,30 +108,9 @@
     },
     {
       "id": null,
-      "login": "mergify",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/10562?v=4",
-      "profileUrl": "https://github.com/apps/mergify",
-      "type": "Bot"
-    },
-    {
-      "id": null,
-      "login": "claudiusz69",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/4454097?v=4",
-      "profileUrl": "https://github.com/apps/claudiusz69",
-      "type": "Bot"
-    },
-    {
-      "id": null,
       "login": "copilot-pull-request-reviewer",
       "avatarUrl": "https://avatars.githubusercontent.com/in/946600?v=4",
       "profileUrl": "https://github.com/apps/copilot-pull-request-reviewer",
-      "type": "Bot"
-    },
-    {
-      "id": null,
-      "login": "github-actions",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/15368?v=4",
-      "profileUrl": "https://github.com/apps/github-actions",
       "type": "Bot"
     },
     {
@@ -174,13 +125,6 @@
       "login": "github-advanced-security",
       "avatarUrl": "https://avatars.githubusercontent.com/in/57789?v=4",
       "profileUrl": "https://github.com/apps/github-advanced-security",
-      "type": "Bot"
-    },
-    {
-      "id": null,
-      "login": "deepsource-autofix",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/57168?v=4",
-      "profileUrl": "https://github.com/apps/deepsource-autofix",
       "type": "Bot"
     },
     {
