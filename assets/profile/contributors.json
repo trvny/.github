@@ -4,7 +4,7 @@
     {
       "id": 120686325,
       "login": "trvny",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/120686325?v=4",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/120686325?u=f421c62e9d101e4f7ddac87061f82ccca98b2fe1&v=4",
       "profileUrl": "https://github.com/trvny",
       "type": "User"
     },
@@ -77,6 +77,125 @@
       "avatarUrl": "https://avatars.githubusercontent.com/in/347564?v=4",
       "profileUrl": "https://github.com/apps/coderabbitai",
       "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "devin-ai-integration",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/811515?v=4",
+      "profileUrl": "https://github.com/apps/devin-ai-integration",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "chatgpt-codex-connector",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/1144995?v=4",
+      "profileUrl": "https://github.com/apps/chatgpt-codex-connector",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "dependabot",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/29110?v=4",
+      "profileUrl": "https://github.com/apps/dependabot",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "sourcery-ai",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/48477?v=4",
+      "profileUrl": "https://github.com/apps/sourcery-ai",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "coderabbitai",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/347564?v=4",
+      "profileUrl": "https://github.com/apps/coderabbitai",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "gptomek",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/4524407?v=4",
+      "profileUrl": "https://github.com/apps/gptomek",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "deepsource-io",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/16372?v=4",
+      "profileUrl": "https://github.com/apps/deepsource-io",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "kanarek-companion",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/4472094?v=4",
+      "profileUrl": "https://github.com/apps/kanarek-companion",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "mergify",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/10562?v=4",
+      "profileUrl": "https://github.com/apps/mergify",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "claudiusz69",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/4454097?v=4",
+      "profileUrl": "https://github.com/apps/claudiusz69",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "copilot-pull-request-reviewer",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "profileUrl": "https://github.com/apps/copilot-pull-request-reviewer",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "github-actions",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/15368?v=4",
+      "profileUrl": "https://github.com/apps/github-actions",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "codacy-production",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/56611?v=4",
+      "profileUrl": "https://github.com/apps/codacy-production",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "github-advanced-security",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/57789?v=4",
+      "profileUrl": "https://github.com/apps/github-advanced-security",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "deepsource-autofix",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/57168?v=4",
+      "profileUrl": "https://github.com/apps/deepsource-autofix",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "copilot-swe-agent",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/1143301?v=4",
+      "profileUrl": "https://github.com/apps/copilot-swe-agent",
+      "type": "Bot"
+    },
+    {
+      "id": null,
+      "login": "kucharz2026-maker",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/324626588?v=4",
+      "profileUrl": "https://github.com/kucharz2026-maker",
+      "type": "User"
     }
   ]
 }
