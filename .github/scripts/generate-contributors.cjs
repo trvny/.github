@@ -13,7 +13,10 @@ const TITLE_HEIGHT = 66;
 const FOOTER_GAP = 20;
 
 function keyFor(member) {
-  return `login:${member.login.toLowerCase()}`;
+  const profileUrl = member.profileUrl?.replace(/\/+$/, "").toLowerCase();
+  return profileUrl
+    ? `profile:${profileUrl}`
+    : `login:${member.login.toLowerCase()}`;
 }
 
 function stableMember(member) {
@@ -524,9 +527,11 @@ module.exports = async ({ github, core }) => {
     return;
   }
 
-  const previousOrder = previousState.members
-    .map(keyFor)
-    .filter((key) => aggregate.has(key));
+  const previousOrder = [...new Set(
+    previousState.members
+      .map(keyFor)
+      .filter((key) => aggregate.has(key)),
+  )];
   const previousOrderSet = new Set(previousOrder);
   const newcomers = [...aggregate.entries()]
     .filter(([key]) => !previousOrderSet.has(key))
