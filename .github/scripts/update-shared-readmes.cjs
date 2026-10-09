@@ -21,7 +21,6 @@ const README_COMMIT_IDENTITY = Object.freeze({
 const README_MODES = new Set(['both', 'feed', 'quote']);
 const README_PATHS = ['README.md', 'README_pl.md', 'README_zh.md'];
 const PROFILE_README_PATHS = [
-  'README.md',
   'profile/README.md',
   'profile/README_pl.md',
   'profile/README_zh.md',
