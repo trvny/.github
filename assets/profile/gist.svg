@@ -28,6 +28,7 @@
     .gray { font: 400 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: #61ffca }
     .icon { fill: #ffca85 }
   
+          
 
           
       /* Animations */
@@ -52,9 +53,15 @@
         </style>
 
         
+        <defs>
+          
+          
+        </defs>
+        
 
         <rect
           data-testid="card-bg"
+          class="card-bg"
           x="0.5"
           y="0.5"
           rx="4.5"
