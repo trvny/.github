@@ -1,0 +1,77 @@
+---
+name: AI Instructions Sync
+
+# Copilot reads instructions only from each repo's own .github/, so canonical
+# files in trvny/.ai get copied out. Edit them in trvny/.ai only; downstream
+# copies are overwritten here.
+
+on: # yamllint disable-line rule:truthy
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ai-instructions-sync
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  sync:
+    name: Sync from trvny/.ai
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trvny/.ai
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: trvny/.ai
+          path: ai
+          persist-credentials: false
+          sparse-checkout: .github
+          sparse-checkout-cone-mode: false
+
+      - name: Push changed copies
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          script: |
+            const fs = require("fs");
+            const targets = {
+              "trvny/trvny": [
+                ".github/copilot-instructions.md",
+                ".github/instructions/cloudflare.instructions.md",
+                ".github/instructions/microsoft.instructions.md",
+              ],
+              "travnie/Kanarek": [".github/copilot-instructions.md"],
+            };
+            for (const [full, paths] of Object.entries(targets)) {
+              const [owner, repo] = full.split("/");
+              for (const path of paths) {
+                const want = fs.readFileSync(`ai/${path}`, "utf8");
+                let sha;
+                try {
+                  const { data } = await github.rest.repos.getContent({ owner, repo, path });
+                  if (Buffer.from(data.content, "base64").toString("utf8") === want) {
+                    core.info(`${full}:${path} up to date`);
+                    continue;
+                  }
+                  sha = data.sha;
+                } catch (e) {
+                  if (e.status !== 404) throw e;
+                }
+                await github.rest.repos.createOrUpdateFileContents({
+                  owner,
+                  repo,
+                  path,
+                  sha,
+                  message: `chore: sync ${path} from trvny/.ai`,
+                  content: Buffer.from(want).toString("base64"),
+                });
+                core.notice(`${full}:${path} updated`);
+              }
+            }
