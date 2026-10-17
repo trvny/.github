@@ -60,68 +60,61 @@ jobs:
             const run = require("./.github/scripts/generate-contributors.cjs");
             await run({ github, core });
 
-      - name: top languages card
+      # Cards run only on manual/reusable invocations. The upstream composite
+      # action bootstraps pnpm, Node, and npm core on *every* use. Prepare once.
+      - name: Checkout stats card renderer
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        uses: stats-organization/github-readme-stats-action@v2
+        uses: actions/checkout@v7
         with:
-          card: top-langs
-          options: username=${{ github.repository_owner }}&layout=donut&langs_count=13&hide_title=true&theme=ambient_gradient&show_icons=true&locale=pl
-          path: assets/profile/top-langs.svg
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: stats-organization/github-readme-stats-action
+          ref: 2c498845f71017821efaad14293ebc736156ef21 # v2.1.0 (v2 tag)
+          path: .github-stats-action
+          persist-credentials: false
 
-      - name: feedseek card
+      - name: Set up pnpm once
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        uses: stats-organization/github-readme-stats-action@v2
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ffeedseek&theme=great-gatsby&description_lines_count=1
-          path: assets/profile/pin-feeds.svg
-          token: ${{ github.token }}
+          package_json_file: .github-stats-action/package.json
 
-      - name: kanarek card
+      - name: Set up Node and pnpm cache
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        uses: stats-organization/github-readme-stats-action@v2
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=travnie%2Fkanarek&theme=shades-of-purple&description_lines_count=1
-          path: assets/profile/pin-kanarek.svg
-          token: ${{ github.token }}
+          node-version-file: .github-stats-action/package.json
+          cache: pnpm
+          cache-dependency-path: .github-stats-action/pnpm-lock.yaml
 
-      - name: tvpi card
+      - name: Install stats renderer dependencies once
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        uses: stats-organization/github-readme-stats-action@v2
-        with:
-          card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=trvny%2Ftvpi&theme=yeblu&description_lines_count=1
-          path: assets/profile/pin-tvpi.svg
-          token: ${{ github.token }}
+        working-directory: .github-stats-action
+        run: pnpm install --frozen-lockfile --prod --ignore-scripts
 
-      - name: wambridge card
+      - name: Generate seven profile cards
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        uses: stats-organization/github-readme-stats-action@v2
-        with:
-          card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=travnie%2Fwambridge&theme=blue_navy&description_lines_count=1
-          path: assets/profile/pin-wambridge.svg
-          token: ${{ github.token }}
+        shell: bash
+        env:
+          CARD_OWNER: ${{ github.repository_owner }}
+          CARD_TOKEN: ${{ github.token }}
+          GIST_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          # Reuse the upstream action's bundled core; no seven repeated npm
+          # installs of core@v2. The action's pinned lockfile supplies core 2.2.0.
+          render() {
+            local card="$1" output="$2" options="$3" token="${4:-$CARD_TOKEN}"
+            INPUT_CARD="$card" INPUT_PATH="$output" INPUT_OPTIONS="$options" \
+              INPUT_CORE_VERSION="" INPUT_FAIL_ON_ERROR="true" PAT_1="$token" \
+              node .github-stats-action/index.js
+          }
+          render top-langs assets/profile/top-langs.svg "username=${CARD_OWNER}&layout=donut&langs_count=13&hide_title=true&theme=ambient_gradient&show_icons=true&locale=pl"
+          render pin assets/profile/pin-feeds.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=trvny%2Ffeedseek&theme=great-gatsby&description_lines_count=1"
+          render pin assets/profile/pin-kanarek.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=travnie%2Fkanarek&theme=shades-of-purple&description_lines_count=1"
+          render pin assets/profile/pin-tvpi.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=trvny%2Ftvpi&theme=yeblu&description_lines_count=1"
+          render pin assets/profile/pin-wambridge.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=travnie%2Fwambridge&theme=blue_navy&description_lines_count=1"
+          render pin assets/profile/pin-autka.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=travnie%2Fautka&theme=synthwave&description_lines_count=1"
+          render gist assets/profile/gist.svg "id=167d2271e3cf7d21e118aa7d906a7d2c&theme=aura" "$GIST_TOKEN"
 
-      - name: autka card
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        uses: stats-organization/github-readme-stats-action@v2
-        with:
-          card: pin
-          options: username=${{ github.repository_owner }}&show_icons=true&locale=pl&repo=travnie%2Fautka&theme=synthwave&description_lines_count=1
-          path: assets/profile/pin-autka.svg
-          token: ${{ github.token }}
-
-      - name: gist card
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        uses: stats-organization/github-readme-stats-action@v2
-        with:
-          card: gist
-          options: id=167d2271e3cf7d21e118aa7d906a7d2c&theme=aura
-          token: ${{ secrets.GH_PAT }}
-          path: assets/profile/gist.svg
 
       - name: Commit profile assets
         run: |
