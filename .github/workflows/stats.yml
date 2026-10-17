@@ -90,21 +90,19 @@ jobs:
         working-directory: .github-stats-action
         run: pnpm install --frozen-lockfile --prod --ignore-scripts
 
-      - name: Generate seven profile cards
+      - name: Generate six public profile cards
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
         env:
           CARD_OWNER: ${{ github.repository_owner }}
           CARD_TOKEN: ${{ github.token }}
-          GIST_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           set -euo pipefail
-          # Reuse the upstream action's bundled core; no seven repeated npm
-          # installs of core@v2. The action's pinned lockfile supplies core 2.2.0.
+          # One upstream Node/pnpm install and bundled core for all cards.
           render() {
-            local card="$1" output="$2" options="$3" token="${4:-$CARD_TOKEN}"
+            local card="$1" output="$2" options="$3"
             INPUT_CARD="$card" INPUT_PATH="$output" INPUT_OPTIONS="$options" \
-              INPUT_CORE_VERSION="" INPUT_FAIL_ON_ERROR="true" PAT_1="$token" \
+              INPUT_CORE_VERSION="" INPUT_FAIL_ON_ERROR="true" PAT_1="$CARD_TOKEN" \
               node .github-stats-action/index.js
           }
           render top-langs assets/profile/top-langs.svg "username=${CARD_OWNER}&layout=donut&langs_count=13&hide_title=true&theme=ambient_gradient&show_icons=true&locale=pl"
@@ -113,7 +111,20 @@ jobs:
           render pin assets/profile/pin-tvpi.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=trvny%2Ftvpi&theme=yeblu&description_lines_count=1"
           render pin assets/profile/pin-wambridge.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=travnie%2Fwambridge&theme=blue_navy&description_lines_count=1"
           render pin assets/profile/pin-autka.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=travnie%2Fautka&theme=synthwave&description_lines_count=1"
-          render gist assets/profile/gist.svg "id=167d2271e3cf7d21e118aa7d906a7d2c&theme=aura" "$GIST_TOKEN"
+
+      - name: Generate gist card with scoped PAT
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        shell: bash
+        env:
+          CARD_TOKEN: ${{ github.token }}
+          GIST_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          INPUT_CARD="gist" INPUT_PATH="assets/profile/gist.svg" \
+            INPUT_OPTIONS="id=167d2271e3cf7d21e118aa7d906a7d2c&theme=aura" \
+            INPUT_CORE_VERSION="" INPUT_FAIL_ON_ERROR="true" \
+            PAT_1="${GIST_TOKEN:-$CARD_TOKEN}" \
+            node .github-stats-action/index.js
 
 
       - name: Commit profile assets
