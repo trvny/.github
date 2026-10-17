@@ -37,7 +37,7 @@ jobs:
           key: pre-commit-${{ runner.os }}-${{ hashFiles('.github/.pre-commit-config.yaml') }}
 
       - name: Install pre-commit
-        run: python -m pip install pre-commit==4.3.0
+        run: python -m pip install pre-commit==4.7.0
 
       - name: Check changed files on PR
         if: github.event_name == 'pull_request'
