@@ -4,6 +4,8 @@ name: Repo Settings Sync
 on: # yamllint disable-line rule:truthy
   repository_dispatch:
     types: [repository-created]
+  schedule:
+    - cron: "1 1 1 * *"
   workflow_dispatch:
     inputs:
       repository:
@@ -62,7 +64,7 @@ jobs:
 
   sync:
     name: Sync ${{ matrix.repositories }}
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'schedule'
     needs: prepare
     permissions:
       contents: read
@@ -118,4 +120,52 @@ jobs:
           retry-exempt-status-codes: 400,401,403,404,409,422
           script: |
             const run = require("./.github/scripts/sync-repo-settings.cjs");
+            await run({ github, core });
+
+  sync-instructions:
+    name: Sync AI instructions (${{ matrix.owner }})
+    if: github.ref == 'refs/heads/main'
+    needs: prepare
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Require cross-repository token
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "::error::Add the repository secret GH_PAT."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Checkout trvny/.ai
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: trvny/.ai
+          path: ai
+          persist-credentials: false
+          sparse-checkout: .github
+          sparse-checkout-cone-mode: false
+
+      - name: Sync AI instructions
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          TARGET_OWNER: ${{ matrix.owner }}
+          TARGET_REPOSITORY: ${{ matrix.repositories }}
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          script: |
+            const run = require("./.github/scripts/sync-ai-instructions.cjs");
             await run({ github, core });
