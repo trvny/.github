@@ -404,7 +404,8 @@ async function fillMissingIds(github, core, aggregate, previousMembers) {
       try {
         const { data } = await github.rest.users.getByUsername({ username });
         if (
-          data.login?.toLowerCase() === username.toLowerCase() &&
+          (data.login?.toLowerCase() === username.toLowerCase() ||
+            (member.type === "Bot" && data.type === "Bot" && Boolean(data.login))) &&
           data.type === member.type &&
           Number.isSafeInteger(data.id) &&
           data.id > 0
