@@ -107,7 +107,7 @@
       "type": "Bot"
     },
     {
-      "id": null,
+      "id": 175728472,
       "login": "copilot-pull-request-reviewer",
       "avatarUrl": "https://avatars.githubusercontent.com/in/946600?v=4",
       "profileUrl": "https://github.com/apps/copilot-pull-request-reviewer",
@@ -128,7 +128,7 @@
       "type": "Bot"
     },
     {
-      "id": null,
+      "id": 198982749,
       "login": "copilot-swe-agent",
       "avatarUrl": "https://avatars.githubusercontent.com/in/1143301?v=4",
       "profileUrl": "https://github.com/apps/copilot-swe-agent",
