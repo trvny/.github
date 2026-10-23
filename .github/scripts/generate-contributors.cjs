@@ -382,6 +382,46 @@ async function collectDiscussionActors(github, repo, addActor) {
   } while (cursor);
 }
 
+
+async function fillMissingIds(github, core, aggregate, previousMembers) {
+  const previousIds = new Map(previousMembers.map((member) => [keyFor(member), member.id]));
+  const lookupCache = new Map();
+
+  for (const [key, member] of aggregate) {
+    if (member.id) continue;
+
+    const previousId = previousIds.get(key);
+    if (Number.isSafeInteger(previousId) && previousId > 0) {
+      member.id = previousId;
+      continue;
+    }
+
+    const username = member.type === "Bot" && !member.login.endsWith("[bot]")
+      ? `${member.login}[bot]`
+      : member.login;
+    if (!lookupCache.has(username)) {
+      let id = null;
+      try {
+        const { data } = await github.rest.users.getByUsername({ username });
+        if (
+          data.login?.toLowerCase() === username.toLowerCase() &&
+          data.type === member.type &&
+          Number.isSafeInteger(data.id) &&
+          data.id > 0
+        ) {
+          id = data.id;
+        } else {
+          core.warning(`${username}: unexpected GitHub identity; leaving ID unresolved`);
+        }
+      } catch (error) {
+        core.warning(`${username}: cannot resolve contributor ID (${error.message})`);
+      }
+      lookupCache.set(username, id);
+    }
+    if (lookupCache.get(username)) member.id = lookupCache.get(username);
+  }
+}
+
 async function avatarDataUri(avatarUrl) {
   if (!avatarUrl) return null;
 
@@ -517,6 +557,7 @@ module.exports = async ({ github, core }) => {
   }
 
   const previousState = readState();
+  await fillMissingIds(github, core, aggregate, previousState.members);
   const previousKeys = new Set(previousState.members.map(keyFor));
   const currentKeys = new Set(aggregate.keys());
   const currentMembers = [...aggregate.values()].map(({ score, ...member }) => member);
