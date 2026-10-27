@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { discover, render, patchFromFiles } = require('./sync-dependabot.cjs');
+const { discover, render, patchFromFiles, syncOne } = require('./sync-dependabot.cjs');
 const file = (path) => ({ path, type: 'blob' });
 
 test('detect real manifests, ignore dependency caches, collapse Gradle modules', () => {
@@ -50,4 +50,17 @@ test('generate replacement and new-file patches for GPTomek', () => {
   assert.match(updated, /--- a\/\.github\/dependabot\.yml\n\+\+\+ b\/\.github\/dependabot\.yml/);
   assert.match(updated, /\n-old\n\+new\n/);
   assert.match(patchFromFiles(null, 'new\n'), /--- \/dev\/null\n\+\+\+ b\/\.github\/dependabot\.yml/);
+});
+
+test('scan and file read use the same immutable base SHA', async () => {
+  const events = [];
+  const github = { rest: {
+    repos: {
+      getBranch: async () => { events.push('branch'); return { data: { commit: { sha: 'a'.repeat(40) } } }; },
+      getContent: async (args) => { events.push('content:' + args.ref); throw Object.assign(new Error('missing'), { status: 404 }); },
+    },
+    git: { getTree: async (args) => { events.push('tree:' + args.tree_sha); return { data: { truncated: false, tree: [] } }; } },
+  } };
+  await syncOne({ github, core: { notice: () => {}, info: () => {} }, repo: { owner: { login: 'trvny' }, name: '.ai', full_name: 'trvny/.ai', default_branch: 'main' }, dryRun: true });
+  assert.deepEqual(events, ['branch', 'tree:' + 'a'.repeat(40), 'content:' + 'a'.repeat(40)]);
 });
