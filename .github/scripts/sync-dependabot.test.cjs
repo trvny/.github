@@ -125,14 +125,20 @@ test('public inventory uses Actions token, private inventory uses PAT only when 
   const { discoverRepositories } = require('./sync-dependabot.cjs');
   const publicGithub = { rest: { repos: { listForUser: () => {}, listForOrg: () => {} } }, paginate: async (_fn, opts) =>
     opts.username ? [{ full_name: 'trvny/trvny', owner: { login: 'trvny' } }] : [{ full_name: 'travnie/aistee', owner: { login: 'travnie' } }] };
-  const pat = { rest: { repos: { listForAuthenticatedUser: () => {} } }, paginate: async () => [
-    { full_name: 'travnie/private', owner: { login: 'travnie' }, private: true },
-  ] };
+  let privateRequests = 0;
+  const pat = { rest: { repos: { listForAuthenticatedUser: () => {} } }, paginate: async (_fn, options) => {
+    assert.equal(options.visibility, 'private');
+    assert.equal(options.affiliation, 'owner,organization_member,collaborator');
+    privateRequests += 1;
+    return [{ full_name: 'travnie/private', owner: { login: 'travnie' }, private: true }];
+  } };
   const core = { warning: () => {} };
   const publicOnly = await discoverRepositories({ publicGithub, pat, patAvailable: false, core });
-  assert.equal(publicOnly.length, 2);
+  assert.deepEqual(publicOnly.map(r => r.full_name), ['trvny/trvny', 'travnie/aistee']);
+  assert.equal(privateRequests, 0);
   const withPrivate = await discoverRepositories({ publicGithub, pat, patAvailable: true, core });
-  assert.equal(withPrivate.length, 3);
+  assert.deepEqual(withPrivate.map(r => r.full_name), ['trvny/trvny', 'travnie/aistee', 'travnie/private']);
+  assert.equal(privateRequests, 1);
 });
 
 test('stop PAT mutations when the remaining quota changes mid-sync', async () => {
