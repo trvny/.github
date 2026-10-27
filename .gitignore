@@ -21,3 +21,11 @@ Thumbs.db
 google-services.json
 .vscode/
 .cache/
+
+# Local tooling / agent state
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+.claude/
+CLAUDE.local.md
