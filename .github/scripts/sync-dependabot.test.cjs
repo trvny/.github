@@ -232,3 +232,45 @@ test('npm workspaces under twojstar benches use the root lockfile', () => {
   assert.match(config, /directory: "\/weather-feed"/);
   assert.doesNotMatch(config, /directory: "\/benches\/(?:codebench|docbench|streambench)"/);
 });
+
+test('skip private repositories before reading or publishing private configuration', async () => {
+  const warnings = [];
+  await syncOne({
+    github: { rest: { repos: { getBranch: async () => { throw new Error('private read'); } } } },
+    core: { warning: msg => warnings.push(msg) },
+    repo: { owner: { login: 'travnie' }, name: 'private', full_name: 'travnie/private', private: true, default_branch: 'main' },
+    dryRun: false,
+  });
+  assert.match(warnings[0], /private repo deferred/);
+});
+
+test('close obsolete sync PR if base already matches wanted rules', async () => {
+  const sha = 'a'.repeat(40), prSha = 'b'.repeat(40);
+  const repo = { owner: { login: 'trvny' }, name: '.ai', full_name: 'trvny/.ai', default_branch: 'main' };
+  let closed = false;
+  const github = {
+    rest: {
+      repos: {
+        getBranch: async () => ({ data: { commit: { sha } } }),
+        getContent: async ({ ref }) => ({ data: { content: Buffer.from(ref === sha ? render(repo.full_name, new Map()) : 'version: 2\nupdates: []\n').toString('base64') } }),
+      },
+      git: { getTree: async () => ({ data: { truncated: false, tree: [] } }) },
+      pulls: { list: () => {} },
+    },
+    paginate: async () => [{ number: 4, head: { ref: 'chore/dependabot-sync-example', sha: prSha, repo: { full_name: repo.full_name } } }],
+  };
+  const writer = { rest: { pulls: { update: async ({ pull_number, state }) => {
+    assert.equal(pull_number, 4); assert.equal(state, 'closed'); closed = true;
+  } } } };
+  await syncOne({ github, writer, repo, core: { notice: () => {} }, dryRun: false, mayWrite: async () => true });
+  assert.equal(closed, true);
+});
+
+test('pip security rules constrain grouping to minor and patch only', () => {
+  const text = render('trvny/feedseek', discover([file('pyproject.toml')]));
+  const pipStart = text.indexOf('package-ecosystem: "pip"');
+  assert.ok(pipStart > 0);
+  const pip = text.slice(pipStart);
+  assert.match(pip, /security:\n\s+applies-to: "security-updates"[\s\S]*?update-types:\n\s+- "minor"\n\s+- "patch"/);
+  assert.doesNotMatch(pip, /- "major"/);
+});
