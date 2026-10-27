@@ -92,7 +92,7 @@ const OVERRIDES = {
         androidx: { patterns: ['androidx.*'] },
         kotlin: { patterns: ['org.jetbrains.kotlin*', 'com.google.devtools.ksp*'] },
         routine: { patterns: ['*'], 'update-types': ['minor', 'patch'] },
-        security: { 'applies-to': 'security-updates', patterns: ['*'] },
+        security: { 'applies-to': 'security-updates', patterns: ['*'], 'update-types': ['minor', 'patch'] },
       },
     },
     'npm@/backend': { 'open-pull-requests-limit': 10, 'commit-message': { prefix: 'deps(backend)' } },
@@ -105,7 +105,7 @@ const OVERRIDES = {
       groups: {
         kotlin: { patterns: ['org.jetbrains.kotlin*', 'com.google.devtools.ksp*'] },
         routine: { patterns: ['*'], 'update-types': ['minor', 'patch'] },
-        security: { 'applies-to': 'security-updates', patterns: ['*'] },
+        security: { 'applies-to': 'security-updates', patterns: ['*'], 'update-types': ['minor', 'patch'] },
       },
     },
   },
@@ -115,7 +115,7 @@ const OVERRIDES = {
         androidx: { patterns: ['androidx*'] },
         kotlin: { patterns: ['org.jetbrains.kotlin*'] },
         routine: { patterns: ['*'], 'update-types': ['minor', 'patch'] },
-        security: { 'applies-to': 'security-updates', patterns: ['*'] },
+        security: { 'applies-to': 'security-updates', patterns: ['*'], 'update-types': ['minor', 'patch'] },
       },
     },
   },
@@ -129,6 +129,7 @@ const hasAncestor = (directory, roots) => [...roots].some((root) => root === dir
 
 function discover(entries) {
   const files = entries.filter((entry) => entry.type === 'blob' &&
+    !entry.path.startsWith('.github/linters/') &&
     !entry.path.split('/').some((p) => NOISE.has(p) || p.startsWith('.cache')))
     .map((entry) => entry.path);
   const set = new Set(files);
@@ -186,7 +187,7 @@ function entriesFor(fullName, found) {
     'open-pull-requests-limit': 5, 'commit-message': { prefix: 'ci' },
     groups: {
       actions: { patterns: ['*'], 'update-types': ['minor', 'patch'] },
-      security: { 'applies-to': 'security-updates', patterns: ['*'] },
+      security: { 'applies-to': 'security-updates', patterns: ['*'], 'update-types': ['minor', 'patch'] },
     },
     ...(OVERRIDES[fullName]?.['github-actions@/'] || {}),
   };
@@ -194,6 +195,10 @@ function entriesFor(fullName, found) {
   const ordered = [...found.keys()].sort();
   for (const ecosystem of ordered) {
     const directories = [...found.get(ecosystem)].sort();
+    // npm workspace lockfile at /benches owns its child package manifests.
+    if (fullName === 'travnie/twojstar' && ecosystem === 'npm' && directories.includes('/benches')) {
+      directories.splice(0, directories.length, ...directories.filter((d) => !d.startsWith('/benches/')));
+    }
     // The existing four plugin requirements trees belong to one reviewable PR.
     if (fullName === 'travnie/twojstar' && ecosystem === 'pip') {
       const plugins = directories.filter((p) => p.startsWith('/plugins/'));
@@ -217,7 +222,7 @@ function makeEntry(ecosystem, directories, fullName, groupName = 'routine') {
     'commit-message': { prefix: 'deps' },
     groups: {
       [groupName]: { patterns: ['*'], 'update-types': ['minor', 'patch'] },
-      security: { 'applies-to': 'security-updates', patterns: ['*'] },
+      security: { 'applies-to': 'security-updates', patterns: ['*'], 'update-types': ['minor', 'patch'] },
     },
   };
   const override = OVERRIDES[fullName]?.[`${ecosystem}@${directories[0]}`] || {};
@@ -316,8 +321,30 @@ async function syncOne({ github, core, repo, dryRun, writer = github, mayWrite =
   const pending = prs.find((pr) => pr.head.repo?.full_name === fullName && pr.head.ref.startsWith(BRANCH_PREFIX));
   if (pending) {
     const pendingContent = await loadConfig(github, owner, name, pending.head.sha);
-    if (pendingContent !== wanted) core.warning(`${fullName}: open sync PR #${pending.number} stale; review before merging`);
-    return core.notice(`${fullName}: existing Dependabot sync PR #${pending.number}; skip until reviewed`);
+    if (pendingContent === wanted) return core.info(`${fullName}: sync PR #${pending.number} already current`);
+    if (!(await mayWrite())) return core.warning(`${fullName}: PAT quota low; defer updating sync PR #${pending.number}`);
+    const checksum = crypto.createHash('sha256').update(fullName + pending.head.sha + wanted).digest('hex').slice(0, 12);
+    const command = {
+      id: `dependabot-refresh-${checksum}-${owner}-${name}`.slice(0, 100),
+      op: 'apply_patch', repository: fullName, branch: pending.head.ref,
+      expectedHeadSha: pending.head.sha,
+      message: 'chore(deps): refresh central Dependabot rules',
+      patch: patchFromFiles(pendingContent, wanted),
+    };
+    await writer.rest.issues.createComment({
+      ...MAILBOX,
+      body: `\`\`\`gptomek\n${JSON.stringify(command)}\n\`\`\``,
+    });
+    let updatedSha = null;
+    for (let attempt = 0; attempt < 30; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      const { data } = await github.rest.repos.getBranch({ owner, repo: name, branch: pending.head.ref });
+      if (data.commit?.sha !== pending.head.sha) { updatedSha = data.commit.sha; break; }
+    }
+    if (!updatedSha) throw new Error(`${fullName}: GPTomek did not refresh PR #${pending.number}; inspect trvny/trvny#203`);
+    const actual = await loadConfig(github, owner, name, updatedSha);
+    if (actual !== wanted) throw new Error(`${fullName}: unexpected content after PR #${pending.number} refresh`);
+    return core.notice(`${fullName}: refreshed sync PR #${pending.number}`);
   }
   const checksum = crypto.createHash('sha256').update(fullName + baseSha + wanted).digest('hex').slice(0, 12);
   const branch = `${BRANCH_PREFIX}${checksum}`;

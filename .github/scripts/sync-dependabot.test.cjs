@@ -171,3 +171,22 @@ test('stop PAT mutations when the remaining quota changes mid-sync', async () =>
   assert.deepEqual(calls, []);
   assert.ok(warnings.some(s => s.includes('deferring GPTomek')));
 });
+
+test('security major updates remain individual; tooling configs do not count as pip manifests', () => {
+  const found = discover([file('.github/linters/pyproject.toml'), file('pyproject.toml')]);
+  assert.deepEqual([...found.get('pip')], ['/']);
+  const config = render('trvny/feedseek', found);
+  assert.match(config, /security:\n\s+applies-to: "security-updates"[\s\S]*?update-types:\n\s+- "minor"\n\s+- "patch"/);
+  assert.doesNotMatch(config, /directory: "\/.github\/linters"/);
+});
+
+test('npm workspaces under twojstar benches use the root lockfile', () => {
+  const config = render('travnie/twojstar', discover([
+    file('benches/package.json'), file('benches/package-lock.json'),
+    file('benches/codebench/package.json'), file('benches/docbench/package.json'),
+    file('benches/streambench/package.json'), file('weather-feed/package.json'),
+  ]));
+  assert.match(config, /directory: "\/benches"/);
+  assert.match(config, /directory: "\/weather-feed"/);
+  assert.doesNotMatch(config, /directory: "\/benches\/(?:codebench|docbench|streambench)"/);
+});
