@@ -74,6 +74,7 @@ function discover(entries) {
     found.get(ecosystem).add(directory);
   };
   const gradleRoots = new Set(files.filter((file) => /^settings\.gradle(?:\.kts)?$/.test(filename(file))).map(parentDir));
+  const tofuRoots = new Set(files.filter((file) => file.endsWith('.tofu')).map(parentDir));
   for (const file of files) {
     const name = filename(file);
     const directory = parentDir(file);
@@ -95,8 +96,20 @@ function discover(entries) {
     if (/^Dockerfile(?:\..+)?$/.test(name)) add('docker', directory);
     if (/^(?:docker-)?compose\.ya?ml$/.test(name)) add('docker-compose', directory);
     if (name === '.pre-commit-config.yaml') add('pre-commit', directory);
-    if (name === '.terraform.lock.hcl' || name.endsWith('.tf')) add('terraform', directory);
+    if (name === '.terraform.lock.hcl' || name.endsWith('.tf')) add(tofuRoots.has(directory) ? 'opentofu' : 'terraform', directory);
     if (name === 'Chart.yaml') add('helm', directory);
+    if (name === 'Package.swift') add('swift', directory);
+    if (name === 'elm.json') add('elm', directory);
+    if (name === 'mix.exs') add('mix', directory);
+    if (name === 'deno.json' || name === 'deno.jsonc') add('deno', directory);
+    if (name === 'Project.toml' || name === 'Manifest.toml') add('julia', directory);
+    if (name === 'flake.nix') add('nix', directory);
+    if (name === 'rust-toolchain.toml' || name === 'rust-toolchain') add('rust-toolchain', directory);
+    if (name === 'vcpkg.json') add('vcpkg', directory);
+    if (name === 'build.sbt') add('sbt', directory);
+    if (name === 'MODULE.bazel' || name === 'WORKSPACE.bazel') add('bazel', directory);
+    if (name === 'environment.yml' || name === 'environment.yaml') add('conda', directory);
+    if (name.endsWith('.tofu')) add('opentofu', directory);
   }
   if (set.has('.gitmodules')) add('gitsubmodule', '/');
   if (set.has('.devcontainer/devcontainer.json')) add('devcontainers', '/');
@@ -107,7 +120,10 @@ function entriesFor(fullName, found) {
   const actions = {
     'package-ecosystem': 'github-actions', directory: '/', schedule: SCHEDULE,
     'open-pull-requests-limit': 5, 'commit-message': { prefix: 'ci' },
-    groups: { actions: { patterns: ['*'] } },
+    groups: {
+      actions: { patterns: ['*'], 'update-types': ['minor', 'patch'] },
+      security: { 'applies-to': 'security-updates', patterns: ['*'] },
+    },
     ...(OVERRIDES[fullName]?.['github-actions@/'] || {}),
   };
   const updates = [actions];
@@ -200,7 +216,7 @@ function patchFromFiles(previous, wanted) {
 async function loadConfig(github, owner, repo, ref) {
   try {
     const { data } = await github.rest.repos.getContent({ owner, repo, path: TARGET, ref });
-    if (Array.isArray(data) || !data.content) throw new Error(`${owner}/${repo}: non-file Dependabot config`);
+    if (Array.isArray(data) || typeof data.content !== 'string') throw new Error(`${owner}/${repo}: non-file Dependabot config`);
     return Buffer.from(data.content, 'base64').toString('utf8');
   } catch (error) {
     if (error.status === 404) return null;
@@ -210,18 +226,33 @@ async function loadConfig(github, owner, repo, ref) {
 
 async function syncOne({ github, core, repo, dryRun }) {
   const { owner: { login: owner }, name, full_name: fullName, default_branch: base } = repo;
-  const { data: branchInfo } = await github.rest.repos.getBranch({ owner, repo: name, branch: base });
+  let branchInfo;
+  try {
+    ({ data: branchInfo } = await github.rest.repos.getBranch({ owner, repo: name, branch: base }));
+  } catch (error) {
+    if (error.status === 404 || error.status === 409) return core.notice(`${fullName}: empty repository; skip`);
+    throw error;
+  }
   const baseSha = branchInfo.commit.sha;
-  const { data: tree } = await github.rest.git.getTree({ owner, repo: name, tree_sha: baseSha, recursive: 'true' });
+  let tree;
+  try {
+    ({ data: tree } = await github.rest.git.getTree({ owner, repo: name, tree_sha: baseSha, recursive: 'true' }));
+  } catch (error) {
+    if (error.status === 409) return core.notice(`${fullName}: empty repository; skip`);
+    throw error;
+  }
   if (tree.truncated) throw new Error(`${fullName}: git tree truncated; refuse partial manifest scan`);
   const wanted = render(fullName, discover(tree.tree));
   const previous = await loadConfig(github, owner, name, baseSha);
   if (previous === wanted) return core.info(`${fullName}: up to date`);
   if (dryRun) return core.notice(`${fullName}: would sync Dependabot configuration`);
 
-  const { data: prs } = await github.rest.pulls.list({ owner, repo: name, state: 'open', per_page: 100 });
-  if (prs.some((pr) => pr.head.repo?.full_name === fullName && pr.head.ref.startsWith(BRANCH_PREFIX))) {
-    return core.notice(`${fullName}: existing Dependabot sync PR; skip until reviewed`);
+  const prs = await github.paginate(github.rest.pulls.list, { owner, repo: name, state: 'open', per_page: 100 });
+  const pending = prs.find((pr) => pr.head.repo?.full_name === fullName && pr.head.ref.startsWith(BRANCH_PREFIX));
+  if (pending) {
+    const pendingContent = await loadConfig(github, owner, name, pending.head.sha);
+    if (pendingContent !== wanted) core.warning(`${fullName}: open sync PR #${pending.number} stale; review before merging`);
+    return core.notice(`${fullName}: existing Dependabot sync PR #${pending.number}; skip until reviewed`);
   }
   const checksum = crypto.createHash('sha256').update(fullName + baseSha + wanted).digest('hex').slice(0, 12);
   const branch = `${BRANCH_PREFIX}${checksum}`;
@@ -232,6 +263,14 @@ async function syncOne({ github, core, repo, dryRun }) {
     exists = Boolean(data.commit?.sha);
   } catch (error) {
     if (error.status !== 404) throw error;
+  }
+  if (exists) {
+    const closed = await github.paginate(github.rest.pulls.list, {
+      owner, repo: name, state: 'closed', head: `${owner}:${branch}`, per_page: 100,
+    });
+    if (closed.some((pr) => pr.head.repo?.full_name === fullName && pr.head.ref === branch)) {
+      return core.notice(`${fullName}: sync PR for this branch closed; respect closure`);
+    }
   }
   if (!exists) {
     const command = {
@@ -273,15 +312,19 @@ module.exports = async ({ github, core }) => {
   const dryRun = process.env.DRY_RUN === 'true';
   if (filter && (!/^(?:trvny|travnie)\/[\w.-]+$/.test(filter))) throw new Error('Invalid repository filter');
   const repositories = await github.paginate(github.rest.repos.listForAuthenticatedUser, {
-    affiliation: 'owner,organization_member', visibility: 'all', per_page: 100,
+    affiliation: 'owner,organization_member,collaborator', visibility: 'all', per_page: 100,
   });
-  const targets = repositories.filter((repo) => OWNERS.has(repo.owner.login) && !repo.archived && !repo.disabled && !repo.fork && (!filter || repo.full_name === filter));
+  const targets = repositories.filter((repo) => OWNERS.has(repo.owner.login) && !repo.archived && !repo.disabled && (!filter || repo.full_name === filter));
   if (targets.length === 0) throw new Error('No accessible target repositories');
   const failures = [];
-  for (const repo of targets.sort((a, b) => a.full_name.localeCompare(b.full_name))) {
-    try { await syncOne({ github, core, repo, dryRun }); }
-    catch (error) { failures.push(`${repo.full_name}: ${error.message}`); core.error(failures.at(-1)); }
-  }
+  const queue = targets.sort((a, b) => a.full_name.localeCompare(b.full_name));
+  await Promise.all(Array.from({ length: Math.min(3, queue.length) }, async () => {
+    while (queue.length) {
+      const repo = queue.shift();
+      try { await syncOne({ github, core, repo, dryRun }); }
+      catch (error) { failures.push(`${repo.full_name}: ${error.message}`); core.error(failures.at(-1)); }
+    }
+  }));
   if (failures.length) core.setFailed(failures.join('\n'));
 };
 module.exports.discover = discover;
