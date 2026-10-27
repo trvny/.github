@@ -8,7 +8,8 @@ on: # yamllint disable-line rule:truthy
       - .github/scripts/sync-dependabot.cjs
       - .github/workflows/dependabot-sync.yml
   schedule:
-    - cron: "17 20 * * 1"
+    # Daily retry window; package updates remain weekly.
+    - cron: "17 2 * * *"
   workflow_dispatch:
     inputs:
       repository:
