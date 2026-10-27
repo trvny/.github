@@ -5,6 +5,69 @@ const os = require('node:os');
 const path = require('node:path');
 
 const OWNERS = new Set(['trvny', 'travnie']);
+const PAT_WRITE_RESERVE = 250;
+
+// Public reads use the per-repository Actions token. PAT only for private repos and writes.
+function quotaSnapshot(response) {
+  const core = response?.data?.resources?.core;
+  const headers = response?.headers || {};
+  const remaining = Number(headers['x-ratelimit-remaining']);
+  const reset = Number(headers['x-ratelimit-reset']);
+  return {
+    remaining: core && Number.isFinite(core.remaining) ? core.remaining : (Number.isFinite(remaining) ? remaining : null),
+    limit: core && Number.isFinite(core.limit) ? core.limit : null,
+    reset: core && Number.isFinite(core.reset) ? core.reset : (Number.isFinite(reset) ? reset : null),
+  };
+}
+
+async function getQuota(client, core) {
+  try {
+    return quotaSnapshot(await client.rest.rateLimit.get());
+  } catch (error) {
+    core.warning(`Cannot read PAT quota: ${error.message}`);
+    return { remaining: null, limit: null, reset: null };
+  }
+}
+
+function quotaLabel(q) {
+  const reset = q.reset ? new Date(q.reset * 1000).toISOString() : 'unknown';
+  return `${q.remaining ?? 'unknown'}/${q.limit ?? 'unknown'} remaining; reset ${reset}`;
+}
+
+function countRequests(client) {
+  const counts = new Map();
+  if (client?.hook?.after) {
+    client.hook.after('request', (_response, options) => {
+      const route = `${options.method || 'GET'} ${String(options.url || '').split('?')[0]}`;
+      counts.set(route, (counts.get(route) || 0) + 1);
+    });
+  }
+  return counts;
+}
+
+async function discoverRepositories({ publicGithub, pat, patAvailable, core }) {
+  const publicLists = await Promise.all([
+    publicGithub.paginate(publicGithub.rest.repos.listForUser, { username: 'trvny', type: 'owner', per_page: 100 }),
+    publicGithub.paginate(publicGithub.rest.repos.listForOrg, { org: 'travnie', type: 'public', per_page: 100 }),
+  ]);
+  const repositories = publicLists.flat();
+  if (patAvailable) {
+    try {
+      const privateVisible = await pat.paginate(pat.rest.repos.listForAuthenticatedUser, {
+        affiliation: 'owner,organization_member,collaborator', visibility: 'private', per_page: 100,
+      });
+      repositories.push(...privateVisible);
+    } catch (error) {
+      core.warning(`Private repository inventory unavailable: ${error.message}`);
+      core.warning('Private repositories deferred; public scan continues.');
+    }
+  } else {
+    core.warning('PAT quota unavailable/low: private repository inventory deferred.');
+  }
+  return [...new Map(repositories.map(repo => [repo.full_name, repo])).values()]
+    .filter(repo => OWNERS.has(repo.owner.login) && !repo.archived && !repo.disabled);
+}
+
 const TARGET = '.github/dependabot.yml';
 const MAILBOX = { owner: 'trvny', repo: 'trvny', issue_number: 203 };
 const BRANCH_PREFIX = 'chore/dependabot-sync-';
@@ -224,7 +287,7 @@ async function loadConfig(github, owner, repo, ref) {
   }
 }
 
-async function syncOne({ github, core, repo, dryRun }) {
+async function syncOne({ github, core, repo, dryRun, writer = github }) {
   const { owner: { login: owner }, name, full_name: fullName, default_branch: base } = repo;
   let branchInfo;
   try {
@@ -279,7 +342,7 @@ async function syncOne({ github, core, repo, dryRun }) {
       message: 'chore(deps): sync Dependabot rules',
       patch: patchFromFiles(previous, wanted),
     };
-    await github.rest.issues.createComment({
+    await writer.rest.issues.createComment({
       ...MAILBOX,
       body: `\`\`\`gptomek\n${JSON.stringify(command)}\n\`\`\``,
     });
@@ -299,7 +362,7 @@ async function syncOne({ github, core, repo, dryRun }) {
   }
   const actual = await loadConfig(github, owner, name, branch);
   if (actual !== wanted) throw new Error(`${fullName}: unexpected branch content; refusing PR`);
-  const { data: pr } = await github.rest.pulls.create({
+  const { data: pr } = await writer.rest.pulls.create({
     owner, repo: name, base, head: branch,
     title: 'chore(deps): sync Dependabot rules',
     body: 'Central rules: [trvny/.github](https://github.com/trvny/.github/blob/main/.github/scripts/sync-dependabot.cjs).\n\nDetected ecosystems, grouped minor/patch and security updates; breaking majors stay separate. Repository-specific exceptions remain central. No automatic merge.',
@@ -307,27 +370,63 @@ async function syncOne({ github, core, repo, dryRun }) {
   core.notice(`${fullName}: opened ${pr.html_url}`);
 }
 
-module.exports = async ({ github, core }) => {
+module.exports = async ({ github, core, pat }) => {
   const filter = process.env.TARGET_REPOSITORY?.trim() || '';
   const dryRun = process.env.DRY_RUN === 'true';
-  if (filter && (!/^(?:trvny|travnie)\/[\w.-]+$/.test(filter))) throw new Error('Invalid repository filter');
-  const repositories = await github.paginate(github.rest.repos.listForAuthenticatedUser, {
-    affiliation: 'owner,organization_member,collaborator', visibility: 'all', per_page: 100,
-  });
-  const targets = repositories.filter((repo) => OWNERS.has(repo.owner.login) && !repo.archived && !repo.disabled && (!filter || repo.full_name === filter));
-  if (targets.length === 0) throw new Error('No accessible target repositories');
+  if (filter && !/^(?:trvny|travnie)\/[\w.-]+$/.test(filter)) throw new Error('Invalid repository filter');
+  const observedPublic = countRequests(github);
+  const observedPat = countRequests(pat);
+  const before = pat ? await getQuota(pat, core) : { remaining: null, limit: null, reset: null };
+  const patAvailable = Boolean(pat && before.remaining !== null && before.remaining >= PAT_WRITE_RESERVE);
   const failures = [];
-  const queue = targets.sort((a, b) => a.full_name.localeCompare(b.full_name));
-  await Promise.all(Array.from({ length: Math.min(3, queue.length) }, async () => {
-    while (queue.length) {
-      const repo = queue.shift();
-      try { await syncOne({ github, core, repo, dryRun }); }
-      catch (error) { failures.push(`${repo.full_name}: ${error.message}`); core.error(failures.at(-1)); }
-    }
-  }));
-  if (failures.length) core.setFailed(failures.join('\n'));
+  let targets = [];
+  try {
+    const repositories = await discoverRepositories({ publicGithub: github, pat, patAvailable, core });
+    targets = repositories.filter(repo => !filter || repo.full_name === filter);
+    if (targets.length === 0) throw new Error('No accessible target repositories');
+    const queue = targets.sort((a, b) => a.full_name.localeCompare(b.full_name));
+    const writable = !dryRun && patAvailable;
+    if (!writable && !dryRun) core.warning('PAT writes deferred due to quota; public discovery still runs.');
+    await Promise.all(Array.from({ length: Math.min(3, queue.length) }, async () => {
+      while (queue.length) {
+        const repo = queue.shift();
+        try {
+          const reader = repo.private ? pat : github;
+          await syncOne({ github: reader, writer: pat || reader, core, repo, dryRun: !writable });
+        } catch (error) {
+          failures.push(`${repo.full_name}: ${error.message}`);
+          core.error(failures.at(-1));
+        }
+      }
+    }));
+    if (failures.length) core.setFailed(failures.join('\n'));
+  } finally {
+    const after = pat ? await getQuota(pat, core) : { remaining: null, limit: null, reset: null };
+    const count = values => [...values.values()].reduce((sum, value) => sum + value, 0);
+    const measuredPat = count(observedPat);
+    const coreUsedDelta = before.remaining !== null && after.remaining !== null
+      ? Math.max(0, before.remaining - after.remaining) : null;
+    const externalDelta = coreUsedDelta === null ? 'unknown'
+      : `at least ${Math.max(0, coreUsedDelta - measuredPat)}`;
+    await core.summary
+      .addHeading('GitHub API quota diagnostics')
+      .addTable([
+        [{ data: 'Metric', header: true }, { data: 'Value', header: true }],
+        ['Repositories scanned', String(targets.length)],
+        ['GITHUB_TOKEN calls observed', String(count(observedPublic))],
+        ['GH_PAT calls observed', String(measuredPat)],
+        ['GH_PAT before', quotaLabel(before)],
+        ['GH_PAT after', quotaLabel(after)],
+        ['Shared quota used while running', String(coreUsedDelta ?? 'unknown')],
+        ['Usage not accounted for by this workflow', externalDelta],
+      ])
+      .addRaw('The difference is shared-account activity, not proof of which integration made the calls. Counts omit unsuccessful requests.')
+      .write();
+  }
 };
 module.exports.discover = discover;
 module.exports.render = render;
 module.exports.patchFromFiles = patchFromFiles;
 module.exports.syncOne = syncOne;
+module.exports.quotaSnapshot = quotaSnapshot;
+module.exports.discoverRepositories = discoverRepositories;

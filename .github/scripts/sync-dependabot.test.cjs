@@ -114,3 +114,23 @@ test('existing open sync PR is not duplicated', async () => {
   await syncOne({ github, core: { notice: (s) => { noticed = s; }, warning: () => {} }, repo, dryRun: false });
   assert.match(noticed, /existing Dependabot sync PR #4/);
 });
+
+test('quota snapshot handles core counters without leaking token data', () => {
+  const { quotaSnapshot } = require('./sync-dependabot.cjs');
+  const result = quotaSnapshot({ data: { resources: { core: { remaining: 450, limit: 5000, reset: 1793109871 } } }, headers: {} });
+  assert.deepEqual(result, { remaining: 450, limit: 5000, reset: 1793109871 });
+});
+
+test('public inventory uses Actions token, private inventory uses PAT only when healthy', async () => {
+  const { discoverRepositories } = require('./sync-dependabot.cjs');
+  const publicGithub = { rest: { repos: { listForUser: () => {}, listForOrg: () => {} } }, paginate: async (_fn, opts) =>
+    opts.username ? [{ full_name: 'trvny/trvny', owner: { login: 'trvny' } }] : [{ full_name: 'travnie/aistee', owner: { login: 'travnie' } }] };
+  const pat = { rest: { repos: { listForAuthenticatedUser: () => {} } }, paginate: async () => [
+    { full_name: 'travnie/private', owner: { login: 'travnie' }, private: true },
+  ] };
+  const core = { warning: () => {} };
+  const publicOnly = await discoverRepositories({ publicGithub, pat, patAvailable: false, core });
+  assert.equal(publicOnly.length, 2);
+  const withPrivate = await discoverRepositories({ publicGithub, pat, patAvailable: true, core });
+  assert.equal(withPrivate.length, 3);
+});
