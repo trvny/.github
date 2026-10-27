@@ -1,0 +1,66 @@
+---
+name: Dependabot Sync
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+    paths:
+      - .github/scripts/sync-dependabot.cjs
+      - .github/workflows/dependabot-sync.yml
+  schedule:
+    - cron: "17 20 * * 1"
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: Optional trvny/repo or travnie/repo
+        required: false
+        type: string
+      dry_run:
+        description: Preview changes without creating PRs
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: dependabot-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-slim
+    timeout-minutes: 30
+    env:
+      TARGET_REPOSITORY: ${{ inputs.repository || '' }}
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+    steps:
+      - name: Checkout central rules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/sync-dependabot.cjs
+            .github/scripts/sync-dependabot.test.cjs
+          sparse-checkout-cone-mode: false
+      - name: Test config generator
+        run: node --test .github/scripts/sync-dependabot.test.cjs
+      - name: Require cross-repository token
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "::error::Add the repository secret GH_PAT."
+            exit 1
+          fi
+      - name: Sync Dependabot through GPTomek
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,403,404,409,422
+          script: |
+            const run = require('./.github/scripts/sync-dependabot.cjs');
+            await run({ github, core });
