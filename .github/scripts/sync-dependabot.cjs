@@ -386,7 +386,13 @@ module.exports = async ({ github, core, pat }) => {
   try {
     const repositories = await discoverRepositories({ publicGithub: github, pat, patAvailable, core });
     targets = repositories.filter(repo => !filter || repo.full_name === filter);
-    if (targets.length === 0) throw new Error('No accessible target repositories');
+    if (targets.length === 0) {
+      if (filter && !patAvailable) {
+        core.warning(`${filter}: target not visible with Actions token, PAT inventory deferred due to quota`);
+        return;
+      }
+      throw new Error('No accessible target repositories');
+    }
     const queue = targets.sort((a, b) => a.full_name.localeCompare(b.full_name));
     const writable = !dryRun && patAvailable;
     if (!writable && !dryRun) core.warning('PAT writes deferred due to quota; public discovery still runs.');
