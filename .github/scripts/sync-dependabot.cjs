@@ -293,7 +293,7 @@ async function loadConfig(github, owner, repo, ref) {
   }
 }
 
-async function syncOne({ github, core, repo, dryRun, writer = github, mayWrite = async () => true }) {
+async function syncOne({ github, core, repo, dryRun, writer = github, mayWrite = async () => true, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) }) {
   const { owner: { login: owner }, name, full_name: fullName, default_branch: base } = repo;
   let branchInfo;
   try {
@@ -337,7 +337,7 @@ async function syncOne({ github, core, repo, dryRun, writer = github, mayWrite =
     });
     let updatedSha = null;
     for (let attempt = 0; attempt < 30; attempt++) {
-      await new Promise((resolve) => setTimeout(resolve, 2500));
+      await sleep(2500);
       const { data } = await github.rest.repos.getBranch({ owner, repo: name, branch: pending.head.ref });
       if (data.commit?.sha !== pending.head.sha) { updatedSha = data.commit.sha; break; }
     }
@@ -379,7 +379,7 @@ async function syncOne({ github, core, repo, dryRun, writer = github, mayWrite =
     // GPTomek runs via the existing Issue #203 relay, not in this job.
     let ready = false;
     for (let attempt = 0; attempt < 30; attempt++) {
-      await new Promise((resolve) => setTimeout(resolve, 2500));
+      await sleep(2500);
       try {
         await github.rest.repos.getBranch({ owner, repo: name, branch });
         ready = true;

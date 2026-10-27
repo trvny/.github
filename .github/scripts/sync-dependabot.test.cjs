@@ -99,20 +99,62 @@ test('empty repos are skipped and empty configs are replaceable', async () => {
   assert.match(notice, /would sync/);
 });
 
-test('existing open sync PR is not duplicated', async () => {
+test('an already-current sync PR is not duplicated', async () => {
   const repo = { owner: { login: 'trvny' }, name: '.ai', full_name: 'trvny/.ai', default_branch: 'main' };
-  const sha = 'a'.repeat(40);
+  const base = 'a'.repeat(40), pending = 'b'.repeat(40);
+  const want = render(repo.full_name, new Map());
   let noticed = '';
   const github = {
     rest: {
-      repos: { getBranch: async () => ({ data: { commit: { sha } } }), getContent: async () => { throw Object.assign(new Error('no config'), { status: 404 }); } },
+      repos: {
+        getBranch: async () => ({ data: { commit: { sha: base } } }),
+        getContent: async ({ ref }) => {
+          if (ref === pending) return { data: { content: Buffer.from(want).toString('base64') } };
+          throw Object.assign(new Error('no config'), { status: 404 });
+        },
+      },
       git: { getTree: async () => ({ data: { truncated: false, tree: [] } }) },
       pulls: { list: () => {} },
     },
-    paginate: async () => [{ head: { repo: { full_name: 'trvny/.ai' }, ref: 'chore/dependabot-sync-example', sha }, number: 4 }],
+    paginate: async () => [{ head: { repo: { full_name: repo.full_name }, ref: 'chore/dependabot-sync-example', sha: pending }, number: 4 }],
   };
-  await syncOne({ github, core: { notice: (s) => { noticed = s; }, warning: () => {} }, repo, dryRun: false });
-  assert.match(noticed, /existing Dependabot sync PR #4/);
+  await syncOne({ github, core: { info: s => { noticed = s; }, warning: () => {} }, repo, dryRun: false });
+  assert.match(noticed, /sync PR #4 already current/);
+});
+
+test('stale sync PR is refreshed through a guarded GPTomek patch', async () => {
+  const repo = { owner: { login: 'trvny' }, name: '.ai', full_name: 'trvny/.ai', default_branch: 'main' };
+  const base = 'a'.repeat(40), pending = 'b'.repeat(40), newSha = 'c'.repeat(40);
+  const want = render(repo.full_name, new Map());
+  let changed = false, writes = 0, noticed = '';
+  const github = {
+    rest: {
+      repos: {
+        getBranch: async ({ branch }) => ({ data: { commit: { sha: branch === 'main' ? base : changed ? newSha : pending } } }),
+        getContent: async ({ ref }) => {
+          if (ref === base) throw Object.assign(new Error('missing'), { status: 404 });
+          return { data: { content: Buffer.from(ref === newSha ? want : 'version: 2\nupdates: []\n').toString('base64') } };
+        },
+      },
+      git: { getTree: async () => ({ data: { truncated: false, tree: [] } }) },
+      pulls: { list: () => {} },
+    },
+    paginate: async () => [{ head: { repo: { full_name: repo.full_name }, ref: 'chore/dependabot-sync-example', sha: pending }, number: 4 }],
+  };
+  const writer = { rest: {
+    issues: { createComment: async ({ body }) => {
+      const command = JSON.parse(body.split('\n').slice(1, -1).join('\n'));
+      assert.equal(command.op, 'apply_patch');
+      assert.equal(command.expectedHeadSha, pending);
+      writes += 1;
+      changed = true;
+    } },
+    pulls: { create: async () => { throw new Error('must reuse the pending PR'); } },
+  } };
+  await syncOne({ github, writer, core: { info: () => {}, notice: s => { noticed = s; }, warning: () => {} }, repo,
+    dryRun: false, mayWrite: async () => true, sleep: async () => {} });
+  assert.equal(writes, 1);
+  assert.match(noticed, /refreshed sync PR #4/);
 });
 
 test('quota snapshot handles core counters without leaking token data', () => {
