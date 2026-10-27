@@ -39,6 +39,7 @@ function countRequests(client) {
   if (client?.hook?.after) {
     client.hook.after('request', (_response, options) => {
       const route = `${options.method || 'GET'} ${String(options.url || '').split('?')[0]}`;
+      if (route.endsWith(' /rate_limit')) return;
       counts.set(route, (counts.get(route) || 0) + 1);
     });
   }
@@ -393,7 +394,7 @@ module.exports = async ({ github, core, pat }) => {
       }
       throw new Error('No accessible target repositories');
     }
-    const queue = targets.sort((a, b) => a.full_name.localeCompare(b.full_name));
+    const queue = [...targets].sort((a, b) => a.full_name.localeCompare(b.full_name));
     const writable = !dryRun && patAvailable;
     if (!writable && !dryRun) core.warning('PAT writes deferred due to quota; public discovery still runs.');
     await Promise.all(Array.from({ length: Math.min(3, queue.length) }, async () => {
@@ -427,7 +428,7 @@ module.exports = async ({ github, core, pat }) => {
     const coreUsedDelta = before.remaining !== null && after.remaining !== null
       ? Math.max(0, before.remaining - after.remaining) : null;
     const externalDelta = coreUsedDelta === null ? 'unknown'
-      : `at least ${Math.max(0, coreUsedDelta - measuredPat)}`;
+      : `rough estimate ${Math.max(0, coreUsedDelta - measuredPat)}`;
     await core.summary
       .addHeading('GitHub API quota diagnostics')
       .addTable([
@@ -440,7 +441,7 @@ module.exports = async ({ github, core, pat }) => {
         ['Shared quota used while running', String(coreUsedDelta ?? 'unknown')],
         ['Usage not accounted for by this workflow', externalDelta],
       ])
-      .addRaw('The difference is shared-account activity, not proof of which integration made the calls. Counts omit unsuccessful requests.')
+      .addRaw('Quota delta is shared across the account. The estimate excludes unobserved failures and some zero-cost endpoints; it is not a lower bound or attribution to another app.')
       .write();
   }
 };
