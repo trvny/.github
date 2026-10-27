@@ -210,10 +210,12 @@ async function loadConfig(github, owner, repo, ref) {
 
 async function syncOne({ github, core, repo, dryRun }) {
   const { owner: { login: owner }, name, full_name: fullName, default_branch: base } = repo;
-  const { data: tree } = await github.rest.git.getTree({ owner, repo: name, tree_sha: base, recursive: 'true' });
+  const { data: branchInfo } = await github.rest.repos.getBranch({ owner, repo: name, branch: base });
+  const baseSha = branchInfo.commit.sha;
+  const { data: tree } = await github.rest.git.getTree({ owner, repo: name, tree_sha: baseSha, recursive: 'true' });
   if (tree.truncated) throw new Error(`${fullName}: git tree truncated; refuse partial manifest scan`);
   const wanted = render(fullName, discover(tree.tree));
-  const previous = await loadConfig(github, owner, name, base);
+  const previous = await loadConfig(github, owner, name, baseSha);
   if (previous === wanted) return core.info(`${fullName}: up to date`);
   if (dryRun) return core.notice(`${fullName}: would sync Dependabot configuration`);
 
@@ -221,8 +223,6 @@ async function syncOne({ github, core, repo, dryRun }) {
   if (prs.some((pr) => pr.head.repo?.full_name === fullName && pr.head.ref.startsWith(BRANCH_PREFIX))) {
     return core.notice(`${fullName}: existing Dependabot sync PR; skip until reviewed`);
   }
-  const { data: branchInfo } = await github.rest.repos.getBranch({ owner, repo: name, branch: base });
-  const baseSha = branchInfo.commit.sha;
   const checksum = crypto.createHash('sha256').update(fullName + baseSha + wanted).digest('hex').slice(0, 12);
   const branch = `${BRANCH_PREFIX}${checksum}`;
 
@@ -287,3 +287,4 @@ module.exports = async ({ github, core }) => {
 module.exports.discover = discover;
 module.exports.render = render;
 module.exports.patchFromFiles = patchFromFiles;
+module.exports.syncOne = syncOne;
