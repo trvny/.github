@@ -295,6 +295,8 @@ async function loadConfig(github, owner, repo, ref) {
 
 async function syncOne({ github, core, repo, dryRun, writer = github, mayWrite = async () => true, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) }) {
   const { owner: { login: owner }, name, full_name: fullName, default_branch: base } = repo;
+  // Public issue mailbox must never receive diffs from private repositories.
+  if (repo.private) return core.warning(`${fullName}: private repo deferred; public GPTomek mailbox cannot safely carry private diffs`);
   let branchInfo;
   try {
     ({ data: branchInfo } = await github.rest.repos.getBranch({ owner, repo: name, branch: base }));
@@ -313,14 +315,18 @@ async function syncOne({ github, core, repo, dryRun, writer = github, mayWrite =
   if (tree.truncated) throw new Error(`${fullName}: git tree truncated; refuse partial manifest scan`);
   const wanted = render(fullName, discover(tree.tree));
   const previous = await loadConfig(github, owner, name, baseSha);
-  if (previous === wanted) return core.info(`${fullName}: up to date`);
-  if (dryRun) return core.notice(`${fullName}: would sync Dependabot configuration`);
+  if (dryRun) return core.notice(`${fullName}: ${previous === wanted ? 'up to date' : 'would sync Dependabot configuration'}`);
   if (!(await mayWrite())) return core.warning(`${fullName}: PAT quota too low; deferring writes`);
 
   const prs = await github.paginate(github.rest.pulls.list, { owner, repo: name, state: 'open', per_page: 100 });
   const pending = prs.find((pr) => pr.head.repo?.full_name === fullName && pr.head.ref.startsWith(BRANCH_PREFIX));
   if (pending) {
     const pendingContent = await loadConfig(github, owner, name, pending.head.sha);
+    if (previous === wanted) {
+      if (!(await mayWrite())) return core.warning(`${fullName}: PAT quota low; defer closing obsolete sync PR #${pending.number}`);
+      await writer.rest.pulls.update({ owner, repo: name, pull_number: pending.number, state: 'closed' });
+      return core.notice(`${fullName}: closed obsolete sync PR #${pending.number}; main already current`);
+    }
     if (pendingContent === wanted) return core.info(`${fullName}: sync PR #${pending.number} already current`);
     if (!(await mayWrite())) return core.warning(`${fullName}: PAT quota low; defer updating sync PR #${pending.number}`);
     const checksum = crypto.createHash('sha256').update(fullName + pending.head.sha + wanted).digest('hex').slice(0, 12);
@@ -338,14 +344,20 @@ async function syncOne({ github, core, repo, dryRun, writer = github, mayWrite =
     let updatedSha = null;
     for (let attempt = 0; attempt < 30; attempt++) {
       await sleep(2500);
-      const { data } = await github.rest.repos.getBranch({ owner, repo: name, branch: pending.head.ref });
-      if (data.commit?.sha !== pending.head.sha) { updatedSha = data.commit.sha; break; }
+      try {
+        const { data } = await github.rest.repos.getBranch({ owner, repo: name, branch: pending.head.ref });
+        if (data.commit?.sha !== pending.head.sha) { updatedSha = data.commit.sha; break; }
+      } catch (error) {
+        if (![429, 500, 502, 503, 504].includes(error.status)) throw error;
+        core.warning(`${fullName}: transient GPTomek branch read (${error.status}); retrying`);
+      }
     }
-    if (!updatedSha) throw new Error(`${fullName}: GPTomek did not refresh PR #${pending.number}; inspect trvny/trvny#203`);
+    if (!updatedSha) return core.warning(`${fullName}: GPTomek refresh for PR #${pending.number} pending; retry on next sync`);
     const actual = await loadConfig(github, owner, name, updatedSha);
     if (actual !== wanted) throw new Error(`${fullName}: unexpected content after PR #${pending.number} refresh`);
     return core.notice(`${fullName}: refreshed sync PR #${pending.number}`);
   }
+  if (previous === wanted) return core.info(`${fullName}: up to date`);
   const checksum = crypto.createHash('sha256').update(fullName + baseSha + wanted).digest('hex').slice(0, 12);
   const branch = `${BRANCH_PREFIX}${checksum}`;
 
@@ -410,6 +422,7 @@ module.exports = async ({ github, core, pat }) => {
   const before = pat ? await getQuota(pat, core) : { remaining: null, limit: null, reset: null };
   const patAvailable = Boolean(pat && before.remaining !== null && before.remaining >= PAT_WRITE_RESERVE);
   const failures = [];
+  let reservedPatCalls = 0;
   let targets = [];
   try {
     const repositories = await discoverRepositories({ publicGithub: github, pat, patAvailable, core });
@@ -437,7 +450,9 @@ module.exports = async ({ github, core, pat }) => {
           const reader = repo.private ? pat : github;
           const mayWrite = async () => {
             const q = await getQuota(pat, core);
-            return q.remaining !== null && q.remaining >= PAT_WRITE_RESERVE;
+            if (q.remaining === null || q.remaining - reservedPatCalls < PAT_WRITE_RESERVE) return false;
+            reservedPatCalls += 1;
+            return true;
           };
           await syncOne({ github: reader, writer: pat || reader, core, repo,
             dryRun: dryRun || !canProceed, mayWrite });
