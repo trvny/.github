@@ -148,7 +148,10 @@ test('stop PAT mutations when the remaining quota changes mid-sync', async () =>
   const github = {
     rest: {
       repos: {
-        getBranch: async () => ({ data: { commit: { sha } } }),
+        getBranch: async ({ branch }) => {
+          if (branch !== 'main') throw Object.assign(new Error('no branch'), { status: 404 });
+          return { data: { commit: { sha } } };
+        },
         getContent: async () => { throw Object.assign(new Error('missing'), { status: 404 }); },
       },
       git: { getTree: async () => ({ data: { truncated: false, tree: [] } }) },
