@@ -287,7 +287,7 @@ async function loadConfig(github, owner, repo, ref) {
   }
 }
 
-async function syncOne({ github, core, repo, dryRun, writer = github }) {
+async function syncOne({ github, core, repo, dryRun, writer = github, mayWrite = async () => true }) {
   const { owner: { login: owner }, name, full_name: fullName, default_branch: base } = repo;
   let branchInfo;
   try {
@@ -309,6 +309,7 @@ async function syncOne({ github, core, repo, dryRun, writer = github }) {
   const previous = await loadConfig(github, owner, name, baseSha);
   if (previous === wanted) return core.info(`${fullName}: up to date`);
   if (dryRun) return core.notice(`${fullName}: would sync Dependabot configuration`);
+  if (!(await mayWrite())) return core.warning(`${fullName}: PAT quota too low; deferring writes`);
 
   const prs = await github.paginate(github.rest.pulls.list, { owner, repo: name, state: 'open', per_page: 100 });
   const pending = prs.find((pr) => pr.head.repo?.full_name === fullName && pr.head.ref.startsWith(BRANCH_PREFIX));
@@ -336,6 +337,7 @@ async function syncOne({ github, core, repo, dryRun, writer = github }) {
     }
   }
   if (!exists) {
+    if (!(await mayWrite())) return core.warning(`${fullName}: PAT quota too low; deferring GPTomek request`);
     const command = {
       id: `dependabot-sync-${checksum}-${owner}-${name}`.slice(0, 100),
       op: 'branch_from_patch', repository: fullName, branch, baseSha,
@@ -362,6 +364,7 @@ async function syncOne({ github, core, repo, dryRun, writer = github }) {
   }
   const actual = await loadConfig(github, owner, name, branch);
   if (actual !== wanted) throw new Error(`${fullName}: unexpected branch content; refusing PR`);
+  if (!(await mayWrite())) return core.warning(`${fullName}: PAT quota too low; deferring pull request`);
   const { data: pr } = await writer.rest.pulls.create({
     owner, repo: name, base, head: branch,
     title: 'chore(deps): sync Dependabot rules',
@@ -391,8 +394,19 @@ module.exports = async ({ github, core, pat }) => {
       while (queue.length) {
         const repo = queue.shift();
         try {
+          const current = writable ? await getQuota(pat, core) : before;
+          const canProceed = writable && current.remaining !== null && current.remaining >= PAT_WRITE_RESERVE;
+          if (repo.private && !canProceed) {
+            core.warning(`${repo.full_name}: private scan deferred due to PAT quota`);
+            continue;
+          }
           const reader = repo.private ? pat : github;
-          await syncOne({ github: reader, writer: pat || reader, core, repo, dryRun: !writable });
+          const mayWrite = async () => {
+            const q = await getQuota(pat, core);
+            return q.remaining !== null && q.remaining >= PAT_WRITE_RESERVE;
+          };
+          await syncOne({ github: reader, writer: pat || reader, core, repo,
+            dryRun: dryRun || !canProceed, mayWrite });
         } catch (error) {
           failures.push(`${repo.full_name}: ${error.message}`);
           core.error(failures.at(-1));

@@ -134,3 +134,31 @@ test('public inventory uses Actions token, private inventory uses PAT only when 
   const withPrivate = await discoverRepositories({ publicGithub, pat, patAvailable: true, core });
   assert.equal(withPrivate.length, 3);
 });
+
+test('stop PAT mutations when the remaining quota changes mid-sync', async () => {
+  const repo = { owner: { login: 'trvny' }, name: '.ai', full_name: 'trvny/.ai', default_branch: 'main' };
+  const sha = 'a'.repeat(40);
+  const calls = [];
+  const github = {
+    rest: {
+      repos: {
+        getBranch: async () => ({ data: { commit: { sha } } }),
+        getContent: async () => { throw Object.assign(new Error('missing'), { status: 404 }); },
+      },
+      git: { getTree: async () => ({ data: { truncated: false, tree: [] } }) },
+      pulls: { list: () => {} },
+    },
+    paginate: async () => [],
+  };
+  const writer = { rest: {
+    issues: { createComment: async () => { calls.push('comment'); } },
+    pulls: { create: async () => { calls.push('PR'); } },
+  } };
+  let quotaChecks = 0;
+  const mayWrite = async () => ++quotaChecks === 1;
+  const warnings = [];
+  await syncOne({ github, writer, core: { warning: s => warnings.push(s), notice: () => {} },
+    repo, dryRun: false, mayWrite });
+  assert.deepEqual(calls, []);
+  assert.ok(warnings.some(s => s.includes('deferring GPTomek')));
+});
