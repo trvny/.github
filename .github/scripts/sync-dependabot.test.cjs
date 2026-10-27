@@ -64,3 +64,53 @@ test('scan and file read use the same immutable base SHA', async () => {
   await syncOne({ github, core: { notice: () => {}, info: () => {} }, repo: { owner: { login: 'trvny' }, name: '.ai', full_name: 'trvny/.ai', default_branch: 'main' }, dryRun: true });
   assert.deepEqual(events, ['branch', 'tree:' + 'a'.repeat(40), 'content:' + 'a'.repeat(40)]);
 });
+
+test('recognize additional ecosystems and Bun lockfiles', () => {
+  const found = discover([
+    file('site/package.json'), file('site/bun.lock'),
+    file('ios/Package.swift'), file('elm/elm.json'), file('hex/mix.exs'),
+    file('cli/deno.json'), file('nix/flake.nix'), file('rust/rust-toolchain.toml'),
+  ]);
+  for (const ecosystem of ['bun', 'swift', 'elm', 'mix', 'deno', 'nix', 'rust-toolchain']) {
+    assert.ok(found.has(ecosystem), `${ecosystem} missing`);
+  }
+  const config = render('trvny/.ai', found);
+  assert.match(config, /package-ecosystem: "bun"/);
+});
+
+test('Actions major updates stay separate from routine and security updates', () => {
+  const config = render('trvny/.ai', new Map());
+  assert.match(config, /actions:\n\s+patterns:\n\s+- "\*"\n\s+update-types:\n\s+- "minor"\n\s+- "patch"/);
+  assert.match(config, /security:\n\s+applies-to: "security-updates"/);
+});
+
+test('empty repos are skipped and empty configs are replaceable', async () => {
+  const repo = { owner: { login: 'trvny' }, name: '.ai', full_name: 'trvny/.ai', default_branch: 'main' };
+  const errors = () => { throw Object.assign(new Error('empty repo'), { status: 409 }); };
+  let notice = '';
+  await syncOne({ github: { rest: { repos: { getBranch: errors } } }, core: { notice: (s) => { notice = s; } }, repo, dryRun: true });
+  assert.match(notice, /empty repository/);
+  const github = { rest: {
+    repos: { getBranch: async () => ({ data: { commit: { sha: 'a'.repeat(40) } } }), getContent: async () => ({ data: { content: '', encoding: 'base64' } }) },
+    git: { getTree: async () => ({ data: { truncated: false, tree: [] } }) },
+  } };
+  notice = '';
+  await syncOne({ github, core: { notice: (s) => { notice = s; } }, repo, dryRun: true });
+  assert.match(notice, /would sync/);
+});
+
+test('existing open sync PR is not duplicated', async () => {
+  const repo = { owner: { login: 'trvny' }, name: '.ai', full_name: 'trvny/.ai', default_branch: 'main' };
+  const sha = 'a'.repeat(40);
+  let noticed = '';
+  const github = {
+    rest: {
+      repos: { getBranch: async () => ({ data: { commit: { sha } } }), getContent: async () => { throw Object.assign(new Error('no config'), { status: 404 }); } },
+      git: { getTree: async () => ({ data: { truncated: false, tree: [] } }) },
+      pulls: { list: () => {} },
+    },
+    paginate: async () => [{ head: { repo: { full_name: 'trvny/.ai' }, ref: 'chore/dependabot-sync-example', sha }, number: 4 }],
+  };
+  await syncOne({ github, core: { notice: (s) => { noticed = s; }, warning: () => {} }, repo, dryRun: false });
+  assert.match(noticed, /existing Dependabot sync PR #4/);
+});
