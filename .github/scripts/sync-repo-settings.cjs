@@ -1,9 +1,5 @@
 const headers = { "X-GitHub-Api-Version": "2026-03-10" };
 const copilotName = "Copilot review for default branch";
-const copilotRule = {
-  type: "copilot_code_review",
-  parameters: { review_draft_pull_requests: false, review_on_push: true },
-};
 
 async function change(core, dryRun, repository, label, fn) {
   if (dryRun) {
@@ -24,17 +20,8 @@ function bypassActors(ruleset) {
   );
 }
 
-function defaultBranchOnly(ruleset) {
-  const ref = ruleset.conditions?.ref_name;
-  return (
-    Array.isArray(ref?.include) &&
-    ref.include.length === 1 &&
-    ref.include[0] === "~DEFAULT_BRANCH" &&
-    Array.isArray(ref.exclude) &&
-    ref.exclude.length === 0
-  );
-}
-
+// Copilot review is off: auto-review on every push ran as the owner (user-to-server
+// token) and ate the shared 5000/h REST quota. Never create; strip/disable existing.
 async function syncCopilot({ github, core, dryRun, repository, owner, repo }) {
   const list = await github.request("GET /repos/{owner}/{repo}/rulesets", {
     owner,
@@ -43,81 +30,42 @@ async function syncCopilot({ github, core, dryRun, repository, owner, repo }) {
     per_page: 100,
     headers,
   });
-  const matches = list.data.filter(({ name }) => name === copilotName);
-  if (matches.length > 1) {
-    throw new Error(`Multiple "${copilotName}" rulesets already exist`);
-  }
 
-  if (matches.length === 0) {
+  for (const { id } of list.data.filter(({ name }) => name === copilotName)) {
+    const current = await github.request(
+      "GET /repos/{owner}/{repo}/rulesets/{ruleset_id}",
+      { owner, repo, ruleset_id: id, headers },
+    );
+    const existingRules = current.data.rules || [];
+    const otherRules = existingRules.filter(
+      ({ type }) => type !== "copilot_code_review",
+    );
+    const hasCopilot = otherRules.length !== existingRules.length;
+    // Copilot-only ruleset: disable, keep it for an easy re-enable.
+    // Mixed ruleset: drop just the Copilot rule, keep deletion/force-push guards.
+    const enforcement = otherRules.length === 0 ? "disabled" : current.data.enforcement;
+    if (!hasCopilot && enforcement === current.data.enforcement) continue;
+    if (otherRules.length === 0 && current.data.enforcement === "disabled") continue;
+
     await change(
       core,
       dryRun,
       repository,
-      "enable Copilot review on the default branch and on each push",
-      () => github.request("POST /repos/{owner}/{repo}/rulesets", {
+      "turn off Copilot review",
+      () => github.request("PUT /repos/{owner}/{repo}/rulesets/{ruleset_id}", {
         owner,
         repo,
-        name: copilotName,
-        target: "branch",
-        enforcement: "active",
-        bypass_actors: [],
-        conditions: {
-          ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
-        },
-        rules: [copilotRule],
+        ruleset_id: id,
+        name: current.data.name,
+        target: current.data.target,
+        enforcement,
+        bypass_actors: bypassActors(current.data),
+        conditions: current.data.conditions,
+        rules: otherRules.length === 0 ? existingRules : otherRules,
         headers,
       }),
     );
-    return;
   }
-
-  const current = await github.request(
-    "GET /repos/{owner}/{repo}/rulesets/{ruleset_id}",
-    { owner, repo, ruleset_id: matches[0].id, headers },
-  );
-  if (current.data.target !== "branch" || !defaultBranchOnly(current.data)) {
-    throw new Error(
-      `Refusing to replace "${copilotName}" because its target or branch conditions differ`,
-    );
-  }
-
-  const existingRules = current.data.rules || [];
-  const existingRule = existingRules.find(
-    ({ type }) => type === "copilot_code_review",
-  );
-  const otherRules = existingRules.filter(
-    ({ type }) => type !== "copilot_code_review",
-  );
-  const ruleMatches =
-    existingRule?.parameters?.review_draft_pull_requests === false &&
-    existingRule?.parameters?.review_on_push === true;
-  if (current.data.enforcement === "active" && ruleMatches) return;
-  if (current.data.enforcement !== "active" && otherRules.length > 0) {
-    throw new Error(
-      `Refusing to activate "${copilotName}" because it contains unrelated rules`,
-    );
-  }
-
-  const rules = [...otherRules, copilotRule];
-
-  await change(
-    core,
-    dryRun,
-    repository,
-    "enable Copilot review on the default branch and on each push",
-    () => github.request("PUT /repos/{owner}/{repo}/rulesets/{ruleset_id}", {
-      owner,
-      repo,
-      ruleset_id: current.data.id,
-      name: current.data.name,
-      target: current.data.target,
-      enforcement: "active",
-      bypass_actors: bypassActors(current.data),
-      conditions: current.data.conditions,
-      rules,
-      headers,
-    }),
-  );
 }
 
 async function syncRepository({ github, core, dryRun, repository }) {
