@@ -9,8 +9,21 @@ module.exports = async ({ github, core }) => {
   const keepMinimumRuns = 3;
   const deleteBatchSize = 5;
   const cutoff = Date.now() - retainDays * 24 * 60 * 60 * 1000;
+  const cutoffDate = new Date(cutoff).toISOString().replace(/\.\d{3}Z$/, 'Z');
   const failures = [];
   const summaries = [];
+
+  // Server-side `created` filter: fetch only old runs to delete, plus recent ones just
+  // to count per workflow (keepMinimumRuns). Full-history pagination burned the PAT quota.
+  // Filtered listings cap at 1000 results; any remainder goes on the next run.
+  const listRuns = (owner, repo, created) =>
+    github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+      owner,
+      repo,
+      status: 'completed',
+      created,
+      per_page: 100,
+    });
 
   for (const repository of repositories) {
     const [owner, repo] = repository.split('/');
@@ -20,37 +33,38 @@ module.exports = async ({ github, core }) => {
     let failed = 0;
 
     try {
-      const [workflows, runs] = await Promise.all([
+      const [workflows, recentRuns, oldRuns] = await Promise.all([
         github.paginate(
           github.rest.actions.listRepoWorkflows,
           { owner, repo, per_page: 100 },
         ),
-        github.paginate(
-          github.rest.actions.listWorkflowRunsForRepo,
-          { owner, repo, per_page: 100 },
-        ),
+        listRuns(owner, repo, `>=${cutoffDate}`),
+        listRuns(owner, repo, `<${cutoffDate}`),
       ]);
-      const completedRuns = runs.filter((run) => run.status === 'completed');
-      before = completedRuns.length;
+      before = recentRuns.length + oldRuns.length;
       const activeWorkflowIds = new Set(workflows.map((workflow) => workflow.id));
-      const runsByWorkflow = new Map();
-
-      for (const run of completedRuns) {
-        const workflowRuns = runsByWorkflow.get(run.workflow_id) ?? [];
-        workflowRuns.push(run);
-        runsByWorkflow.set(run.workflow_id, workflowRuns);
+      const recentCount = new Map();
+      for (const run of recentRuns) {
+        recentCount.set(run.workflow_id, (recentCount.get(run.workflow_id) ?? 0) + 1);
       }
 
+      const oldByWorkflow = new Map();
+      for (const run of oldRuns) {
+        const workflowRuns = oldByWorkflow.get(run.workflow_id) ?? [];
+        workflowRuns.push(run);
+        oldByWorkflow.set(run.workflow_id, workflowRuns);
+      }
+
+      // Same outcome as before: newest keepMinimumRuns per active workflow survive,
+      // so old runs are kept only when the window has fewer than that.
       const runsToDelete = [];
-      for (const [workflowId, workflowRuns] of runsByWorkflow) {
+      for (const [workflowId, workflowRuns] of oldByWorkflow) {
         workflowRuns.sort(
           (left, right) => Date.parse(right.created_at) - Date.parse(left.created_at),
         );
         const minimum = activeWorkflowIds.has(workflowId) ? keepMinimumRuns : 0;
-
-        for (const run of workflowRuns.slice(minimum)) {
-          if (Date.parse(run.created_at) < cutoff) runsToDelete.push(run);
-        }
+        const keepOld = Math.max(0, minimum - (recentCount.get(workflowId) ?? 0));
+        runsToDelete.push(...workflowRuns.slice(keepOld));
       }
 
       matched = runsToDelete.length;
