@@ -92,7 +92,7 @@ jobs:
           repositories: ${{ matrix.repositories }}
           owner: ${{ matrix.owner }}
           allow-squash-merge: true
-          allow-merge-commit: true
+          allow-merge-commit: false
           allow-rebase-merge: true
           allow-auto-merge: true
           delete-branch-on-merge: true
