@@ -98,7 +98,7 @@ jobs:
           delete-branch-on-merge: true
           allow-update-branch: true
           wiki: false
-          code-scanning: true
+          # CodeQL default/advanced policy lives in sync-repo-settings.cjs.
           dependabot-alerts: true
           dependabot-security-updates: true
           dry-run: ${{ env.DRY_RUN }}

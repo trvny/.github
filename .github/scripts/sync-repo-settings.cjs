@@ -1,5 +1,6 @@
 const headers = { "X-GitHub-Api-Version": "2026-03-10" };
 const copilotName = "Copilot review for default branch";
+const advancedCodeQLRepos = new Set(["travnie/aistee"]);
 
 async function change(core, dryRun, repository, label, fn) {
   if (dryRun) {
@@ -68,6 +69,36 @@ async function syncCopilot({ github, core, dryRun, repository, owner, repo }) {
   }
 }
 
+// Default setup cannot build Aistee Kotlin with its JDK 21 toolchain.
+// All other repositories retain automatic CodeQL default setup.
+async function syncCodeQL({ github, core, dryRun, repository, owner, repo }) {
+  let current;
+  try {
+    current = await github.request(
+      "GET /repos/{owner}/{repo}/code-scanning/default-setup",
+      { owner, repo, headers },
+    );
+  } catch (error) {
+    if ([403, 404].includes(error.status)) {
+      core.warning(`Skip CodeQL default setup for ${repository}: ${error.message}`);
+      return;
+    }
+    throw error;
+  }
+
+  const desired = advancedCodeQLRepos.has(repository) ? "not-configured" : "configured";
+  if (current.data.state === desired) return;
+
+  await change(core, dryRun, repository, `set CodeQL default setup to ${desired}`, () =>
+    github.request("PATCH /repos/{owner}/{repo}/code-scanning/default-setup", {
+      owner,
+      repo,
+      state: desired,
+      headers,
+    }),
+  );
+}
+
 async function syncRepository({ github, core, dryRun, repository }) {
   const [owner, repo] = repository.split("/");
 
@@ -133,6 +164,8 @@ async function syncRepository({ github, core, dryRun, repository }) {
       ),
     );
   }
+
+  await syncCodeQL({ github, core, dryRun, repository, owner, repo });
 
   await syncCopilot({ github, core, dryRun, repository, owner, repo });
 
