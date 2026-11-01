@@ -140,6 +140,20 @@
       "avatarUrl": "https://avatars.githubusercontent.com/u/324626588?v=4",
       "profileUrl": "https://github.com/kucharz2026-maker",
       "type": "User"
+    },
+    {
+      "id": 191113872,
+      "login": "cubic-dev-ai",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/1082092?v=4",
+      "profileUrl": "https://github.com/apps/cubic-dev-ai",
+      "type": "Bot"
+    },
+    {
+      "id": 165735046,
+      "login": "greptile-apps",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/867647?v=4",
+      "profileUrl": "https://github.com/apps/greptile-apps",
+      "type": "Bot"
     }
   ]
 }
