@@ -309,6 +309,37 @@ jobs:
           script: |
             const run = require('./.github/scripts/delete-actions-caches.cjs');
             await run({ github, core });
+  delete-deployments:
+    name: Prune inactive Pages deployments
+    needs: discover-repositories
+    if: >-
+      github.event_name == 'schedule' ||
+      inputs.task == 'all' ||
+      inputs.task == 'cleanup'
+    runs-on: ubuntu-slim
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      REPOSITORIES_JSON: ${{ needs.discover-repositories.outputs.repositories }}
+    steps:
+      - name: Checkout workflow script
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/delete-deployments.cjs
+          sparse-checkout-cone-mode: false
+
+      - name: Delete stale GitHub Pages deployments
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GH_PAT }}
+          retries: 3
+          retry-exempt-status-codes: 400,401,404,422
+          script: |
+            const run = require('./.github/scripts/delete-deployments.cjs');
+            await run({ github, core });
   eol-guard:
     name: Stored blobs match .gitattributes
     needs: discover-repositories
