@@ -46,7 +46,14 @@ module.exports = async ({ github, core }) => {
       );
       matched = candidates.length;
 
-      for (const deployment of candidates.slice(0, maxChecksPerRepo)) {
+      // Rotate the bounded checks across runs, without persistent state.
+      const runNumber = Number(process.env.GITHUB_RUN_NUMBER) || 0;
+      const start = candidates.length > 0
+        ? (runNumber * maxChecksPerRepo) % candidates.length
+        : 0;
+      const selected = [...candidates.slice(start), ...candidates.slice(0, start)]
+        .slice(0, maxChecksPerRepo);
+      for (const deployment of selected) {
         const statusResponse = await github.rest.repos.listDeploymentStatuses({
           owner, repo, deployment_id: deployment.id, per_page: 1,
         });
