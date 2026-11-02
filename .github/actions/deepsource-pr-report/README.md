@@ -7,7 +7,7 @@ Includes issues outside PR diffs; skips stale reports. No external Python packag
 
 ## Usage
 
-Caller workflow requires `issues: write`, `pull-requests: read`, `contents: read`.
+Caller workflow requires `issues: write` and `pull-requests: read`. No contents permission.
 Run on `status` events where `context` starts with `DeepSource:`, ignoring `pending`.
 Composite actions do not declare event triggers. Add a minimal caller job in each
 repository that needs PR reporting. Keep unrelated jobs gated against `status` events.
