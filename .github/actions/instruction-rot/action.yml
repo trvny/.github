@@ -1,0 +1,114 @@
+name: Instruction Rot
+description: Validate repository-local instruction files using shared Brainrot and RickLang checks.
+
+inputs:
+  base-sha:
+    description: Comparison base; missing history checks all tracked instructions.
+    required: false
+    default: ""
+  head-sha:
+    description: Comparison head.
+    required: false
+    default: ""
+
+outputs:
+  changed:
+    description: Whether instruction files were selected for validation.
+    value: ${{ steps.files.outputs.changed }}
+  rotcheck:
+    description: Structural check outcome.
+    value: ${{ steps.rotcheck.outcome }}
+  yaplint:
+    description: Instruction length check outcome.
+    value: ${{ steps.yaplint.outcome }}
+  rickcheck:
+    description: RickLang guard outcome.
+    value: ${{ steps.rickcheck.outcome }}
+
+runs:
+  using: composite
+  steps:
+    - name: Detect changed instructions
+      id: files
+      shell: bash
+      env:
+        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+        BASE_SHA: ${{ inputs.base-sha }}
+        HEAD_SHA: ${{ inputs.head-sha }}
+      run: |
+        set -euo pipefail
+        manifest="$RUNNER_TEMP/instruction-rot-files.txt"
+        bash "$CHECKS_DIR/changed-files.sh" "$GITHUB_WORKSPACE" > "$manifest"
+        if [[ -s "$manifest" ]]; then
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "::group::Instruction files"
+          cat "$manifest"
+          echo "::endgroup::"
+        else
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+          echo "No changed or tracked instruction files to check."
+        fi
+
+    - name: Brainrot structural check
+      id: rotcheck
+      if: steps.files.outputs.changed == 'true'
+      continue-on-error: true
+      shell: bash
+      env:
+        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+        BASE_SHA: ${{ inputs.base-sha }}
+        HEAD_SHA: ${{ inputs.head-sha }}
+      run: bash "$CHECKS_DIR/run-brainrot.sh" rotcheck "$GITHUB_WORKSPACE"
+
+    - name: Brainrot yap budget
+      id: yaplint
+      if: steps.files.outputs.changed == 'true'
+      continue-on-error: true
+      shell: bash
+      env:
+        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+        BASE_SHA: ${{ inputs.base-sha }}
+        HEAD_SHA: ${{ inputs.head-sha }}
+      run: bash "$CHECKS_DIR/run-brainrot.sh" yaplint "$GITHUB_WORKSPACE"
+
+    - name: RickLang reference guard
+      id: rickcheck
+      if: steps.files.outputs.changed == 'true'
+      continue-on-error: true
+      shell: bash
+      env:
+        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+        BASE_SHA: ${{ inputs.base-sha }}
+        HEAD_SHA: ${{ inputs.head-sha }}
+      run: bash "$CHECKS_DIR/run-ricklang.sh" "$GITHUB_WORKSPACE"
+
+    - name: Render RickLang failure WAV
+      if: steps.rickcheck.outcome == 'failure'
+      shell: bash
+      env:
+        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+      run: >-
+        bash "$CHECKS_DIR/make-ricklang-wav.sh"
+        "$RUNNER_TEMP/never-gonna-deploy-you.wav"
+
+    - name: Upload RickLang failure WAV
+      if: steps.rickcheck.outcome == 'failure'
+      uses: actions/upload-artifact@v7
+      with:
+        name: never-gonna-deploy-you-${{ github.event.repository.name }}-${{ github.run_id }}
+        path: ${{ runner.temp }}/never-gonna-deploy-you.wav
+        if-no-files-found: warn
+        retention-days: 7
+
+    - name: Gate instruction checks
+      if: always()
+      shell: bash
+      env:
+        ROTCHECK: ${{ steps.rotcheck.outcome }}
+        YAPLINT: ${{ steps.yaplint.outcome }}
+        RICKCHECK: ${{ steps.rickcheck.outcome }}
+      run: |
+        echo "rotcheck: $ROTCHECK; yaplint: $YAPLINT; rickcheck: $RICKCHECK"
+        if [[ "$ROTCHECK" == failure || "$YAPLINT" == failure || "$RICKCHECK" == failure ]]; then
+          exit 1
+        fi
