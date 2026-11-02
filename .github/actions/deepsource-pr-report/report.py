@@ -183,7 +183,8 @@ def main():
     for pr in prs:
         number = pr["number"]
         previous = None
-        for page in range(1, 11):
+        page = 1
+        while True:
             batch = get_json(f"{gh}/issues/{number}/comments?per_page=100&page={page}",
                              github_token)
             for comment in batch:
@@ -192,6 +193,7 @@ def main():
                     previous = comment
             if len(batch) < 100:
                 break
+            page += 1
         # Old runs must not overwrite a newer head's report.
         current = get_json(f"{gh}/pulls/{number}", github_token)
         if current["state"] != "open" or current["head"]["sha"] != sha:
