@@ -4,11 +4,7 @@ name: Instruction Rot
 on: # yamllint disable-line rule:truthy
   workflow_call:
   pull_request:
-    paths:
-      - AGENTS.md
-      - CLAUDE.md
-      - GEMINI.md
-      - CODEX.md
+    paths: &instruction-paths
       - "**/AGENTS.md"
       - "**/CLAUDE.md"
       - "**/GEMINI.md"
@@ -20,26 +16,11 @@ on: # yamllint disable-line rule:truthy
       - "**/.windsurfrules"
       - "**/.clinerules"
       - ".github/instruction-checks/**"
+      - ".github/actions/instruction-rot/**"
       - ".github/workflows/instruction-rot.yml"
   push:
     branches: [main]
-    paths:
-      - AGENTS.md
-      - CLAUDE.md
-      - GEMINI.md
-      - CODEX.md
-      - "**/AGENTS.md"
-      - "**/CLAUDE.md"
-      - "**/GEMINI.md"
-      - "**/CODEX.md"
-      - "**/copilot-instructions.md"
-      - ".github/instructions/**"
-      - "**/.cursor/rules/**"
-      - "**/.cursorrules"
-      - "**/.windsurfrules"
-      - "**/.clinerules"
-      - ".github/instruction-checks/**"
-      - ".github/workflows/instruction-rot.yml"
+    paths: *instruction-paths
   workflow_dispatch:
 
 concurrency:
@@ -52,11 +33,16 @@ env:
   HARNESS_REF: ${{ github.repository == 'trvny/.github' && github.sha || 'main' }}
 
 jobs:
-  rotcheck:
-    name: rotcheck
+  checks:
+    name: instruction-checks
     runs-on: ubuntu-slim
     permissions:
       contents: read
+    outputs:
+      changed: ${{ steps.rot.outputs.changed }}
+      rotcheck: ${{ steps.rot.outputs.rotcheck }}
+      yaplint: ${{ steps.rot.outputs.yaplint }}
+      rickcheck: ${{ steps.rot.outputs.rickcheck }}
     steps:
       - name: Checkout target
         uses: actions/checkout@v7
@@ -70,75 +56,20 @@ jobs:
           ref: ${{ env.HARNESS_REF }}
           path: .instruction-rot
           persist-credentials: false
-      - name: Run Brainrot structural check
-        run: bash .instruction-rot/.github/instruction-checks/run-brainrot.sh rotcheck "$GITHUB_WORKSPACE"
-
-  yaplint:
-    name: yaplint
-    runs-on: ubuntu-slim
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout target
-        uses: actions/checkout@v7
+      - name: Run Instruction Rot
+        id: rot
+        uses: ./.instruction-rot/.github/actions/instruction-rot
         with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Checkout Instruction Rot harness
-        uses: actions/checkout@v7
-        with:
-          repository: trvny/.github
-          ref: ${{ env.HARNESS_REF }}
-          path: .instruction-rot
-          persist-credentials: false
-      - name: Run Brainrot yap budget
-        run: bash .instruction-rot/.github/instruction-checks/run-brainrot.sh yaplint "$GITHUB_WORKSPACE"
-
-  rickcheck:
-    name: Never Gonna Deploy You
-    runs-on: ubuntu-slim
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout target
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Checkout Instruction Rot harness
-        uses: actions/checkout@v7
-        with:
-          repository: trvny/.github
-          ref: ${{ env.HARNESS_REF }}
-          path: .instruction-rot
-          persist-credentials: false
-      - id: rickcheck
-        name: Run RickLang reference guard
-        continue-on-error: true
-        run: bash .instruction-rot/.github/instruction-checks/run-ricklang.sh "$GITHUB_WORKSPACE"
-      - name: Render RickLang failure WAV
-        if: steps.rickcheck.outcome == 'failure'
-        run: >-
-          bash .instruction-rot/.github/instruction-checks/make-ricklang-wav.sh
-          "${{ runner.temp }}/never-gonna-deploy-you.wav"
-      - name: Upload RickLang failure WAV
-        if: steps.rickcheck.outcome == 'failure'
-        uses: actions/upload-artifact@v7
-        with:
-          name: never-gonna-deploy-you-${{ github.event.repository.name }}-${{ github.run_id }}
-          path: ${{ runner.temp }}/never-gonna-deploy-you.wav
-          if-no-files-found: warn
-          retention-days: 7
-      - name: Propagate RickLang failure
-        if: steps.rickcheck.outcome == 'failure'
-        run: exit 1
+          base-sha: ${{ env.BASE_SHA }}
+          head-sha: ${{ env.HEAD_SHA }}
 
   report:
     name: PR report
     if: >-
       always() && github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository
-    needs: [rotcheck, yaplint, rickcheck]
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.checks.outputs.changed == 'true'
+    needs: [checks]
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -149,9 +80,9 @@ jobs:
         continue-on-error: true
         uses: actions/github-script@v9
         env:
-          ROTCHECK: ${{ needs.rotcheck.result }}
-          YAPLINT: ${{ needs.yaplint.result }}
-          RICKCHECK: ${{ needs.rickcheck.result }}
+          ROTCHECK: ${{ needs.checks.outputs.rotcheck }}
+          YAPLINT: ${{ needs.checks.outputs.yaplint }}
+          RICKCHECK: ${{ needs.checks.outputs.rickcheck }}
         with:
           script: |
             const marker = '<!-- instruction-rot-report -->';
@@ -161,9 +92,9 @@ jobs:
               `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const artifactName =
               `never-gonna-deploy-you-${context.payload.repository.name}-${context.runId}`;
-            const audioLine = process.env.RICKCHECK === 'success'
-              ? '🎧 RickLang WAV: generated only when the RickLang guard fails.'
-              : `🎧 RickLang WAV: artifact **${artifactName}** in [this run](${runUrl}).`;
+            const audioLine = process.env.RICKCHECK === 'failure'
+              ? `🎧 RickLang WAV: artifact **${artifactName}** in [this run](${runUrl}).`
+              : '🎧 RickLang WAV: generated only when the RickLang guard fails.';
             const body = [
               marker,
               '### Instruction Rot 🧠',
