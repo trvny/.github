@@ -119,7 +119,15 @@ def main():
         raise ValueError("Full 40-character TARGET_SHA required")
     github_token = os.environ["GITHUB_TOKEN"]
     gh = "https://api.github.com/repos/" + repo
-    prs = get_json(f"{gh}/commits/{sha}/pulls?per_page=100", github_token)
+    prs = []
+    page = 1
+    while True:
+        batch = get_json(f"{gh}/commits/{sha}/pulls?per_page=100&page={page}",
+                         github_token)
+        prs.extend(batch)
+        if len(batch) < 100:
+            break
+        page += 1
     prs = [p for p in prs if p["state"] == "open" and p["head"]["sha"] == sha
            and p["head"]["repo"]["full_name"] == repo]
     if not prs:

@@ -11,6 +11,9 @@ Caller workflow requires `issues: write` and `pull-requests: read`. No contents 
 Run on `status` events where `context` starts with `DeepSource:`, ignoring `pending`.
 Composite actions do not declare event triggers. Add a minimal caller job in each
 repository that needs PR reporting. Keep unrelated jobs gated against `status` events.
+For concurrency, serialize per repository in that job with `group: deepsource-report-${{ github.repository }}`,
+`cancel-in-progress: false` and `queue: max`. This avoids stale writers racing
+across commit SHAs; the reporter also verifies that the PR head still matches.
 
 ```yaml
 - uses: trvny/.github/.github/actions/deepsource-pr-report@PINNED_COMMIT_SHA
