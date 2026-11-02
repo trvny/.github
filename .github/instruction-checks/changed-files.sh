@@ -32,7 +32,7 @@ done
 if (( matched == 0 )); then
   for path in "${changed[@]}"; do
     case "$path" in
-      .github/instruction-checks/*|.github/workflows/instruction-rot.yml)
+      .github/instruction-checks/*|.github/actions/instruction-rot/*|.github/workflows/instruction-rot.yml)
         list_all
         break
         ;;
