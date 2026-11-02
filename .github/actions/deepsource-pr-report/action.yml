@@ -1,0 +1,27 @@
+name: DeepSource PR findings
+description: Sync DeepSource analysis issues into one PR comment using the current head SHA.
+inputs:
+  deepsource-token:
+    description: DeepSource personal access token.
+    required: true
+  github-token:
+    description: Caller repository GitHub token with issues write and pull requests read.
+    required: true
+  commit-sha:
+    description: Exact analyzed commit SHA.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Publish DeepSource findings
+      shell: bash
+      env:
+        DEEPSOURCE_PAT: ${{ inputs.deepsource-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        TARGET_SHA: ${{ inputs.commit-sha }}
+      run: |
+        if [[ -z "$DEEPSOURCE_PAT" ]]; then
+          echo "::notice::Configure DEEPSOURCE_PAT to publish DeepSource PR reports."
+          exit 0
+        fi
+        python3 "$GITHUB_ACTION_PATH/report.py"
