@@ -9,6 +9,7 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 MARKER = "<!-- deepsource-pr-findings:v1 -->"
+MAX_REPORT_BYTES = 50_000
 QUERY = """
 query ($sha: String!, $after: String) {
   run(commitOid: $sha) {
@@ -17,14 +18,33 @@ query ($sha: String!, $after: String) {
       pageInfo { hasNextPage endCursor }
       edges {
         node {
+          id
           analyzer { name }
           issues(first: 100) {
             totalCount
+            pageInfo { hasNextPage endCursor }
             edges {
               node {
                 path beginLine severity shortcode title isSuppressed
               }
             }
+          }
+        }
+      }
+    }
+  }
+}
+"""
+
+MORE_ISSUES_QUERY = """
+query ($check: ID!, $cursor: String) {
+  node(id: $check) {
+    ... on Check {
+      issues(first: 100, after: $cursor) {
+        pageInfo { hasNextPage endCursor }
+        edges {
+          node {
+            path beginLine severity shortcode title isSuppressed
           }
         }
       }
@@ -52,34 +72,44 @@ def safe_markdown(value):
 
 
 def format_report(repo, sha, run):
-    found, hidden = [], 0
+    found = []
     for edge in run["checks"]["edges"]:
         check = edge["node"]
-        connection = check["issues"]
-        issues = [e["node"] for e in connection["edges"]]
-        hidden += max(0, (connection["totalCount"] or 0) - len(issues))
-        for issue in issues:
-            if not issue["isSuppressed"]:
+        if not check:
+            continue
+        for item in check["issues"]["edges"]:
+            issue = item["node"]
+            if issue and not issue["isSuppressed"]:
                 found.append((check["analyzer"]["name"], issue))
     found.sort(key=lambda x: (
         {"CRITICAL": 0, "MAJOR": 1, "MINOR": 2}.get(x[1]["severity"].upper(), 3),
         x[1]["path"], x[1]["beginLine"],
     ))
-    lines = [MARKER, "### DeepSource findings: " + sha[:7], ""]
-    lines.append(f"{len(found)} findings" + (f" (+{hidden} not shown)" if hidden else "") + ".")
-    lines.append("")
-    for analyzer, issue in found[:150]:
+    lines = [MARKER, "### DeepSource findings: " + sha[:7], "",
+             f"{len(found)} actionable findings.", ""]
+    footer = ["",
+              f"[Full DeepSource analysis](https://app.deepsource.com/gh/{repo}/run/{run['runUid']}/)",
+              "", "_Updated automatically from the DeepSource API._"]
+    used = len("\n".join(lines + footer).encode("utf-8")) + 256
+    shown = 0
+    for analyzer, issue in found:
+        if shown >= 150:
+            break
         path, line = issue["path"], issue["beginLine"]
         title = safe_markdown(" ".join((issue["title"] or "Unnamed issue").split()))
         code = safe_markdown(issue["shortcode"] or "AI")
         link = f"https://github.com/{repo}/blob/{sha}/{quote(path, safe='/')}#L{line}"
-        lines.append(f"- **{issue['severity'].lower()}** {safe_markdown(analyzer)} "
-                     f"[{safe_markdown(path)}:{line}]({link}): {code} · {title}")
-    if len(found) > 150:
-        lines.append(f"- And {len(found) - 150} more findings.")
-    lines.extend(["", f"[Full DeepSource analysis](https://app.deepsource.com/gh/{repo}/run/{run['runUid']}/)",
-                  "", "_Updated automatically from the DeepSource API._"])
-    return "\n".join(lines), len(found) + hidden
+        entry = (f"- **{issue['severity'].lower()}** {safe_markdown(analyzer)} "
+                 f"[{safe_markdown(path)}:{line}]({link}): {code} · {title}")
+        size = len((entry + "\n").encode("utf-8"))
+        if used + size > MAX_REPORT_BYTES:
+            break
+        lines.append(entry)
+        used += size
+        shown += 1
+    if shown < len(found):
+        lines.append(f"- {len(found) - shown} additional findings in the full report.")
+    return "\n".join(lines + footer), len(found)
 
 
 def main():
@@ -118,6 +148,35 @@ def main():
             raise RuntimeError("Missing DeepSource check pagination cursor")
     else:
         raise RuntimeError("DeepSource check pagination exceeded 100 pages")
+    # Follow each check's issue cursor before filtering suppressed findings.
+    for edge in all_checks:
+        check = edge["node"]
+        if not check:
+            continue
+        issues = check["issues"]
+        seen_cursors = set()
+        for _ in range(100):
+            info = issues["pageInfo"]
+            if not info["hasNextPage"]:
+                break
+            cursor = info["endCursor"]
+            if not cursor or cursor in seen_cursors:
+                raise RuntimeError("Invalid DeepSource issue pagination cursor")
+            seen_cursors.add(cursor)
+            data = get_json("https://api.deepsource.com/graphql/",
+                            os.environ["DEEPSOURCE_PAT"], "POST",
+                            {"query": MORE_ISSUES_QUERY,
+                             "variables": {"check": check["id"], "cursor": cursor}})
+            if data.get("errors"):
+                raise RuntimeError("DeepSource issues query rejected: " + json.dumps(data["errors"]))
+            node = (data.get("data") or {}).get("node")
+            if not node:
+                raise RuntimeError("DeepSource check missing during pagination")
+            page = node["issues"]
+            issues["edges"].extend(page["edges"])
+            issues["pageInfo"] = page["pageInfo"]
+        else:
+            raise RuntimeError("DeepSource issue pagination exceeded 100 pages")
     run["checks"]["edges"] = all_checks
     report, count = format_report(repo, sha, run)
 
