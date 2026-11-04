@@ -86,7 +86,7 @@ jobs:
 
       - id: settings
         name: Sync repository settings
-        uses: joshjohanning/bulk-github-repo-settings-sync-action@f4c247dd32d37e0ffdb0f728e7c90bbe0b67d5f6 # v2.12.0
+        uses: joshjohanning/bulk-github-repo-settings-sync-action@40134e844f292d0dcdc88c24fde06f085d191a35 # v2.12.4
         with:
           github-token: ${{ secrets.GH_PAT }}
           repositories: ${{ matrix.repositories }}
