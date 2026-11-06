@@ -154,6 +154,13 @@
       "avatarUrl": "https://avatars.githubusercontent.com/in/867647?v=4",
       "profileUrl": "https://github.com/apps/greptile-apps",
       "type": "Bot"
+    },
+    {
+      "id": 46447321,
+      "login": "allcontributors[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/23186?v=4",
+      "profileUrl": "https://github.com/apps/allcontributors",
+      "type": "Bot"
     }
   ]
 }
