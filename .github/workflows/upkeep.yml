@@ -118,6 +118,8 @@ jobs:
           AUTOMERGE_IDLE_HOURS: ${{ vars.PR_AUTOMERGE_IDLE_HOURS || '4' }}
           AUTOMERGE_LABEL: ${{ vars.PR_AUTOMERGE_LABEL || 'automerge' }}
           AUTOMERGE_METHOD: ${{ vars.PR_AUTOMERGE_METHOD || 'squash' }}
+          DEPENDABOT_AUTOMERGE_ENABLED: ${{ vars.PR_DEPENDABOT_AUTOMERGE_ENABLED || 'true' }}
+          DEPENDABOT_AUTOMERGE_METHOD: ${{ vars.PR_DEPENDABOT_AUTOMERGE_METHOD || 'squash' }}
         with:
           github-token: ${{ secrets.GH_PAT }}
           retries: 3
