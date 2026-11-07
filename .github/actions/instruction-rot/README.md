@@ -2,7 +2,7 @@
 
 Checks instruction files belonging to the **calling repository**, not shared
 instruction files. The rules and scripts live centrally in
-`trvny/.github/.github/instruction-checks/`.
+`trvny/.github/.github/actions/instruction-rot/checks/`.
 
 Use after `actions/checkout`; `fetch-depth: 0` enables accurate changed-file
 selection. When the comparison commits are unavailable, all tracked supported

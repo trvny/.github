@@ -32,7 +32,7 @@ runs:
       id: files
       shell: bash
       env:
-        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+        CHECKS_DIR: ${{ github.action_path }}/checks
         BASE_SHA: ${{ inputs.base-sha }}
         HEAD_SHA: ${{ inputs.head-sha }}
       run: |
@@ -55,7 +55,7 @@ runs:
       continue-on-error: true
       shell: bash
       env:
-        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+        CHECKS_DIR: ${{ github.action_path }}/checks
         BASE_SHA: ${{ inputs.base-sha }}
         HEAD_SHA: ${{ inputs.head-sha }}
       run: bash "$CHECKS_DIR/run-brainrot.sh" rotcheck "$GITHUB_WORKSPACE"
@@ -66,7 +66,7 @@ runs:
       continue-on-error: true
       shell: bash
       env:
-        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+        CHECKS_DIR: ${{ github.action_path }}/checks
         BASE_SHA: ${{ inputs.base-sha }}
         HEAD_SHA: ${{ inputs.head-sha }}
       run: bash "$CHECKS_DIR/run-brainrot.sh" yaplint "$GITHUB_WORKSPACE"
@@ -77,7 +77,7 @@ runs:
       continue-on-error: true
       shell: bash
       env:
-        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+        CHECKS_DIR: ${{ github.action_path }}/checks
         BASE_SHA: ${{ inputs.base-sha }}
         HEAD_SHA: ${{ inputs.head-sha }}
       run: bash "$CHECKS_DIR/run-ricklang.sh" "$GITHUB_WORKSPACE"
@@ -86,7 +86,7 @@ runs:
       if: steps.rickcheck.outcome == 'failure'
       shell: bash
       env:
-        CHECKS_DIR: ${{ github.action_path }}/../../instruction-checks
+        CHECKS_DIR: ${{ github.action_path }}/checks
       run: >-
         bash "$CHECKS_DIR/make-ricklang-wav.sh"
         "$RUNNER_TEMP/never-gonna-deploy-you.wav"
