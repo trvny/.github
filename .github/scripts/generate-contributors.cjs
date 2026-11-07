@@ -13,10 +13,7 @@ const TITLE_HEIGHT = 66;
 const FOOTER_GAP = 20;
 
 function keyFor(member) {
-  const profileUrl = member.profileUrl?.replace(/\/+$/, "").toLowerCase();
-  return profileUrl
-    ? `profile:${profileUrl}`
-    : `login:${member.login.toLowerCase()}`;
+  return `login:${member.login.toLowerCase()}`;
 }
 
 function stableMember(member) {
@@ -44,7 +41,9 @@ function normalizeActor(actor) {
     id: actor.id || null,
     login: actor.login,
     avatarUrl: actor.avatar_url || actor.avatarUrl || null,
-    profileUrl: actor.html_url || actor.url || `https://github.com/${actor.login}`,
+    profileUrl: actor.html_url ||
+      (actor.url?.startsWith("https://github.com/") ? actor.url : null) ||
+      `https://github.com/${actor.login}`,
     type: actor.type || actor.__typename || "User",
   };
 }
@@ -86,7 +85,7 @@ async function listRepositories(github) {
 
   return [...new Map(repositories.map((repo) => [repo.full_name, repo])).values()]
     .filter((repo) => OWNERS.includes(repo.owner.login))
-    .filter((repo) => !repo.private && !repo.archived && !repo.disabled && !repo.fork)
+    .filter((repo) => !repo.private && !repo.disabled)
     .sort((left, right) => left.full_name.localeCompare(right.full_name));
 }
 
@@ -101,6 +100,29 @@ async function listContributors(github, repo) {
   } catch (error) {
     if (error?.status === 204 || error?.status === 409) return [];
     throw error;
+  }
+}
+
+// Repository-wide endpoints cover activity outside PR authorship/reviews.
+async function collectRepositoryActivityActors(github, repo, addActor) {
+  const { login: owner } = repo.owner;
+  const { name } = repo;
+  const sources = [
+    ["GET /repos/{owner}/{repo}/issues", "user", 2, { state: "all" }],
+    ["GET /repos/{owner}/{repo}/issues/comments", "user", 1, {}],
+    ["GET /repos/{owner}/{repo}/pulls/comments", "user", 1, {}],
+    ["GET /repos/{owner}/{repo}/comments", "user", 1, {}],
+    ["GET /repos/{owner}/{repo}/issues/events", "actor", 1, {}],
+  ];
+
+  for (const [route, field, weight, options] of sources) {
+    const items = await github.paginate(route, {
+      owner,
+      repo: name,
+      per_page: 100,
+      ...options,
+    });
+    for (const item of items) addActor(item[field], weight);
   }
 }
 
@@ -495,7 +517,7 @@ function buildSvg(members, avatars) {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
 <title id="title">Contributors</title>
-<desc id="desc">${members.length} unique contributors from commits, pull requests, reviews, and discussions across public non-fork trvny and travnie repositories.</desc>
+<desc id="desc">${members.length} unique contributors from commits, issues, pull requests, reviews, comments, events, and discussions across public trvny and travnie repositories.</desc>
 <style>
   .bg { fill: #ffffff; stroke: #d0d7de; }
   .heading { fill: #1f2328; font: 700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
@@ -554,6 +576,7 @@ module.exports = async ({ github, core }) => {
     }
 
     await collectPullRequestActors(github, repo, addActor);
+    await collectRepositoryActivityActors(github, repo, addActor);
     await collectDiscussionActors(github, repo, addActor);
   }
 
@@ -617,6 +640,6 @@ module.exports = async ({ github, core }) => {
   const removed = [...previousKeys].filter((key) => !currentKeys.has(key)).length;
   core.notice(
     `Contributor roster updated: ${members.length} total, +${added}, -${removed}. ` +
-    `Scanned ${repositories.length} public non-fork repositories.`,
+    `Scanned ${repositories.length} public repositories.`,
   );
 };
