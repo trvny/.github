@@ -37,14 +37,18 @@ function sameMembers(previous, current) {
 
 function normalizeActor(actor) {
   if (!actor?.login) return null;
+  const type = actor.type || actor.__typename || "User";
+  const login = type === "Bot" && !actor.login.endsWith("[bot]")
+    ? `${actor.login}[bot]`
+    : actor.login;
   return {
-    id: actor.id || null,
-    login: actor.login,
+    id: Number.isSafeInteger(actor.id) ? actor.id : null,
+    login,
     avatarUrl: actor.avatar_url || actor.avatarUrl || null,
     profileUrl: actor.html_url ||
       (actor.url?.startsWith("https://github.com/") ? actor.url : null) ||
-      `https://github.com/${actor.login}`,
-    type: actor.type || actor.__typename || "User",
+      `https://github.com/${login}`,
+    type,
   };
 }
 
