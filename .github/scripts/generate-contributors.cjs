@@ -126,7 +126,12 @@ async function collectRepositoryActivityActors(github, repo, addActor) {
       per_page: 100,
       ...options,
     });
-    for (const item of items) addActor(item[field], weight);
+    for (const item of items) {
+      if (field === "user" && route.endsWith("/issues") && item.pull_request) {
+        continue;
+      }
+      addActor(item[field], weight);
+    }
   }
 }
 
