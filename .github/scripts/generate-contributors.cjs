@@ -38,6 +38,7 @@ function sameMembers(previous, current) {
 function normalizeActor(actor) {
   if (!actor?.login) return null;
   const type = actor.type || actor.__typename || "User";
+  if (type === "Organization") return null;
   const login = type === "Bot" && !actor.login.endsWith("[bot]")
     ? `${actor.login}[bot]`
     : actor.login;
@@ -89,7 +90,7 @@ async function listRepositories(github) {
 
   return [...new Map(repositories.map((repo) => [repo.full_name, repo])).values()]
     .filter((repo) => OWNERS.includes(repo.owner.login))
-    .filter((repo) => !repo.private && !repo.disabled)
+    .filter((repo) => !repo.private && !repo.disabled && !repo.fork)
     .sort((left, right) => left.full_name.localeCompare(right.full_name));
 }
 
