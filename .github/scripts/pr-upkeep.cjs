@@ -101,18 +101,34 @@ async function checkState(github, owner, repo, headSha) {
   };
 }
 
-function safeDependabotUpdate(pullRequest) {
+async function safeDependabotUpdate(github, owner, repo, pullRequest) {
   if (
     pullRequest.user?.login !== 'dependabot[bot]' ||
     !pullRequest.head.ref?.startsWith('dependabot/')
   ) return false;
 
-  const types = [...(pullRequest.body || '').matchAll(
-    /^\s*-\s*update-type:\s*(\S+)/gm,
-  )].map((match) => match[1]);
-  return types.length > 0 && types.every((type) =>
-    type === 'version-update:semver-patch' ||
-    type === 'version-update:semver-minor');
+  const commits = await github.paginate(github.rest.pulls.listCommits, {
+    owner,
+    repo,
+    pull_number: pullRequest.number,
+    per_page: 100,
+  });
+  const updates = commits.filter((commit) => commit.parents?.length !== 2);
+  if (!updates.length) return false;
+
+  return updates.every((commit) => {
+    if (
+      commit.author?.login !== 'dependabot[bot]' &&
+      commit.committer?.login !== 'dependabot[bot]'
+    ) return false;
+
+    const types = [...(commit.commit?.message || '').matchAll(
+      /^\s*-?\s*update-type:\s*(\S+)/gm,
+    )].map((match) => match[1]);
+    return types.length > 0 && types.every((type) =>
+      type === 'version-update:semver-patch' ||
+      type === 'version-update:semver-minor');
+  });
 }
 
 async function blockingReviewFeedback(github, owner, repo, pullRequest) {
@@ -279,8 +295,17 @@ module.exports = async function keepPullRequestsCurrent({
     }
 
     const dependabotAuthor = pullRequest.user?.login === 'dependabot[bot]';
-    const dependabotEligible = dependabotEnabled &&
-      safeDependabotUpdate(pullRequest);
+    let dependabotEligible = false;
+    if (dependabotEnabled && dependabotAuthor) {
+      try {
+        dependabotEligible = await safeDependabotUpdate(
+          github, owner, repo, pullRequest,
+        );
+      } catch (error) {
+        core.warning(`${prefix}: Dependabot metadata unavailable: ${error.message}`);
+        continue;
+      }
+    }
     const labelledEligible = automergeEnabled &&
       hasLabel(pullRequest, automergeLabel);
 
