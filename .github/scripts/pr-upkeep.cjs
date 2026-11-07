@@ -198,6 +198,10 @@ module.exports = async function keepPullRequestsCurrent({
     request: { timeout: 30_000 },
   });
   const defaultBranch = repository.data.default_branch;
+  const updateMethod = process.env.PR_BRANCH_UPDATE_METHOD || 'rebase';
+  if (!['merge', 'rebase'].includes(updateMethod)) {
+    throw new Error(`Invalid PR_BRANCH_UPDATE_METHOD: ${updateMethod}`);
+  }
   const automergeEnabled =
     (process.env.AUTOMERGE_ENABLED || 'false').toLowerCase() === 'true';
   const automergeLabel = process.env.AUTOMERGE_LABEL || 'automerge';
@@ -252,6 +256,10 @@ module.exports = async function keepPullRequestsCurrent({
     );
 
     if (comparison.behind_by > 0) {
+      if (pullRequest.head.ref === 'gptomek/control') {
+        core.info(`${prefix}: reserved GPTomek control branch; left untouched.`);
+        continue;
+      }
       const sameRepository =
         pullRequest.head.repo?.full_name === pullRequest.base.repo.full_name;
       if (!sameRepository) {
@@ -269,17 +277,35 @@ module.exports = async function keepPullRequestsCurrent({
       }
 
       try {
-        await github.request(
-          'PUT /repos/{owner}/{repo}/pulls/{pull_number}/update-branch',
-          {
-            owner,
-            repo,
-            pull_number: pullRequest.number,
-            expected_head_sha: pullRequest.head.sha,
-          },
-        );
+        if (updateMethod === 'rebase') {
+          await github.graphql(`mutation(
+            $pullRequestId: ID!, $expectedHeadOid: GitObjectID!
+          ) {
+            updatePullRequestBranch(input: {
+              pullRequestId: $pullRequestId
+              expectedHeadOid: $expectedHeadOid
+              updateMethod: REBASE
+            }) {
+              pullRequest { id }
+            }
+          }`, {
+            pullRequestId: pullRequest.node_id,
+            expectedHeadOid: pullRequest.head.sha,
+          });
+        } else {
+          await github.request(
+            'PUT /repos/{owner}/{repo}/pulls/{pull_number}/update-branch',
+            {
+              owner,
+              repo,
+              pull_number: pullRequest.number,
+              expected_head_sha: pullRequest.head.sha,
+            },
+          );
+        }
         core.info(
-          `${prefix}: updated with ${defaultBranch}; merge deferred for fresh CI.`,
+          `${prefix}: ${updateMethod} update requested onto ${defaultBranch}; ` +
+          'merge deferred for fresh CI.',
         );
       } catch (error) {
         if ([403, 422].includes(error.status)) {

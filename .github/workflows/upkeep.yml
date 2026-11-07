@@ -115,6 +115,7 @@ jobs:
           AUTOMERGE_ALLOW_NO_CHECKS: >-
             ${{ vars.PR_AUTOMERGE_ALLOW_NO_CHECKS || 'false' }}
           AUTOMERGE_ENABLED: "false"
+          PR_BRANCH_UPDATE_METHOD: ${{ vars.PR_BRANCH_UPDATE_METHOD || 'rebase' }}
           AUTOMERGE_IDLE_HOURS: ${{ vars.PR_AUTOMERGE_IDLE_HOURS || '4' }}
           AUTOMERGE_LABEL: ${{ vars.PR_AUTOMERGE_LABEL || 'automerge' }}
           AUTOMERGE_METHOD: ${{ vars.PR_AUTOMERGE_METHOD || 'squash' }}
