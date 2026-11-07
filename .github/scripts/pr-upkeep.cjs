@@ -308,9 +308,12 @@ module.exports = async function keepPullRequestsCurrent({
           'merge deferred for fresh CI.',
         );
       } catch (error) {
-        if ([403, 422].includes(error.status)) {
+        const graphqlRejected = updateMethod === 'rebase' &&
+          (error.name === 'GraphqlResponseError' || Array.isArray(error.errors));
+        if ([403, 422].includes(error.status) || graphqlRejected) {
+          const reason = error.status || 'GraphQL';
           const message =
-            `${prefix}: branch update rejected (${error.status}): ${error.message}`;
+            `${prefix}: branch update rejected (${reason}): ${error.message}`;
           failures.push(message);
           core.warning(message);
           continue;
