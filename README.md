@@ -28,7 +28,7 @@
 # .github
 > This repo contains shared community resources that will propagate to all public repositories that don't already have their own resource that fills this purpose. You can learn more about this GitHub feature [here](https://help.github.com/en/articles/creating-a-default-community-health-file-for-your-organization). 
 
-## [Licenses](LICENSE)
+## [Licenses](LICENSE) <picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/github/github-mcp-server/blob/main/pkg/octicons/icons/law-dark.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/github/github-mcp-server/blob/main/pkg/octicons/icons/law-light.png"><img src="https://github.com/github/github-mcp-server/blob/main/pkg/octicons/icons/law-light.png" width="20" height="20" alt="law"></picture>
 
 [![code license](https://img.shields.io/github/license/trvny/.github?label=code&logo=opensourceinitiative&logoColor=white&color=6f42c1&style=flat-square)](https://spdx.org/licenses/ISC)
 [![content license](https://img.shields.io/badge/content-CC_BY_4.0-2b579a?style=flat-square&logo=creativecommons&logoColor=white)](https://creativecommons.org/licenses/by/4.0)
