@@ -120,12 +120,25 @@ async function collectRepositoryActivityActors(github, repo, addActor) {
   ];
 
   for (const [route, field, weight, options] of sources) {
-    const items = await github.paginate(route, {
-      owner,
-      repo: name,
-      per_page: 100,
-      ...options,
-    });
+    if (repo.has_issues === false &&
+        (route.endsWith("/issues") || route.endsWith("/issues/events"))) {
+      continue;
+    }
+
+    let items;
+    try {
+      items = await github.paginate(route, {
+        owner,
+        repo: name,
+        per_page: 100,
+        ...options,
+      });
+    } catch (error) {
+      if (repo.has_issues === false && [404, 410].includes(error.status)) {
+        continue;
+      }
+      throw error;
+    }
     for (const item of items) {
       if (field === "user" && route.endsWith("/issues") && item.pull_request) {
         continue;
