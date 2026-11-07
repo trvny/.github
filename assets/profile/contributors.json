@@ -58,13 +58,6 @@
       "type": "User"
     },
     {
-      "id": 132028505,
-      "login": "coderabbitai",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/132028505?v=4",
-      "profileUrl": "https://github.com/coderabbitai",
-      "type": "Organization"
-    },
-    {
       "id": 324626588,
       "login": "kucharz2026-maker",
       "avatarUrl": "https://avatars.githubusercontent.com/u/324626588?v=4",
@@ -156,13 +149,6 @@
       "type": "Bot"
     },
     {
-      "id": 3942091,
-      "login": "j4velin",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/3942091?v=4",
-      "profileUrl": "https://github.com/j4velin",
-      "type": "User"
-    },
-    {
       "id": 62310815,
       "login": "github-advanced-security[bot]",
       "avatarUrl": "https://avatars.githubusercontent.com/in/57789?v=4",
@@ -205,13 +191,6 @@
       "type": "Bot"
     },
     {
-      "id": 46410174,
-      "login": "all-contributors",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/46410174?v=4",
-      "profileUrl": "https://github.com/all-contributors",
-      "type": "Organization"
-    },
-    {
       "id": 242468646,
       "login": "Claude[bot]",
       "avatarUrl": "https://avatars.githubusercontent.com/in/2246796?v=4",
@@ -219,60 +198,11 @@
       "type": "Bot"
     },
     {
-      "id": 12978679,
-      "login": "Rodhos",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/12978679?v=4",
-      "profileUrl": "https://github.com/Rodhos",
-      "type": "User"
-    },
-    {
-      "id": 31301487,
-      "login": "alonezw",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/31301487?v=4",
-      "profileUrl": "https://github.com/alonezw",
-      "type": "User"
-    },
-    {
-      "id": 7817144,
-      "login": "friedlP",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/7817144?v=4",
-      "profileUrl": "https://github.com/friedlP",
-      "type": "User"
-    },
-    {
-      "id": 39814207,
-      "login": "pull[bot]",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/12910?v=4",
-      "profileUrl": "https://github.com/apps/pull",
-      "type": "Bot"
-    },
-    {
-      "id": 27347476,
-      "login": "dependabot",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/27347476?v=4",
-      "profileUrl": "https://github.com/dependabot",
-      "type": "Organization"
-    },
-    {
       "id": 71236121,
       "login": "get",
       "avatarUrl": "https://avatars.githubusercontent.com/u/71236121?v=4",
       "profileUrl": "https://github.com/get",
       "type": "User"
-    },
-    {
-      "id": 8255666,
-      "login": "lelelic",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/8255666?v=4",
-      "profileUrl": "https://github.com/lelelic",
-      "type": "User"
-    },
-    {
-      "id": 188008098,
-      "login": "stepsecurity-app[bot]",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/1053343?v=4",
-      "profileUrl": "https://github.com/apps/stepsecurity-app",
-      "type": "Bot"
     },
     {
       "id": 383316,
@@ -303,39 +233,11 @@
       "type": "Bot"
     },
     {
-      "id": 8712544,
-      "login": "svetlemodry",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/8712544?v=4",
-      "profileUrl": "https://github.com/svetlemodry",
-      "type": "User"
-    },
-    {
-      "id": 9983079,
-      "login": "volatile",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/9983079?v=4",
-      "profileUrl": "https://github.com/volatile",
-      "type": "Organization"
-    },
-    {
       "id": 236830434,
       "login": "context7[bot]",
       "avatarUrl": "https://avatars.githubusercontent.com/in/2083650?v=4",
       "profileUrl": "https://github.com/apps/context7",
       "type": "Bot"
-    },
-    {
-      "id": 24716924,
-      "login": "marcositz",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/24716924?v=4",
-      "profileUrl": "https://github.com/marcositz",
-      "type": "User"
-    },
-    {
-      "id": 32389249,
-      "login": "Pixie80",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/32389249?v=4",
-      "profileUrl": "https://github.com/Pixie80",
-      "type": "User"
     },
     {
       "id": 325200326,
