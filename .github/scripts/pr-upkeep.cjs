@@ -94,7 +94,73 @@ async function checkState(github, owner, repo, headSha) {
     failed: [...failedChecks, ...unusualChecks, ...failedStatuses],
     observed: checkRuns.length + statuses.length > 0,
     pending: [...pendingChecks, ...pendingStatuses],
+    allGreen: checkRuns.length + statuses.length > 0 &&
+      checkRuns.every((run) =>
+        run.status === 'completed' && run.conclusion === 'success') &&
+      statuses.every((status) => status.state === 'success'),
   };
+}
+
+function safeDependabotUpdate(pullRequest) {
+  if (
+    pullRequest.user?.login !== 'dependabot[bot]' ||
+    !pullRequest.head.ref?.startsWith('dependabot/')
+  ) return false;
+
+  const types = [...(pullRequest.body || '').matchAll(
+    /^\s*-\s*update-type:\s*(\S+)/gm,
+  )].map((match) => match[1]);
+  return types.length > 0 && types.every((type) =>
+    type === 'version-update:semver-patch' ||
+    type === 'version-update:semver-minor');
+}
+
+async function blockingReviewFeedback(github, owner, repo, pullRequest) {
+  if (
+    pullRequest.requested_reviewers?.length ||
+    pullRequest.requested_teams?.length
+  ) return 'requested reviewers are still pending';
+
+  const reviews = await github.paginate(github.rest.pulls.listReviews, {
+    owner,
+    repo,
+    pull_number: pullRequest.number,
+    per_page: 100,
+  });
+  const latest = new Map();
+  for (const review of reviews) {
+    if (!review.user?.login) continue;
+    if (['APPROVED', 'CHANGES_REQUESTED', 'DISMISSED'].includes(review.state)) {
+      latest.set(review.user.login.toLowerCase(), review.state);
+    }
+  }
+  if ([...latest.values()].includes('CHANGES_REQUESTED')) {
+    return 'changes requested in reviews';
+  }
+
+  let cursor = null;
+  do {
+    const data = await github.graphql(`query(
+      $owner: String!, $repo: String!, $number: Int!, $cursor: String
+    ) {
+      repository(owner: $owner, name: $repo) {
+        pullRequest(number: $number) {
+          reviewThreads(first: 100, after: $cursor) {
+            nodes { isResolved }
+            pageInfo { hasNextPage endCursor }
+          }
+        }
+      }
+    }`, { owner, repo, number: pullRequest.number, cursor });
+    const page = data.repository?.pullRequest?.reviewThreads;
+    if (!page) return 'review threads could not be verified';
+    if (page.nodes.some((thread) => !thread.isResolved)) {
+      return 'unresolved review threads';
+    }
+    cursor = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null;
+  } while (cursor);
+
+  return null;
 }
 
 function describeChecks(items) {
@@ -124,16 +190,24 @@ module.exports = async function keepPullRequestsCurrent({
   const allowNoChecks =
     (process.env.AUTOMERGE_ALLOW_NO_CHECKS || 'false').toLowerCase() ===
     'true';
+  const dependabotEnabled =
+    (process.env.DEPENDABOT_AUTOMERGE_ENABLED || 'true').toLowerCase() ===
+    'true';
+  const dependabotMethod =
+    process.env.DEPENDABOT_AUTOMERGE_METHOD || 'squash';
   const failures = [];
 
-  if (automergeEnabled) {
+  if (automergeEnabled || dependabotEnabled) {
     if (!Number.isFinite(idleHours) || idleHours < 0) {
       throw new Error(
         `Invalid AUTOMERGE_IDLE_HOURS: ${process.env.AUTOMERGE_IDLE_HOURS}`,
       );
     }
-    if (!MERGE_METHODS.has(mergeMethod)) {
+    if (automergeEnabled && !MERGE_METHODS.has(mergeMethod)) {
       throw new Error(`Invalid AUTOMERGE_METHOD: ${mergeMethod}`);
+    }
+    if (dependabotEnabled && !['squash', 'rebase'].includes(dependabotMethod)) {
+      throw new Error(`Invalid DEPENDABOT_AUTOMERGE_METHOD: ${dependabotMethod}`);
     }
   }
 
@@ -204,22 +278,24 @@ module.exports = async function keepPullRequestsCurrent({
       continue;
     }
 
-    if (!automergeEnabled) {
-      core.info(`${prefix}: branch is current; automerge disabled.`);
+    const dependabotAuthor = pullRequest.user?.login === 'dependabot[bot]';
+    const dependabotEligible = dependabotEnabled &&
+      safeDependabotUpdate(pullRequest);
+    const labelledEligible = automergeEnabled &&
+      hasLabel(pullRequest, automergeLabel);
+
+    if (!dependabotEligible && !labelledEligible) {
+      core.info(`${prefix}: no automerge route${dependabotAuthor
+        ? ' (Dependabot update not eligible for safe semver automerge)' : ''}.`);
       continue;
     }
 
     if (pullRequest.draft) {
-      core.info(
-        `${prefix}: branch is current; draft is not eligible for automerge.`,
-      );
+      core.info(`${prefix}: draft is not eligible for automerge.`);
       continue;
     }
 
-    if (!hasLabel(pullRequest, automergeLabel)) {
-      core.info(`${prefix}: up to date; no ${automergeLabel} label.`);
-      continue;
-    }
+    const selectedMethod = dependabotEligible ? dependabotMethod : mergeMethod;
 
     pullRequest = await getPullRequest(github, owner, repo, pullRequest.number);
     if (
@@ -265,17 +341,35 @@ module.exports = async function keepPullRequestsCurrent({
       core.info(`${prefix}: pending checks: ${describeChecks(checks.pending)}.`);
       continue;
     }
+    if (dependabotEligible && !checks.allGreen) {
+      core.info(`${prefix}: Dependabot requires every observed check to succeed.`);
+      continue;
+    }
+
+    let reviewBlocker;
+    try {
+      reviewBlocker = await blockingReviewFeedback(
+        github, owner, repo, pullRequest,
+      );
+    } catch (error) {
+      core.warning(`${prefix}: cannot verify review state: ${error.message}`);
+      continue;
+    }
+    if (reviewBlocker) {
+      core.info(`${prefix}: ${reviewBlocker}; merge deferred.`);
+      continue;
+    }
 
     try {
       const merge = await github.rest.pulls.merge({
         owner,
         repo,
         pull_number: pullRequest.number,
-        merge_method: mergeMethod,
+        merge_method: selectedMethod,
         sha: pullRequest.head.sha,
       });
       if (merge.data.merged) {
-        core.info(`${prefix}: merged via ${mergeMethod}.`);
+        core.info(`${prefix}: merged via ${selectedMethod}.`);
       } else {
         core.warning(`${prefix}: merge declined: ${merge.data.message}`);
       }
