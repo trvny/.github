@@ -4,7 +4,7 @@
     {
       "id": 120686325,
       "login": "trvny",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/120686325?u=f421c62e9d101e4f7ddac87061f82ccca98b2fe1&v=4",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/120686325?v=4",
       "profileUrl": "https://github.com/trvny",
       "type": "User"
     },
@@ -44,24 +44,10 @@
       "type": "User"
     },
     {
-      "id": 311718492,
-      "login": "claudiusz69",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/4454097?v=4",
-      "profileUrl": "https://github.com/apps/claudiusz69",
-      "type": "Bot"
-    },
-    {
       "id": 62050782,
       "login": "deepsource-autofix[bot]",
       "avatarUrl": "https://avatars.githubusercontent.com/in/57168?v=4",
       "profileUrl": "https://github.com/apps/deepsource-autofix",
-      "type": "Bot"
-    },
-    {
-      "id": 158243242,
-      "login": "devin-ai-integration",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/811515?v=4",
-      "profileUrl": "https://github.com/apps/devin-ai-integration",
       "type": "Bot"
     },
     {
@@ -72,67 +58,11 @@
       "type": "User"
     },
     {
-      "id": 136622811,
+      "id": 132028505,
       "login": "coderabbitai",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/347564?v=4",
-      "profileUrl": "https://github.com/apps/coderabbitai",
-      "type": "Bot"
-    },
-    {
-      "id": 199175422,
-      "login": "chatgpt-codex-connector",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/1144995?v=4",
-      "profileUrl": "https://github.com/apps/chatgpt-codex-connector",
-      "type": "Bot"
-    },
-    {
-      "id": 58596630,
-      "login": "sourcery-ai",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/48477?v=4",
-      "profileUrl": "https://github.com/apps/sourcery-ai",
-      "type": "Bot"
-    },
-    {
-      "id": 42547082,
-      "login": "deepsource-io",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/16372?v=4",
-      "profileUrl": "https://github.com/apps/deepsource-io",
-      "type": "Bot"
-    },
-    {
-      "id": 312454330,
-      "login": "kanarek-companion",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/4472094?v=4",
-      "profileUrl": "https://github.com/apps/kanarek-companion",
-      "type": "Bot"
-    },
-    {
-      "id": 175728472,
-      "login": "copilot-pull-request-reviewer",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/946600?v=4",
-      "profileUrl": "https://github.com/apps/copilot-pull-request-reviewer",
-      "type": "Bot"
-    },
-    {
-      "id": 61871480,
-      "login": "codacy-production",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/56611?v=4",
-      "profileUrl": "https://github.com/apps/codacy-production",
-      "type": "Bot"
-    },
-    {
-      "id": 62310815,
-      "login": "github-advanced-security",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/57789?v=4",
-      "profileUrl": "https://github.com/apps/github-advanced-security",
-      "type": "Bot"
-    },
-    {
-      "id": 198982749,
-      "login": "copilot-swe-agent",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/1143301?v=4",
-      "profileUrl": "https://github.com/apps/copilot-swe-agent",
-      "type": "Bot"
+      "avatarUrl": "https://avatars.githubusercontent.com/u/132028505?v=4",
+      "profileUrl": "https://github.com/coderabbitai",
+      "type": "Organization"
     },
     {
       "id": 324626588,
@@ -142,25 +72,277 @@
       "type": "User"
     },
     {
-      "id": 191113872,
-      "login": "cubic-dev-ai",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/1082092?v=4",
-      "profileUrl": "https://github.com/apps/cubic-dev-ai",
-      "type": "Bot"
-    },
-    {
-      "id": 165735046,
-      "login": "greptile-apps",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/867647?v=4",
-      "profileUrl": "https://github.com/apps/greptile-apps",
-      "type": "Bot"
-    },
-    {
       "id": 46447321,
       "login": "allcontributors[bot]",
       "avatarUrl": "https://avatars.githubusercontent.com/in/23186?v=4",
       "profileUrl": "https://github.com/apps/allcontributors",
       "type": "Bot"
+    },
+    {
+      "id": 199175422,
+      "login": "chatgpt-codex-connector[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/1144995?v=4",
+      "profileUrl": "https://github.com/apps/chatgpt-codex-connector",
+      "type": "Bot"
+    },
+    {
+      "id": 158243242,
+      "login": "devin-ai-integration[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/811515?v=4",
+      "profileUrl": "https://github.com/apps/devin-ai-integration",
+      "type": "Bot"
+    },
+    {
+      "id": 312454330,
+      "login": "kanarek-companion[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/4472094?v=4",
+      "profileUrl": "https://github.com/apps/kanarek-companion",
+      "type": "Bot"
+    },
+    {
+      "id": 136622811,
+      "login": "coderabbitai[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/347564?v=4",
+      "profileUrl": "https://github.com/apps/coderabbitai",
+      "type": "Bot"
+    },
+    {
+      "id": 58596630,
+      "login": "sourcery-ai[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/48477?v=4",
+      "profileUrl": "https://github.com/apps/sourcery-ai",
+      "type": "Bot"
+    },
+    {
+      "id": 42547082,
+      "login": "deepsource-io[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/16372?v=4",
+      "profileUrl": "https://github.com/apps/deepsource-io",
+      "type": "Bot"
+    },
+    {
+      "id": 311718492,
+      "login": "claudiusz69[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/4454097?v=4",
+      "profileUrl": "https://github.com/apps/claudiusz69",
+      "type": "Bot"
+    },
+    {
+      "id": 267193182,
+      "login": "codex",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/267193182?v=4",
+      "profileUrl": "https://github.com/codex",
+      "type": "User"
+    },
+    {
+      "id": 191113872,
+      "login": "cubic-dev-ai[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/1082092?v=4",
+      "profileUrl": "https://github.com/apps/cubic-dev-ai",
+      "type": "Bot"
+    },
+    {
+      "id": 257055122,
+      "login": "ecc-tools[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/2724203?v=4",
+      "profileUrl": "https://github.com/apps/ecc-tools",
+      "type": "Bot"
+    },
+    {
+      "id": 61871480,
+      "login": "codacy-production[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/56611?v=4",
+      "profileUrl": "https://github.com/apps/codacy-production",
+      "type": "Bot"
+    },
+    {
+      "id": 3942091,
+      "login": "j4velin",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/3942091?v=4",
+      "profileUrl": "https://github.com/j4velin",
+      "type": "User"
+    },
+    {
+      "id": 62310815,
+      "login": "github-advanced-security[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/57789?v=4",
+      "profileUrl": "https://github.com/apps/github-advanced-security",
+      "type": "Bot"
+    },
+    {
+      "id": 165735046,
+      "login": "greptile-apps[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/867647?v=4",
+      "profileUrl": "https://github.com/apps/greptile-apps",
+      "type": "Bot"
+    },
+    {
+      "id": 175728472,
+      "login": "copilot-pull-request-reviewer[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "profileUrl": "https://github.com/apps/copilot-pull-request-reviewer",
+      "type": "Bot"
+    },
+    {
+      "id": 175728472,
+      "login": "Copilot[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "profileUrl": "https://github.com/apps/copilot-pull-request-reviewer",
+      "type": "Bot"
+    },
+    {
+      "id": 35613825,
+      "login": "vercel[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/8329?v=4",
+      "profileUrl": "https://github.com/apps/vercel",
+      "type": "Bot"
+    },
+    {
+      "id": 73139402,
+      "login": "cloudflare-workers-and-pages[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/85455?v=4",
+      "profileUrl": "https://github.com/apps/cloudflare-workers-and-pages",
+      "type": "Bot"
+    },
+    {
+      "id": 46410174,
+      "login": "all-contributors",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/46410174?v=4",
+      "profileUrl": "https://github.com/all-contributors",
+      "type": "Organization"
+    },
+    {
+      "id": 242468646,
+      "login": "Claude[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/2246796?v=4",
+      "profileUrl": "https://github.com/apps/anthropic-code-agent",
+      "type": "Bot"
+    },
+    {
+      "id": 12978679,
+      "login": "Rodhos",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/12978679?v=4",
+      "profileUrl": "https://github.com/Rodhos",
+      "type": "User"
+    },
+    {
+      "id": 31301487,
+      "login": "alonezw",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/31301487?v=4",
+      "profileUrl": "https://github.com/alonezw",
+      "type": "User"
+    },
+    {
+      "id": 7817144,
+      "login": "friedlP",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/7817144?v=4",
+      "profileUrl": "https://github.com/friedlP",
+      "type": "User"
+    },
+    {
+      "id": 39814207,
+      "login": "pull[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/12910?v=4",
+      "profileUrl": "https://github.com/apps/pull",
+      "type": "Bot"
+    },
+    {
+      "id": 27347476,
+      "login": "dependabot",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/27347476?v=4",
+      "profileUrl": "https://github.com/dependabot",
+      "type": "Organization"
+    },
+    {
+      "id": 71236121,
+      "login": "get",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/71236121?v=4",
+      "profileUrl": "https://github.com/get",
+      "type": "User"
+    },
+    {
+      "id": 8255666,
+      "login": "lelelic",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/8255666?v=4",
+      "profileUrl": "https://github.com/lelelic",
+      "type": "User"
+    },
+    {
+      "id": 188008098,
+      "login": "stepsecurity-app[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/1053343?v=4",
+      "profileUrl": "https://github.com/apps/stepsecurity-app",
+      "type": "Bot"
+    },
+    {
+      "id": 383316,
+      "login": "test",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/383316?v=4",
+      "profileUrl": "https://github.com/test",
+      "type": "User"
+    },
+    {
+      "id": 198982749,
+      "login": "copilot-swe-agent[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/1143301?v=4",
+      "profileUrl": "https://github.com/apps/copilot-swe-agent",
+      "type": "Bot"
+    },
+    {
+      "id": 218195315,
+      "login": "gemini-cli",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/218195315?v=4",
+      "profileUrl": "https://github.com/gemini-cli",
+      "type": "User"
+    },
+    {
+      "id": 113052574,
+      "login": "github-project-automation[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/235829?v=4",
+      "profileUrl": "https://github.com/apps/github-project-automation",
+      "type": "Bot"
+    },
+    {
+      "id": 8712544,
+      "login": "svetlemodry",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/8712544?v=4",
+      "profileUrl": "https://github.com/svetlemodry",
+      "type": "User"
+    },
+    {
+      "id": 9983079,
+      "login": "volatile",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/9983079?v=4",
+      "profileUrl": "https://github.com/volatile",
+      "type": "Organization"
+    },
+    {
+      "id": 236830434,
+      "login": "context7[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/2083650?v=4",
+      "profileUrl": "https://github.com/apps/context7",
+      "type": "Bot"
+    },
+    {
+      "id": 24716924,
+      "login": "marcositz",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/24716924?v=4",
+      "profileUrl": "https://github.com/marcositz",
+      "type": "User"
+    },
+    {
+      "id": 32389249,
+      "login": "Pixie80",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/32389249?v=4",
+      "profileUrl": "https://github.com/Pixie80",
+      "type": "User"
+    },
+    {
+      "id": 325200326,
+      "login": "ybanezhou777",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/325200326?v=4",
+      "profileUrl": "https://github.com/ybanezhou777",
+      "type": "User"
     }
   ]
 }
