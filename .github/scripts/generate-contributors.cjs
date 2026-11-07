@@ -586,7 +586,9 @@ module.exports = async ({ github, core }) => {
 
     await collectPullRequestActors(github, repo, addActor);
     await collectRepositoryActivityActors(github, repo, addActor);
-    await collectDiscussionActors(github, repo, addActor);
+    if (repo.has_discussions !== false) {
+      await collectDiscussionActors(github, repo, addActor);
+    }
   }
 
   const previousState = readState();
