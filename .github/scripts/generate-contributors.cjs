@@ -154,6 +154,7 @@ async function pullRequestReviewPages(github, pullId, cursor) {
         ... on PullRequest {
           reviews(first: 100, after: $cursor) {
             nodes {
+              submittedAt
               author {
                 login
                 avatarUrl
@@ -190,6 +191,7 @@ async function collectPullRequestActors(github, repo, addActor) {
           ) {
             nodes {
               id
+              closedAt
               author {
                 login
                 avatarUrl
@@ -198,6 +200,7 @@ async function collectPullRequestActors(github, repo, addActor) {
               }
               reviews(first: 100) {
                 nodes {
+                  submittedAt
                   author {
                     login
                     avatarUrl
@@ -230,7 +233,12 @@ async function collectPullRequestActors(github, repo, addActor) {
 
     for (const pull of page.nodes) {
       addActor(pull.author, 2);
-      for (const review of pull.reviews.nodes) addActor(review.author, 1);
+      const addTimelyReview = (review) => {
+        if (!review.submittedAt) return;
+        if (pull.closedAt && Date.parse(review.submittedAt) > Date.parse(pull.closedAt)) return;
+        addActor(review.author, 1);
+      };
+      for (const review of pull.reviews.nodes) addTimelyReview(review);
 
       let reviewCursor = pull.reviews.pageInfo.hasNextPage
         ? pull.reviews.pageInfo.endCursor
@@ -238,7 +246,7 @@ async function collectPullRequestActors(github, repo, addActor) {
       while (reviewCursor) {
         const reviews = await pullRequestReviewPages(github, pull.id, reviewCursor);
         if (!reviews) break;
-        for (const review of reviews.nodes) addActor(review.author, 1);
+        for (const review of reviews.nodes) addTimelyReview(review);
         reviewCursor = reviews.pageInfo.hasNextPage ? reviews.pageInfo.endCursor : null;
       }
     }
