@@ -8,7 +8,7 @@ on:
       - ".github/scripts/generate-contributors.cjs"
       - ".github/workflows/stats.yml"
   schedule:
-    - cron: "17 4 1 */3 *"
+    - cron: "17 4 * * 0"
   workflow_dispatch:
     inputs:
       force_contributors:
@@ -60,10 +60,10 @@ jobs:
             const run = require("./.github/scripts/generate-contributors.cjs");
             await run({ github, core });
 
-      # Cards run only on manual/reusable invocations. The upstream composite
+      # Pins and gist refresh on manual/reusable/scheduled runs. The upstream composite
       # action bootstraps pnpm, Node, and npm core on *every* use. Prepare once.
       - name: Checkout stats card renderer
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' || github.event_name == 'schedule'
         uses: actions/checkout@v7
         with:
           repository: stats-organization/github-readme-stats-action
@@ -72,13 +72,13 @@ jobs:
           persist-credentials: false
 
       - name: Set up pnpm once
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' || github.event_name == 'schedule'
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           package_json_file: .github-stats-action/package.json
 
       - name: Set up Node and pnpm cache
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' || github.event_name == 'schedule'
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .github-stats-action/package.json
@@ -86,12 +86,12 @@ jobs:
           cache-dependency-path: .github-stats-action/pnpm-lock.yaml
 
       - name: Install stats renderer dependencies once
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' || github.event_name == 'schedule'
         working-directory: .github-stats-action
         run: pnpm install --frozen-lockfile --prod --ignore-scripts
 
-      - name: Generate six public profile cards
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+      - name: Generate five pinned repository cards
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' || github.event_name == 'schedule'
         shell: bash
         env:
           CARD_OWNER: ${{ github.repository_owner }}
@@ -105,7 +105,6 @@ jobs:
               INPUT_CORE_VERSION="" INPUT_FAIL_ON_ERROR="true" PAT_1="$CARD_TOKEN" \
               node .github-stats-action/index.js
           }
-          render top-langs assets/profile/top-langs.svg "username=${CARD_OWNER}&layout=donut&langs_count=13&hide_title=true&theme=ambient_gradient&show_icons=true&locale=pl"
           render pin assets/profile/pin-feeds.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=trvny%2Ffeedseek&theme=great-gatsby&description_lines_count=1"
           render pin assets/profile/pin-kanarek.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=travnie%2Fkanarek&theme=shades-of-purple&description_lines_count=1"
           render pin assets/profile/pin-tvpi.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=trvny%2Ftvpi&theme=yeblu&description_lines_count=1"
@@ -113,7 +112,7 @@ jobs:
           render pin assets/profile/pin-autka.svg "username=${CARD_OWNER}&show_icons=true&locale=pl&repo=travnie%2Fautka&theme=synthwave&description_lines_count=1"
 
       - name: Generate gist card with scoped PAT
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' || github.event_name == 'schedule'
         shell: bash
         env:
           CARD_TOKEN: ${{ github.token }}

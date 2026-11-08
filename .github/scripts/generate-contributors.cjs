@@ -5,6 +5,7 @@ const OWNERS = (process.env.OWNERS || "trvny travnie").trim().split(/\s+/);
 const OUTPUT_DIR = path.join("assets", "profile");
 const STATE_PATH = path.join(OUTPUT_DIR, "contributors.json");
 const SVG_PATH = path.join(OUTPUT_DIR, "contributors.svg");
+const LANGUAGES_PATH = path.join(OUTPUT_DIR, "top-langs.svg");
 const COLUMNS = 5;
 const AVATAR_SIZE = 72;
 const GAP = 18;
@@ -493,6 +494,47 @@ async function avatarDataUri(avatarUrl) {
   return `data:${mime};base64,${bytes.toString("base64")}`;
 }
 
+function buildLanguageSvg(languages) {
+  const colors={TypeScript:"#3178c6",Python:"#3572a5",JavaScript:"#f1e05a",Kotlin:"#a97bff",Markdown:"#083fa1",HTML:"#e34c26",CSS:"#563d7c",Lua:"#000080",Shell:"#89e051",PowerShell:"#012456",Astro:"#ff5d01",MDX:"#fcb32c",Java:"#b07219",Dart:"#00b4ab",Swift:"#f05138",Rust:"#dea584",Go:"#00add8",Ruby:"#701516","C++":"#f34b7d",C:"#555555"};
+  const total=languages.reduce((sum,[,bytes])=>sum+bytes,0);
+  const sorted=languages.filter(([,bytes])=>bytes>0).sort((a,b)=>b[1]-a[1]);
+  const top=sorted.slice(0,10);
+  const remaining=sorted.slice(10).reduce((sum,[,bytes])=>sum+bytes,0);
+  if(remaining)top.push(["Other",remaining]);
+  const colorFor=name=>{if(colors[name])return colors[name];let hash=0;for(const char of name)hash=(hash*31+char.charCodeAt(0))%360;return `hsl(${hash} 65% 50%)`};
+  const height=Math.max(150,119+top.length*38);
+  const lines=top.map(([name,bytes],index)=>{
+    const percent=total?100*bytes/total:0;
+    const y=97+index*38,width=Math.max(1,Math.round(396*percent/100));
+    return `<g>
+<text class="lang" x="22" y="${y}">${escapeXml(name)}</text>
+<text class="percent" text-anchor="end" x="418" y="${y}">${percent.toFixed(1)}%</text>
+<rect class="track" x="22" y="${y+8}" width="396" height="9" rx="4.5"/>
+<rect x="22" y="${y+8}" width="${width}" height="9" rx="4.5" fill="${colorFor(name)}"/>
+</g>`;
+  }).join("\n");
+  const empty=total?"":`<text class="subtitle" x="22" y="103">No language bytes reported by GitHub.</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="440" height="${height}" viewBox="0 0 440 ${height}" role="img" aria-labelledby="title description">
+<title id="title">Repository languages</title>
+<desc id="description">GitHub-reported source bytes across public, non-fork repositories owned by trvny and travnie, including archives. Not a measure of developer productivity.</desc>
+<style>
+.bg{fill:#fff;stroke:#d0d7de}.title{fill:#1f2328;font:700 21px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.subtitle{fill:#57606a;font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.lang{fill:#1f2328;font:600 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.percent{fill:#57606a;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.track{fill:#eaeef2}
+@media(prefers-color-scheme:dark){.bg{fill:#0d1117;stroke:#30363d}.title,.lang{fill:#e6edf3}
+.subtitle,.percent{fill:#9198a1}.track{fill:#21262d}}
+</style>
+<rect class="bg" x="1.5" y="1.5" width="437" height="${height-3}" rx="14"/>
+<text class="title" x="22" y="35">Repository languages</text>
+<text class="subtitle" x="22" y="57">trvny + travnie · public repositories · no forks</text>
+${lines}
+${empty}
+</svg>
+`;
+}
+
 function readState() {
   if (!fs.existsSync(STATE_PATH)) return { version: 1, members: [] };
   try {
@@ -579,6 +621,7 @@ module.exports = async ({ github, core }) => {
   const force = process.env.FORCE_CONTRIBUTORS === "true";
   const repositories = await listRepositories(github);
   const aggregate = new Map();
+  const languageTotals = new Map();
 
   const addActor = (actor, score = 1) => {
     const member = normalizeActor(actor);
@@ -599,6 +642,16 @@ module.exports = async ({ github, core }) => {
   };
 
   for (const repo of repositories) {
+    const { data: languages } = await github.rest.repos.listLanguages({
+      owner: repo.owner.login,
+      repo: repo.name,
+    });
+    for (const [language, bytes] of Object.entries(languages)) {
+      if (Number.isSafeInteger(bytes) && bytes > 0) {
+        languageTotals.set(language, (languageTotals.get(language) || 0) + bytes);
+      }
+    }
+
     const contributors = await listContributors(github, repo);
     for (const contributor of contributors) {
       addActor(contributor, Number(contributor.contributions) || 1);
@@ -609,6 +662,14 @@ module.exports = async ({ github, core }) => {
     if (repo.has_discussions !== false) {
       await collectDiscussionActors(github, repo, addActor);
     }
+  }
+
+  const languagesSvg = buildLanguageSvg([...languageTotals]);
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  if (!fs.existsSync(LANGUAGES_PATH) ||
+      fs.readFileSync(LANGUAGES_PATH, "utf8") !== languagesSvg) {
+    fs.writeFileSync(LANGUAGES_PATH, languagesSvg, "utf8");
+    core.notice(`Repository language card updated across ${repositories.length} repositories.`);
   }
 
   const previousState = readState();
