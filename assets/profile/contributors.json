@@ -121,13 +121,6 @@
       "type": "Bot"
     },
     {
-      "id": 267193182,
-      "login": "codex",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/267193182?v=4",
-      "profileUrl": "https://github.com/codex",
-      "type": "User"
-    },
-    {
       "id": 191113872,
       "login": "cubic-dev-ai[bot]",
       "avatarUrl": "https://avatars.githubusercontent.com/in/1082092?v=4",
@@ -198,38 +191,10 @@
       "type": "Bot"
     },
     {
-      "id": 71236121,
-      "login": "get",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/71236121?v=4",
-      "profileUrl": "https://github.com/get",
-      "type": "User"
-    },
-    {
-      "id": 383316,
-      "login": "test",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/383316?v=4",
-      "profileUrl": "https://github.com/test",
-      "type": "User"
-    },
-    {
       "id": 198982749,
       "login": "copilot-swe-agent[bot]",
       "avatarUrl": "https://avatars.githubusercontent.com/in/1143301?v=4",
       "profileUrl": "https://github.com/apps/copilot-swe-agent",
-      "type": "Bot"
-    },
-    {
-      "id": 218195315,
-      "login": "gemini-cli",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/218195315?v=4",
-      "profileUrl": "https://github.com/gemini-cli",
-      "type": "User"
-    },
-    {
-      "id": 113052574,
-      "login": "github-project-automation[bot]",
-      "avatarUrl": "https://avatars.githubusercontent.com/in/235829?v=4",
-      "profileUrl": "https://github.com/apps/github-project-automation",
       "type": "Bot"
     },
     {
@@ -240,10 +205,10 @@
       "type": "Bot"
     },
     {
-      "id": 325200326,
-      "login": "ybanezhou777",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/325200326?v=4",
-      "profileUrl": "https://github.com/ybanezhou777",
+      "id": 350103640,
+      "login": "joseoswaldo135",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/350103640?v=4",
+      "profileUrl": "https://github.com/joseoswaldo135",
       "type": "User"
     }
   ]
