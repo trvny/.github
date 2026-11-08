@@ -58,13 +58,6 @@
       "type": "User"
     },
     {
-      "id": 324626588,
-      "login": "kucharz2026-maker",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/324626588?v=4",
-      "profileUrl": "https://github.com/kucharz2026-maker",
-      "type": "User"
-    },
-    {
       "id": 46447321,
       "login": "allcontributors[bot]",
       "avatarUrl": "https://avatars.githubusercontent.com/in/23186?v=4",
@@ -203,13 +196,6 @@
       "avatarUrl": "https://avatars.githubusercontent.com/in/2083650?v=4",
       "profileUrl": "https://github.com/apps/context7",
       "type": "Bot"
-    },
-    {
-      "id": 350103640,
-      "login": "joseoswaldo135",
-      "avatarUrl": "https://avatars.githubusercontent.com/u/350103640?v=4",
-      "profileUrl": "https://github.com/joseoswaldo135",
-      "type": "User"
     }
   ]
 }
