@@ -1,372 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="537" viewBox="0 0 440 537" role="img" aria-labelledby="title description">
+<title id="title">Repository languages</title>
+<desc id="description">GitHub-reported source bytes across public, non-fork repositories owned by trvny and travnie, including archives. Not a measure of developer productivity.</desc>
+<style>
+.bg{fill:#fff;stroke:#d0d7de}.title{fill:#1f2328;font:700 21px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.subtitle{fill:#57606a;font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.lang{fill:#1f2328;font:600 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.percent{fill:#57606a;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.track{fill:#eaeef2}
+@media(prefers-color-scheme:dark){.bg{fill:#0d1117;stroke:#30363d}.title,.lang{fill:#e6edf3}
+.subtitle,.percent{fill:#9198a1}.track{fill:#21262d}}
+</style>
+<rect class="bg" x="1.5" y="1.5" width="437" height="534" rx="14"/>
+<text class="title" x="22" y="35">Repository languages</text>
+<text class="subtitle" x="22" y="57">trvny + travnie · public repositories · no forks</text>
+<g>
+<text class="lang" x="22" y="97">Kotlin</text>
+<text class="percent" text-anchor="end" x="418" y="97">32.9%</text>
+<rect class="track" x="22" y="105" width="396" height="9" rx="4.5"/>
+<rect x="22" y="105" width="130" height="9" rx="4.5" fill="#a97bff"/>
+</g>
+<g>
+<text class="lang" x="22" y="135">TypeScript</text>
+<text class="percent" text-anchor="end" x="418" y="135">25.4%</text>
+<rect class="track" x="22" y="143" width="396" height="9" rx="4.5"/>
+<rect x="22" y="143" width="101" height="9" rx="4.5" fill="#3178c6"/>
+</g>
+<g>
+<text class="lang" x="22" y="173">Python</text>
+<text class="percent" text-anchor="end" x="418" y="173">21.0%</text>
+<rect class="track" x="22" y="181" width="396" height="9" rx="4.5"/>
+<rect x="22" y="181" width="83" height="9" rx="4.5" fill="#3572a5"/>
+</g>
+<g>
+<text class="lang" x="22" y="211">JavaScript</text>
+<text class="percent" text-anchor="end" x="418" y="211">9.0%</text>
+<rect class="track" x="22" y="219" width="396" height="9" rx="4.5"/>
+<rect x="22" y="219" width="36" height="9" rx="4.5" fill="#f1e05a"/>
+</g>
+<g>
+<text class="lang" x="22" y="249">Markdown</text>
+<text class="percent" text-anchor="end" x="418" y="249">2.7%</text>
+<rect class="track" x="22" y="257" width="396" height="9" rx="4.5"/>
+<rect x="22" y="257" width="11" height="9" rx="4.5" fill="#083fa1"/>
+</g>
+<g>
+<text class="lang" x="22" y="287">HTML</text>
+<text class="percent" text-anchor="end" x="418" y="287">2.6%</text>
+<rect class="track" x="22" y="295" width="396" height="9" rx="4.5"/>
+<rect x="22" y="295" width="10" height="9" rx="4.5" fill="#e34c26"/>
+</g>
+<g>
+<text class="lang" x="22" y="325">C++</text>
+<text class="percent" text-anchor="end" x="418" y="325">1.7%</text>
+<rect class="track" x="22" y="333" width="396" height="9" rx="4.5"/>
+<rect x="22" y="333" width="7" height="9" rx="4.5" fill="#f34b7d"/>
+</g>
+<g>
+<text class="lang" x="22" y="363">C#</text>
+<text class="percent" text-anchor="end" x="418" y="363">1.2%</text>
+<rect class="track" x="22" y="371" width="396" height="9" rx="4.5"/>
+<rect x="22" y="371" width="5" height="9" rx="4.5" fill="hsl(312 65% 50%)"/>
+</g>
+<g>
+<text class="lang" x="22" y="401">Lua</text>
+<text class="percent" text-anchor="end" x="418" y="401">1.0%</text>
+<rect class="track" x="22" y="409" width="396" height="9" rx="4.5"/>
+<rect x="22" y="409" width="4" height="9" rx="4.5" fill="#000080"/>
+</g>
+<g>
+<text class="lang" x="22" y="439">MDX</text>
+<text class="percent" text-anchor="end" x="418" y="439">0.7%</text>
+<rect class="track" x="22" y="447" width="396" height="9" rx="4.5"/>
+<rect x="22" y="447" width="3" height="9" rx="4.5" fill="#fcb32c"/>
+</g>
+<g>
+<text class="lang" x="22" y="477">Other</text>
+<text class="percent" text-anchor="end" x="418" y="477">1.8%</text>
+<rect class="track" x="22" y="485" width="396" height="9" rx="4.5"/>
+<rect x="22" y="485" width="7" height="9" rx="4.5" fill="hsl(184 65% 50%)"/>
+</g>
 
-      <svg
-        width="350"
-        height="441"
-        viewBox="0 0 350 441"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        role="img"
-        aria-labelledby="descId"
-      >
-        <title id="titleId"></title>
-        <desc id="descId"></desc>
-        <style>
-          .header {
-            font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
-            fill: #ffffff;
-            animation: fadeInAnimation 0.8s ease-in-out forwards;
-          }
-          @supports(-moz-appearance: auto) {
-            /* Selector detects Firefox */
-            .header { font-size: 15.5px; }
-          }
-          
-    @keyframes slideInAnimation {
-      from {
-        width: 0;
-      }
-      to {
-        width: calc(100%-100px);
-      }
-    }
-    @keyframes growWidthAnimation {
-      from {
-        width: 0;
-      }
-      to {
-        width: 100%;
-      }
-    }
-    .stat {
-      font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: #ffffff;
-    }
-    @supports(-moz-appearance: auto) {
-      /* Selector detects Firefox */
-      .stat { font-size:12px; }
-    }
-    .bold { font-weight: 700 }
-    .lang-name {
-      font: 400 11px "Segoe UI", Ubuntu, Sans-Serif;
-      fill: #ffffff;
-    }
-    .stagger {
-      opacity: 0;
-      animation: fadeInAnimation 0.3s ease-in-out forwards;
-    }
-    #rect-mask rect{
-      animation: slideInAnimation 1s ease-in-out forwards;
-    }
-    .lang-progress{
-      animation: growWidthAnimation 0.6s ease-in-out forwards;
-    }
-    .progress-background { fill: #ddd; }
-    
-          
-
-          
-      /* Animations */
-      @keyframes scaleInAnimation {
-        from {
-          transform: translate(-5px, 5px) scale(0);
-        }
-        to {
-          transform: translate(-5px, 5px) scale(1);
-        }
-      }
-      @keyframes fadeInAnimation {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-    
-          
-        </style>
-
-        
-        <defs>
-          
-          <linearGradient
-            id="gradient"
-            gradientTransform="rotate(35)"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="0%" stop-color="#4158d0" />,<stop offset="50%" stop-color="#c850c0" />,<stop offset="100%" stop-color="#ffcc70" />
-          </linearGradient>
-          
-        </defs>
-        
-
-        <rect
-          data-testid="card-bg"
-          class="card-bg"
-          x="0.5"
-          y="0.5"
-          rx="4.5"
-          height="99%"
-          stroke="#e4e2e2"
-          width="349"
-          fill="url(#gradient)"
-          stroke-opacity="1"
-        />
-
-        
-
-        <g
-          data-testid="main-card-body"
-          transform="translate(0, 25)"
-        >
-          
-    <svg data-testid="lang-items" x="25">
-      
-    <g transform="translate(0, 0)">
-      <g transform="translate(0, 0)">
-        <g transform="translate(0, 0)">
-    <g class="stagger" style="animation-delay: 450ms">
-      <circle cx="5" cy="6" r="5" fill="#3178c6" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        TypeScript 46.76%
-      </text>
-    </g>
-  </g><g transform="translate(0, 32)">
-    <g class="stagger" style="animation-delay: 600ms">
-      <circle cx="5" cy="6" r="5" fill="#3572A5" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        Python 29.84%
-      </text>
-    </g>
-  </g><g transform="translate(0, 64)">
-    <g class="stagger" style="animation-delay: 750ms">
-      <circle cx="5" cy="6" r="5" fill="#f1e05a" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        JavaScript 10.46%
-      </text>
-    </g>
-  </g><g transform="translate(0, 96)">
-    <g class="stagger" style="animation-delay: 900ms">
-      <circle cx="5" cy="6" r="5" fill="#083fa1" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        Markdown 5.80%
-      </text>
-    </g>
-  </g><g transform="translate(0, 128)">
-    <g class="stagger" style="animation-delay: 1050ms">
-      <circle cx="5" cy="6" r="5" fill="#e34c26" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        HTML 3.44%
-      </text>
-    </g>
-  </g><g transform="translate(0, 160)">
-    <g class="stagger" style="animation-delay: 1200ms">
-      <circle cx="5" cy="6" r="5" fill="#000080" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        Lua 2.16%
-      </text>
-    </g>
-  </g><g transform="translate(0, 192)">
-    <g class="stagger" style="animation-delay: 1350ms">
-      <circle cx="5" cy="6" r="5" fill="#012456" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        PowerShell 0.67%
-      </text>
-    </g>
-  </g><g transform="translate(0, 224)">
-    <g class="stagger" style="animation-delay: 1500ms">
-      <circle cx="5" cy="6" r="5" fill="#ff5a03" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        Astro 0.27%
-      </text>
-    </g>
-  </g><g transform="translate(0, 256)">
-    <g class="stagger" style="animation-delay: 1650ms">
-      <circle cx="5" cy="6" r="5" fill="#663399" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        CSS 0.27%
-      </text>
-    </g>
-  </g><g transform="translate(0, 288)">
-    <g class="stagger" style="animation-delay: 1800ms">
-      <circle cx="5" cy="6" r="5" fill="#89e051" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        Shell 0.22%
-      </text>
-    </g>
-  </g><g transform="translate(0, 320)">
-    <g class="stagger" style="animation-delay: 1950ms">
-      <circle cx="5" cy="6" r="5" fill="#fcb32c" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        MDX 0.07%
-      </text>
-    </g>
-  </g><g transform="translate(0, 352)">
-    <g class="stagger" style="animation-delay: 2100ms">
-      <circle cx="5" cy="6" r="5" fill="#427819" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        Makefile 0.05%
-      </text>
-    </g>
-  </g><g transform="translate(0, 384)">
-    <g class="stagger" style="animation-delay: 2250ms">
-      <circle cx="5" cy="6" r="5" fill="#C1F12E" />
-      <text data-testid="lang-name" x="15" y="10" class='lang-name'>
-        Batchfile 0.00%
-      </text>
-    </g>
-  </g>
-      </g>
-
-      <g transform="translate(125, 83)">
-        <svg width="350" height="350">
-       <g class="stagger" style="animation-delay: 600ms">
-        <path
-          data-testid="lang-donut"
-          size="46.76"
-          d="M 128.1230795200772 172.16316849915447 A 56.66666666666667 56.66666666666667 0 0 0 116.66666666666667 60"
-          stroke="#3178c6"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 700ms">
-        <path
-          data-testid="lang-donut"
-          size="29.84"
-          d="M 60.28610903772633 110.97950282509784 A 56.66666666666667 56.66666666666667 0 0 0 128.1230795200772 172.16316849915447"
-          stroke="#3572A5"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 800ms">
-        <path
-          data-testid="lang-donut"
-          size="10.46"
-          d="M 75.50497627517441 77.72021169030143 A 56.66666666666667 56.66666666666667 0 0 0 60.28610903772633 110.97950282509784"
-          stroke="#f1e05a"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 900ms">
-        <path
-          data-testid="lang-donut"
-          size="5.8"
-          d="M 92.08908720080456 65.60735117272037 A 56.66666666666667 56.66666666666667 0 0 0 75.50497627517441 77.72021169030143"
-          stroke="#083fa1"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 1000ms">
-        <path
-          data-testid="lang-donut"
-          size="3.44"
-          d="M 103.61126582165987 61.52441771101282 A 56.66666666666667 56.66666666666667 0 0 0 92.08908720080456 65.60735117272037"
-          stroke="#e34c26"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 1100ms">
-        <path
-          data-testid="lang-donut"
-          size="2.16"
-          d="M 111.19209243000687 60.265069632199534 A 56.66666666666667 56.66666666666667 0 0 0 103.61126582165987 61.52441771101282"
-          stroke="#000080"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 1200ms">
-        <path
-          data-testid="lang-donut"
-          size="0.67"
-          d="M 113.57059875240607 60.08464236051978 A 56.66666666666667 56.66666666666667 0 0 0 111.19209243000687 60.265069632199534"
-          stroke="#012456"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 1300ms">
-        <path
-          data-testid="lang-donut"
-          size="0.27"
-          d="M 114.53088964870369 60.04026321703328 A 56.66666666666667 56.66666666666667 0 0 0 113.57059875240607 60.08464236051978"
-          stroke="#ff5a03"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 1400ms">
-        <path
-          data-testid="lang-donut"
-          size="0.27"
-          d="M 115.49179520189699 60.01218062935113 A 56.66666666666667 56.66666666666667 0 0 0 114.53088964870369 60.04026321703328"
-          stroke="#663399"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 1500ms">
-        <path
-          data-testid="lang-donut"
-          size="0.22"
-          d="M 116.27501790064059 60.00135344636247 A 56.66666666666667 56.66666666666667 0 0 0 115.49179520189699 60.01218062935113"
-          stroke="#89e051"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 1600ms">
-        <path
-          data-testid="lang-donut"
-          size="0.07"
-          d="M 116.52424794963642 60.00017896873227 A 56.66666666666667 56.66666666666667 0 0 0 116.27501790064059 60.00135344636247"
-          stroke="#fcb32c"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 1700ms">
-        <path
-          data-testid="lang-donut"
-          size="0.05"
-          d="M 116.7022713810646 60.00001118555129 A 56.66666666666667 56.66666666666667 0 0 0 116.52424794963642 60.00017896873227"
-          stroke="#427819"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      
-       <g class="stagger" style="animation-delay: 1800ms">
-        <path
-          data-testid="lang-donut"
-          size="0"
-          d="M 116.7022713810646 60.00001118555129 A 56.66666666666667 56.66666666666667 0 0 0 116.7022713810646 60.00001118555129"
-          stroke="#C1F12E"
-          fill="none"
-          stroke-width="12">
-        </path>
-      </g>
-      </svg>
-      </g>
-    </g>
-  
-    </svg>
-  
-        </g>
-      </svg>
-    
+</svg>
