@@ -117,12 +117,10 @@ async function collectRepositoryActivityActors(github, repo, addActor) {
     ["GET /repos/{owner}/{repo}/issues/comments", "user", 1, {}],
     ["GET /repos/{owner}/{repo}/pulls/comments", "user", 1, {}],
     ["GET /repos/{owner}/{repo}/comments", "user", 1, {}],
-    ["GET /repos/{owner}/{repo}/issues/events", "actor", 1, {}],
   ];
 
   for (const [route, field, weight, options] of sources) {
-    if (repo.has_issues === false &&
-        (route.endsWith("/issues") || route.endsWith("/issues/events"))) {
+    if (repo.has_issues === false && route.endsWith("/issues")) {
       continue;
     }
 
@@ -540,7 +538,7 @@ function buildSvg(members, avatars) {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
 <title id="title">Contributors</title>
-<desc id="desc">${members.length} unique contributors from commits, issues, pull requests, reviews, comments, events, and discussions across public trvny and travnie repositories.</desc>
+<desc id="desc">${members.length} unique contributors from commits, issues, pull requests, reviews, comments, and discussions across public trvny and travnie repositories.</desc>
 <style>
   .bg { fill: #ffffff; stroke: #d0d7de; }
   .heading { fill: #1f2328; font: 700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
