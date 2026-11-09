@@ -5,7 +5,7 @@ on: # yamllint disable-line rule:truthy
   workflow_dispatch:
 
 concurrency:
-  group: pre-commit-${{ github.ref }}
+  group: pre-commit-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
