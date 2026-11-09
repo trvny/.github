@@ -20,7 +20,8 @@ on: # yamllint disable-line rule:truthy
 
 concurrency:
   group: repo-settings-sync
-  cancel-in-progress: true
+  queue: max
+  cancel-in-progress: false
 
 permissions: {}
 
