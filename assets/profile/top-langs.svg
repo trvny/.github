@@ -15,13 +15,13 @@
 <text class="subtitle" x="22" y="57">trvny + travnie · public repositories · no forks</text>
 <g>
 <text class="lang" x="22" y="97">Kotlin</text>
-<text class="percent" text-anchor="end" x="418" y="97">32.9%</text>
+<text class="percent" text-anchor="end" x="418" y="97">32.8%</text>
 <rect class="track" x="22" y="105" width="396" height="9" rx="4.5"/>
 <rect x="22" y="105" width="130" height="9" rx="4.5" fill="#a97bff"/>
 </g>
 <g>
 <text class="lang" x="22" y="135">TypeScript</text>
-<text class="percent" text-anchor="end" x="418" y="135">25.4%</text>
+<text class="percent" text-anchor="end" x="418" y="135">25.5%</text>
 <rect class="track" x="22" y="143" width="396" height="9" rx="4.5"/>
 <rect x="22" y="143" width="101" height="9" rx="4.5" fill="#3178c6"/>
 </g>
@@ -33,7 +33,7 @@
 </g>
 <g>
 <text class="lang" x="22" y="211">JavaScript</text>
-<text class="percent" text-anchor="end" x="418" y="211">9.0%</text>
+<text class="percent" text-anchor="end" x="418" y="211">9.1%</text>
 <rect class="track" x="22" y="219" width="396" height="9" rx="4.5"/>
 <rect x="22" y="219" width="36" height="9" rx="4.5" fill="#f1e05a"/>
 </g>
