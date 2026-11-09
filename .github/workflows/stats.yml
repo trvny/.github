@@ -25,7 +25,8 @@ on:
 
 concurrency:
   group: stats-${{ github.repository }}
-  cancel-in-progress: true
+  queue: max
+  cancel-in-progress: false
 
 permissions: {}
 
