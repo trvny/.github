@@ -61,7 +61,6 @@ async function checkState(github, owner, repo, headSha) {
       filter: 'latest',
       per_page: 100,
     },
-    (response) => response.data.check_runs,
   );
 
   const statusResponse = await github.rest.repos.getCombinedStatusForRef({
