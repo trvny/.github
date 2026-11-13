@@ -30,3 +30,9 @@ test("empty and untrusted language names render safely", () => {
   assert.match(svg, /&lt;script&gt;&amp;/);
   assert.doesNotMatch(svg, /<script>/);
 });
+
+test("pre-aggregated Other stays a single trailing bucket", () => {
+  const svg = buildLanguageSvg([["Kotlin", 60], ["TypeScript", 30], ["Other", 10]]);
+  assert.equal((svg.match(/Other 10\.0%/g) || []).length, 2);
+  assert.equal((svg.match(/class="donut-segment"/g) || []).length, 3);
+});

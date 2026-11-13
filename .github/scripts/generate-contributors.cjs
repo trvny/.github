@@ -504,12 +504,16 @@ function buildLanguageSvg(languages) {
     Rust: "#dea584", Go: "#00add8", Ruby: "#701516",
     "C++": "#f34b7d", C: "#555555",
   };
-  const sorted = languages
-    .filter(([, bytes]) => Number.isFinite(bytes) && bytes > 0)
+  const valid = languages.filter(([, bytes]) => Number.isFinite(bytes) && bytes > 0);
+  const total = valid.reduce((sum, [, bytes]) => sum + bytes, 0);
+  const sorted = valid
+    .filter(([name]) => name !== "Other")
     .sort((a, b) => b[1] - a[1]);
-  const total = sorted.reduce((sum, [, bytes]) => sum + bytes, 0);
   const top = sorted.slice(0, 10);
-  const other = sorted.slice(10).reduce((sum, [, bytes]) => sum + bytes, 0);
+  const other = valid
+    .filter(([name]) => name === "Other")
+    .reduce((sum, [, bytes]) => sum + bytes, 0) +
+    sorted.slice(10).reduce((sum, [, bytes]) => sum + bytes, 0);
   if (other > 0) top.push(["Other", other]);
 
   const colorFor = (name) => {
