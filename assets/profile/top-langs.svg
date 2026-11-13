@@ -21,9 +21,9 @@
 </g>
 <g>
 <text class="lang" x="22" y="135">TypeScript</text>
-<text class="percent" text-anchor="end" x="418" y="135">25.5%</text>
+<text class="percent" text-anchor="end" x="418" y="135">25.3%</text>
 <rect class="track" x="22" y="143" width="396" height="9" rx="4.5"/>
-<rect x="22" y="143" width="101" height="9" rx="4.5" fill="#3178c6"/>
+<rect x="22" y="143" width="100" height="9" rx="4.5" fill="#3178c6"/>
 </g>
 <g>
 <text class="lang" x="22" y="173">Python</text>
@@ -33,15 +33,15 @@
 </g>
 <g>
 <text class="lang" x="22" y="211">JavaScript</text>
-<text class="percent" text-anchor="end" x="418" y="211">9.1%</text>
+<text class="percent" text-anchor="end" x="418" y="211">9.4%</text>
 <rect class="track" x="22" y="219" width="396" height="9" rx="4.5"/>
-<rect x="22" y="219" width="36" height="9" rx="4.5" fill="#f1e05a"/>
+<rect x="22" y="219" width="37" height="9" rx="4.5" fill="#f1e05a"/>
 </g>
 <g>
 <text class="lang" x="22" y="249">Markdown</text>
-<text class="percent" text-anchor="end" x="418" y="249">2.7%</text>
+<text class="percent" text-anchor="end" x="418" y="249">2.6%</text>
 <rect class="track" x="22" y="257" width="396" height="9" rx="4.5"/>
-<rect x="22" y="257" width="11" height="9" rx="4.5" fill="#083fa1"/>
+<rect x="22" y="257" width="10" height="9" rx="4.5" fill="#083fa1"/>
 </g>
 <g>
 <text class="lang" x="22" y="287">HTML</text>
