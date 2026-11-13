@@ -35,6 +35,9 @@ test("pre-aggregated Other stays a single trailing bucket", () => {
   const svg = buildLanguageSvg([["Kotlin", 60], ["TypeScript", 30], ["Other", 10]]);
   assert.equal((svg.match(/Other 10\.0%/g) || []).length, 2);
   assert.equal((svg.match(/class="donut-segment"/g) || []).length, 3);
+  const titles = [...svg.matchAll(/class="donut-segment"[^>]*><title>([^<]+)<\/title><\/circle>/g)]
+    .map((match) => match[1]);
+  assert.equal(titles.at(-1), "Other 10.0%");
 });
 
 test("donut arc lengths and offsets match each language share", () => {
