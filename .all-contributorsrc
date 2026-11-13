@@ -13,8 +13,14 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/56611?v=4",
       "profile": "https://github.com/apps/codacy-production",
       "contributions": [
-        "code",
-        "review"
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=codacy-production%5Bbot%5D"
+        },
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Acodacy-production%5Bbot%5D"
+        }
       ]
     },
     {
@@ -23,8 +29,14 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/347564?v=4",
       "profile": "https://github.com/apps/coderabbitai",
       "contributions": [
-        "review",
-        "code"
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Acoderabbitai%5Bbot%5D"
+        },
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=coderabbitai%5Bbot%5D"
+        }
       ]
     },
     {
@@ -33,8 +45,14 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/120686325?u=f421c62e9d101e4f7ddac87061f82ccca98b2fe1&v=4",
       "profile": "https://github.com/trvny",
       "contributions": [
-        "code",
-        "doc",
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=trvny"
+        },
+        {
+          "type": "doc",
+          "url": "https://github.com/trvny/trvny/commits?author=trvny"
+        },
         "maintenance"
       ]
     },
@@ -71,8 +89,14 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/4524407?v=4",
       "profile": "https://github.com/apps/gptomek",
       "contributions": [
-        "code",
-        "doc"
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=gptomek%5Bbot%5D"
+        },
+        {
+          "type": "doc",
+          "url": "https://github.com/trvny/trvny/commits?author=gptomek%5Bbot%5D"
+        }
       ]
     },
     {
@@ -81,7 +105,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/81847?v=4",
       "profile": "https://github.com/claude",
       "contributions": [
-        "code"
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=claude"
+        }
       ]
     },
     {
@@ -90,7 +117,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/4454097?v=4",
       "profile": "https://github.com/apps/claudiusz69",
       "contributions": [
-        "review"
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Aclaudiusz69%5Bbot%5D"
+        }
       ]
     },
     {
@@ -99,7 +129,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/57168?v=4",
       "profile": "https://github.com/apps/deepsource-autofix",
       "contributions": [
-        "code"
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=deepsource-autofix%5Bbot%5D"
+        }
       ]
     },
     {
@@ -108,7 +141,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/811515?v=4",
       "profile": "https://github.com/apps/devin-ai-integration",
       "contributions": [
-        "review"
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Adevin-ai-integration%5Bbot%5D"
+        }
       ]
     },
     {
@@ -126,8 +162,14 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/1144995?v=4",
       "profile": "https://github.com/apps/chatgpt-codex-connector",
       "contributions": [
-        "code",
-        "review"
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=chatgpt-codex-connector%5Bbot%5D"
+        },
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Achatgpt-codex-connector%5Bbot%5D"
+        }
       ]
     },
     {
@@ -136,7 +178,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/48477?v=4",
       "profile": "https://github.com/apps/sourcery-ai",
       "contributions": [
-        "review"
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Asourcery-ai%5Bbot%5D"
+        }
       ]
     },
     {
@@ -145,7 +190,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/16372?v=4",
       "profile": "https://github.com/apps/deepsource-io",
       "contributions": [
-        "review",
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Adeepsource-io%5Bbot%5D"
+        },
         "security"
       ]
     },
@@ -155,7 +203,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/4472094?v=4",
       "profile": "https://github.com/apps/kanarek-companion",
       "contributions": [
-        "review",
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Akanarek-companion%5Bbot%5D"
+        },
         "infra"
       ]
     },
@@ -165,7 +216,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
       "profile": "https://github.com/apps/copilot-pull-request-reviewer",
       "contributions": [
-        "review"
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Acopilot-pull-request-reviewer%5Bbot%5D"
+        }
       ]
     },
     {
@@ -183,7 +237,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/1143301?v=4",
       "profile": "https://github.com/apps/copilot-swe-agent",
       "contributions": [
-        "code"
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=copilot-swe-agent%5Bbot%5D"
+        }
       ]
     },
     {
@@ -201,7 +258,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/1082092?v=4",
       "profile": "https://github.com/apps/cubic-dev-ai",
       "contributions": [
-        "review"
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Acubic-dev-ai%5Bbot%5D"
+        }
       ]
     },
     {
@@ -210,7 +270,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/867647?v=4",
       "profile": "https://github.com/apps/greptile-apps",
       "contributions": [
-        "review"
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Agreptile-apps%5Bbot%5D"
+        }
       ]
     },
     {
@@ -219,7 +282,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/23186?v=4",
       "profile": "https://github.com/apps/allcontributors",
       "contributions": [
-        "doc"
+        {
+          "type": "doc",
+          "url": "https://github.com/trvny/trvny/commits?author=allcontributors%5Bbot%5D"
+        }
       ]
     },
     {
@@ -228,7 +294,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/267193182?v=4",
       "profile": "https://github.com/codex",
       "contributions": [
-        "code"
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=codex"
+        }
       ]
     },
     {
@@ -237,7 +306,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/2724203?v=4",
       "profile": "https://github.com/apps/ecc-tools",
       "contributions": [
-        "review"
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3Aecc-tools%5Bbot%5D"
+        }
       ]
     },
     {
@@ -264,7 +336,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/2246796?v=4",
       "profile": "https://github.com/apps/anthropic-code-agent",
       "contributions": [
-        "code"
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=Claude%5Bbot%5D"
+        }
       ]
     },
     {
@@ -273,7 +348,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/218195315?v=4",
       "profile": "https://github.com/gemini-cli",
       "contributions": [
-        "code"
+        {
+          "type": "code",
+          "url": "https://github.com/trvny/trvny/commits?author=gemini-cli"
+        }
       ]
     },
     {
@@ -291,7 +369,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/in/2083650?v=4",
       "profile": "https://github.com/apps/context7",
       "contributions": [
-        "doc"
+        {
+          "type": "doc",
+          "url": "https://github.com/trvny/trvny/commits?author=context7%5Bbot%5D"
+        }
       ]
     }
   ],
@@ -300,22 +381,5 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "projectName": ".github",
-  "projectOwner": "trvny",
-  "types": {
-    "code": {
-      "symbol": "💻",
-      "description": "Code",
-      "link": "<%= options.repoHost || \"https://github.com\" %>/trvny/trvny/commits?author=<%= contributor.login %>"
-    },
-    "doc": {
-      "symbol": "📖",
-      "description": "Documentation",
-      "link": "<%= options.repoHost || \"https://github.com\" %>/trvny/trvny/commits?author=<%= contributor.login %>"
-    },
-    "review": {
-      "symbol": "👀",
-      "description": "Reviewed Pull Requests",
-      "link": "<%= options.repoHost || \"https://github.com\" %>/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3A<%= contributor.login %>"
-    }
-  }
+  "projectOwner": "trvny"
 }
