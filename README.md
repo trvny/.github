@@ -16,7 +16,7 @@
 
 ![Contributors](./assets/profile/contributors.svg)
 </div>
-  
+
 [![feedseek](./assets/profile/pin-feeds.svg)](https://github.com/trvny/feedseek) [![kanarek](./assets/profile/pin-kanarek.svg)](https://github.com/travnie/kanarek) [![tvpi](./assets/profile/pin-tvpi.svg)](https://github.com/trvny/tvpi) [![wambridge](./assets/profile/pin-wambridge.svg)](https://github.com/travnie/wambridge)
 
 <a href="https://www.star-history.com/?repos=trvny%2Ffeedseek%2Ctravnie%2Ftwojstar%2Ctrvny%2Ftvpi%2Ctravnie%2Fwambridge%2Ctravnie%2Fkanarek&type=date&legend=top-left">
@@ -28,7 +28,7 @@
 </a>
 
 # .github
-> This repo contains shared community resources that will propagate to all public repositories that don't already have their own resource that fills this purpose. You can learn more about this GitHub feature [here](https://help.github.com/en/articles/creating-a-default-community-health-file-for-your-organization). 
+> This repo contains shared community resources that will propagate to all public repositories that don't already have their own resource that fills this purpose. You can learn more about this GitHub feature [here](https://help.github.com/en/articles/creating-a-default-community-health-file-for-your-organization).
 
 ## [Licenses](LICENSE) <picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/github/github-mcp-server/blob/main/pkg/octicons/icons/law-dark.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/github/github-mcp-server/blob/main/pkg/octicons/icons/law-light.png"><img src="https://github.com/github/github-mcp-server/blob/main/pkg/octicons/icons/law-light.png" width="20" height="20" alt="law"></picture>
 
