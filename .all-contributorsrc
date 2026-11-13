@@ -300,5 +300,22 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "projectName": ".github",
-  "projectOwner": "trvny"
+  "projectOwner": "trvny",
+  "types": {
+    "code": {
+      "symbol": "💻",
+      "description": "Code",
+      "link": "<%= options.repoHost || \"https://github.com\" %>/trvny/trvny/commits?author=<%= contributor.login %>"
+    },
+    "doc": {
+      "symbol": "📖",
+      "description": "Documentation",
+      "link": "<%= options.repoHost || \"https://github.com\" %>/trvny/trvny/commits?author=<%= contributor.login %>"
+    },
+    "review": {
+      "symbol": "👀",
+      "description": "Reviewed Pull Requests",
+      "link": "<%= options.repoHost || \"https://github.com\" %>/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3A<%= contributor.login %>"
+    }
+  }
 }
