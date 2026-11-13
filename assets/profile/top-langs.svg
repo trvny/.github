@@ -21,7 +21,7 @@
 </g>
 <g>
 <text class="lang" x="22" y="135">TypeScript</text>
-<text class="percent" text-anchor="end" x="418" y="135">25.3%</text>
+<text class="percent" text-anchor="end" x="418" y="135">25.2%</text>
 <rect class="track" x="22" y="143" width="396" height="9" rx="4.5"/>
 <rect x="22" y="143" width="100" height="9" rx="4.5" fill="#3178c6"/>
 </g>
@@ -33,9 +33,9 @@
 </g>
 <g>
 <text class="lang" x="22" y="211">JavaScript</text>
-<text class="percent" text-anchor="end" x="418" y="211">9.6%</text>
+<text class="percent" text-anchor="end" x="418" y="211">9.7%</text>
 <rect class="track" x="22" y="219" width="396" height="9" rx="4.5"/>
-<rect x="22" y="219" width="38" height="9" rx="4.5" fill="#f1e05a"/>
+<rect x="22" y="219" width="39" height="9" rx="4.5" fill="#f1e05a"/>
 </g>
 <g>
 <text class="lang" x="22" y="249">Markdown</text>
