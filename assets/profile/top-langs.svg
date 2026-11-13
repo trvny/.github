@@ -20,16 +20,16 @@
 <g><circle cx="30" cy="312" r="5" fill="hsl(184 65% 50%)"/><text class="lang" x="43" y="316">Other 1.8%</text></g>
 
 <circle cx="263" cy="181" r="56" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="16"/>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#a97bff" stroke-width="16" stroke-dasharray="114.9427 351.8584" stroke-dashoffset="0.0000" transform="rotate(-90 263 181)"><title>Kotlin 32.7%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#3178c6" stroke-width="16" stroke-dasharray="88.5797 351.8584" stroke-dashoffset="-114.9427" transform="rotate(-90 263 181)"><title>TypeScript 25.2%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#3572a5" stroke-width="16" stroke-dasharray="73.4649 351.8584" stroke-dashoffset="-203.5225" transform="rotate(-90 263 181)"><title>Python 20.9%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#f1e05a" stroke-width="16" stroke-dasharray="34.0962 351.8584" stroke-dashoffset="-276.9874" transform="rotate(-90 263 181)"><title>JavaScript 9.7%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#083fa1" stroke-width="16" stroke-dasharray="9.1392 351.8584" stroke-dashoffset="-311.0836" transform="rotate(-90 263 181)"><title>Markdown 2.6%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#e34c26" stroke-width="16" stroke-dasharray="9.1392 351.8584" stroke-dashoffset="-320.2228" transform="rotate(-90 263 181)"><title>HTML 2.6%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#f34b7d" stroke-width="16" stroke-dasharray="5.9756 351.8584" stroke-dashoffset="-329.3619" transform="rotate(-90 263 181)"><title>C++ 1.7%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="hsl(312 65% 50%)" stroke-width="16" stroke-dasharray="4.2181 351.8584" stroke-dashoffset="-335.3376" transform="rotate(-90 263 181)"><title>C# 1.2%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#000080" stroke-width="16" stroke-dasharray="3.5151 351.8584" stroke-dashoffset="-339.5556" transform="rotate(-90 263 181)"><title>Lua 1.0%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#fcb32c" stroke-width="16" stroke-dasharray="2.4605 351.8584" stroke-dashoffset="-343.0707" transform="rotate(-90 263 181)"><title>MDX 0.7%</title></circle>
-<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="hsl(184 65% 50%)" stroke-width="16" stroke-dasharray="6.3271 351.8584" stroke-dashoffset="-345.5313" transform="rotate(-90 263 181)"><title>Other 1.8%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#a97bff" stroke-width="16" stroke-dasharray="114.9427 236.9157" stroke-dashoffset="0.0000" transform="rotate(-90 263 181)"><title>Kotlin 32.7%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#3178c6" stroke-width="16" stroke-dasharray="88.5797 263.2787" stroke-dashoffset="-114.9427" transform="rotate(-90 263 181)"><title>TypeScript 25.2%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#3572a5" stroke-width="16" stroke-dasharray="73.4649 278.3935" stroke-dashoffset="-203.5225" transform="rotate(-90 263 181)"><title>Python 20.9%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#f1e05a" stroke-width="16" stroke-dasharray="34.0962 317.7622" stroke-dashoffset="-276.9874" transform="rotate(-90 263 181)"><title>JavaScript 9.7%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#083fa1" stroke-width="16" stroke-dasharray="9.1392 342.7192" stroke-dashoffset="-311.0836" transform="rotate(-90 263 181)"><title>Markdown 2.6%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#e34c26" stroke-width="16" stroke-dasharray="9.1392 342.7192" stroke-dashoffset="-320.2228" transform="rotate(-90 263 181)"><title>HTML 2.6%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#f34b7d" stroke-width="16" stroke-dasharray="5.9756 345.8828" stroke-dashoffset="-329.3619" transform="rotate(-90 263 181)"><title>C++ 1.7%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="hsl(312 65% 50%)" stroke-width="16" stroke-dasharray="4.2181 347.6403" stroke-dashoffset="-335.3376" transform="rotate(-90 263 181)"><title>C# 1.2%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#000080" stroke-width="16" stroke-dasharray="3.5151 348.3433" stroke-dashoffset="-339.5556" transform="rotate(-90 263 181)"><title>Lua 1.0%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="#fcb32c" stroke-width="16" stroke-dasharray="2.4605 349.3979" stroke-dashoffset="-343.0707" transform="rotate(-90 263 181)"><title>MDX 0.7%</title></circle>
+<circle class="donut-segment" cx="263" cy="181" r="56" fill="none" stroke="hsl(184 65% 50%)" stroke-width="16" stroke-dasharray="6.3271 345.5313" stroke-dashoffset="-345.5313" transform="rotate(-90 263 181)"><title>Other 1.8%</title></circle>
 <text class="caption" x="26" y="356">trvny + travnie · public repositories · no forks</text>
 </svg>

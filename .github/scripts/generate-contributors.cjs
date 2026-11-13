@@ -531,7 +531,7 @@ function buildLanguageSvg(languages) {
     const length = (bytes / total) * circumference;
     const dashOffset = offset;
     offset += length;
-    return `<circle class="donut-segment" cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${colorFor(name)}" stroke-width="16" stroke-dasharray="${length.toFixed(4)} ${circumference.toFixed(4)}" stroke-dashoffset="${(-dashOffset).toFixed(4)}" transform="rotate(-90 ${cx} ${cy})"><title>${escapeXml(name)} ${(bytes / total * 100).toFixed(1)}%</title></circle>`;
+    return `<circle class="donut-segment" cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${colorFor(name)}" stroke-width="16" stroke-dasharray="${length.toFixed(4)} ${(circumference - length).toFixed(4)}" stroke-dashoffset="${(-dashOffset).toFixed(4)}" transform="rotate(-90 ${cx} ${cy})"><title>${escapeXml(name)} ${(bytes / total * 100).toFixed(1)}%</title></circle>`;
   }).join("\n");
   const legend = top.map(([name, bytes], index) => {
     const y = 36 + index * 28;

@@ -36,3 +36,21 @@ test("pre-aggregated Other stays a single trailing bucket", () => {
   assert.equal((svg.match(/Other 10\.0%/g) || []).length, 2);
   assert.equal((svg.match(/class="donut-segment"/g) || []).length, 3);
 });
+
+test("donut arc lengths and offsets match each language share", () => {
+  const svg = buildLanguageSvg([["Kotlin", 50], ["Python", 30], ["Other", 20]]);
+  const arcs = [...svg.matchAll(/class="donut-segment"[^>]*stroke-dasharray="([\d.]+) ([\d.]+)" stroke-dashoffset="(-?[\d.]+)"/g)];
+  assert.equal(arcs.length, 3);
+  const circumference = 2 * Math.PI * 56;
+  let offset = 0;
+  for (const [index, arc] of arcs.entries()) {
+    const length = Number(arc[1]);
+    const gap = Number(arc[2]);
+    const dashOffset = Number(arc[3]);
+    const share = [0.5, 0.3, 0.2][index];
+    assert.ok(Math.abs(length - circumference * share) < 0.001);
+    assert.ok(Math.abs(length + gap - circumference) < 0.001);
+    assert.ok(Math.abs(dashOffset + offset) < 0.001);
+    offset += length;
+  }
+});
