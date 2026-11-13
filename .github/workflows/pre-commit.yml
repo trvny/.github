@@ -23,6 +23,14 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Set up Node for language tests
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Test language donut renderer
+        run: node --test .github/scripts/generate-contributors.test.cjs
+
       - name: Set up Python
         uses: actions/setup-python@v7
         with:

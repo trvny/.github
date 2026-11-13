@@ -495,42 +495,63 @@ async function avatarDataUri(avatarUrl) {
 }
 
 function buildLanguageSvg(languages) {
-  const colors={TypeScript:"#3178c6",Python:"#3572a5",JavaScript:"#f1e05a",Kotlin:"#a97bff",Markdown:"#083fa1",HTML:"#e34c26",CSS:"#563d7c",Lua:"#000080",Shell:"#89e051",PowerShell:"#012456",Astro:"#ff5d01",MDX:"#fcb32c",Java:"#b07219",Dart:"#00b4ab",Swift:"#f05138",Rust:"#dea584",Go:"#00add8",Ruby:"#701516","C++":"#f34b7d",C:"#555555"};
-  const total=languages.reduce((sum,[,bytes])=>sum+bytes,0);
-  const sorted=languages.filter(([,bytes])=>bytes>0).sort((a,b)=>b[1]-a[1]);
-  const top=sorted.slice(0,10);
-  const remaining=sorted.slice(10).reduce((sum,[,bytes])=>sum+bytes,0);
-  if(remaining)top.push(["Other",remaining]);
-  const colorFor=name=>{if(colors[name])return colors[name];let hash=0;for(const char of name)hash=(hash*31+char.charCodeAt(0))%360;return `hsl(${hash} 65% 50%)`};
-  const height=Math.max(150,119+top.length*38);
-  const lines=top.map(([name,bytes],index)=>{
-    const percent=total?100*bytes/total:0;
-    const y=97+index*38,width=Math.max(1,Math.round(396*percent/100));
-    return `<g>
-<text class="lang" x="22" y="${y}">${escapeXml(name)}</text>
-<text class="percent" text-anchor="end" x="418" y="${y}">${percent.toFixed(1)}%</text>
-<rect class="track" x="22" y="${y+8}" width="396" height="9" rx="4.5"/>
-<rect x="22" y="${y+8}" width="${width}" height="9" rx="4.5" fill="${colorFor(name)}"/>
-</g>`;
+  const colors = {
+    TypeScript: "#3178c6", Python: "#3572a5", JavaScript: "#f1e05a",
+    Kotlin: "#a97bff", Markdown: "#083fa1", HTML: "#e34c26",
+    CSS: "#563d7c", Lua: "#000080", Shell: "#89e051",
+    PowerShell: "#012456", Astro: "#ff5d01", MDX: "#fcb32c",
+    Java: "#b07219", Dart: "#00b4ab", Swift: "#f05138",
+    Rust: "#dea584", Go: "#00add8", Ruby: "#701516",
+    "C++": "#f34b7d", C: "#555555",
+  };
+  const valid = languages.filter(([, bytes]) => Number.isFinite(bytes) && bytes > 0);
+  const total = valid.reduce((sum, [, bytes]) => sum + bytes, 0);
+  const sorted = valid
+    .filter(([name]) => name !== "Other")
+    .sort((a, b) => b[1] - a[1]);
+  const top = sorted.slice(0, 10);
+  const other = valid
+    .filter(([name]) => name === "Other")
+    .reduce((sum, [, bytes]) => sum + bytes, 0) +
+    sorted.slice(10).reduce((sum, [, bytes]) => sum + bytes, 0);
+  if (other > 0) top.push(["Other", other]);
+
+  const colorFor = (name) => {
+    if (colors[name]) return colors[name];
+    let hash = 0;
+    for (const char of name) hash = (hash * 31 + char.charCodeAt(0)) % 360;
+    return `hsl(${hash} 65% 50%)`;
+  };
+  const cx = 263;
+  const cy = 181;
+  const radius = 56;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
+  const segments = top.map(([name, bytes]) => {
+    const length = (bytes / total) * circumference;
+    const dashOffset = offset;
+    offset += length;
+    return `<circle class="donut-segment" cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${colorFor(name)}" stroke-width="16" stroke-dasharray="${length.toFixed(4)} ${(circumference - length).toFixed(4)}" stroke-dashoffset="${(-dashOffset).toFixed(4)}" transform="rotate(-90 ${cx} ${cy})"><title>${escapeXml(name)} ${(bytes / total * 100).toFixed(1)}%</title></circle>`;
   }).join("\n");
-  const empty=total?"":`<text class="subtitle" x="22" y="103">No language bytes reported by GitHub.</text>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="440" height="${height}" viewBox="0 0 440 ${height}" role="img" aria-labelledby="title description">
+  const legend = top.map(([name, bytes], index) => {
+    const y = 36 + index * 28;
+    return `<g><circle cx="30" cy="${y - 4}" r="5" fill="${colorFor(name)}"/><text class="lang" x="43" y="${y}">${escapeXml(name)} ${(bytes / total * 100).toFixed(1)}%</text></g>`;
+  }).join("\n");
+  const empty = total ? "" : `<text class="lang" x="30" y="75">No language data available.</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="350" height="377" viewBox="0 0 350 377" role="img" aria-labelledby="title description">
 <title id="title">Repository languages</title>
 <desc id="description">GitHub-reported source bytes across public, non-fork repositories owned by trvny and travnie, including archives. Not a measure of developer productivity.</desc>
+<defs><linearGradient id="gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4158d0"/><stop offset="50%" stop-color="#c850c0"/><stop offset="100%" stop-color="#ffcc70"/></linearGradient></defs>
 <style>
-.bg{fill:#fff;stroke:#d0d7de}.title{fill:#1f2328;font:700 21px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.subtitle{fill:#57606a;font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.lang{fill:#1f2328;font:600 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.percent{fill:#57606a;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.track{fill:#eaeef2}
-@media(prefers-color-scheme:dark){.bg{fill:#0d1117;stroke:#30363d}.title,.lang{fill:#e6edf3}
-.subtitle,.percent{fill:#9198a1}.track{fill:#21262d}}
+.lang{fill:#fff;font:400 11.5px "Segoe UI",Ubuntu,sans-serif}
+.caption{fill:#fff;fill-opacity:.87;font:11px "Segoe UI",Ubuntu,sans-serif}
 </style>
-<rect class="bg" x="1.5" y="1.5" width="437" height="${height-3}" rx="14"/>
-<text class="title" x="22" y="35">Repository languages</text>
-<text class="subtitle" x="22" y="57">trvny + travnie · public repositories · no forks</text>
-${lines}
+<rect x=".5" y=".5" width="349" height="376" rx="5" fill="url(#gradient)" stroke="#e4e2e2"/>
+${legend}
 ${empty}
+<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="16"/>
+${segments}
+<text class="caption" x="26" y="356">trvny + travnie · public repositories · no forks</text>
 </svg>
 `;
 }
@@ -735,3 +756,5 @@ module.exports = async ({ github, core }) => {
     `Scanned ${repositories.length} public repositories.`,
   );
 };
+
+module.exports.buildLanguageSvg = buildLanguageSvg;
