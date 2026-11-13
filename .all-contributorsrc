@@ -1,0 +1,304 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "codacy-production[bot]",
+      "name": "codacy-production[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/56611?v=4",
+      "profile": "https://github.com/apps/codacy-production",
+      "contributions": [
+        "code",
+        "review"
+      ]
+    },
+    {
+      "login": "coderabbitai[bot]",
+      "name": "CodeRabbit",
+      "avatar_url": "https://avatars.githubusercontent.com/in/347564?v=4",
+      "profile": "https://github.com/apps/coderabbitai",
+      "contributions": [
+        "review",
+        "code"
+      ]
+    },
+    {
+      "login": "trvny",
+      "name": "trvny",
+      "avatar_url": "https://avatars.githubusercontent.com/u/120686325?u=f421c62e9d101e4f7ddac87061f82ccca98b2fe1&v=4",
+      "profile": "https://github.com/trvny",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "github-actions[bot]",
+      "name": "github-actions[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/15368?v=4",
+      "profile": "https://github.com/apps/github-actions",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "dependabot[bot]",
+      "name": "dependabot[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/29110?v=4",
+      "profile": "https://github.com/apps/dependabot",
+      "contributions": [
+        "maintenance"
+      ]
+    },
+    {
+      "login": "mergify[bot]",
+      "name": "mergify[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/10562?v=4",
+      "profile": "https://github.com/apps/mergify",
+      "contributions": [
+        "maintenance"
+      ]
+    },
+    {
+      "login": "gptomek[bot]",
+      "name": "gptomek[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/4524407?v=4",
+      "profile": "https://github.com/apps/gptomek",
+      "contributions": [
+        "code",
+        "doc"
+      ]
+    },
+    {
+      "login": "claude",
+      "name": "claude",
+      "avatar_url": "https://avatars.githubusercontent.com/u/81847?v=4",
+      "profile": "https://github.com/claude",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "claudiusz69[bot]",
+      "name": "claudiusz69[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/4454097?v=4",
+      "profile": "https://github.com/apps/claudiusz69",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "deepsource-autofix[bot]",
+      "name": "deepsource-autofix[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/57168?v=4",
+      "profile": "https://github.com/apps/deepsource-autofix",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "devin-ai-integration[bot]",
+      "name": "devin-ai-integration[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/811515?v=4",
+      "profile": "https://github.com/apps/devin-ai-integration",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "actions-user",
+      "name": "actions-user",
+      "avatar_url": "https://avatars.githubusercontent.com/u/65916846?v=4",
+      "profile": "https://github.com/actions-user",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "chatgpt-codex-connector[bot]",
+      "name": "chatgpt-codex-connector[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/1144995?v=4",
+      "profile": "https://github.com/apps/chatgpt-codex-connector",
+      "contributions": [
+        "code",
+        "review"
+      ]
+    },
+    {
+      "login": "sourcery-ai[bot]",
+      "name": "sourcery-ai[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/48477?v=4",
+      "profile": "https://github.com/apps/sourcery-ai",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "deepsource-io[bot]",
+      "name": "deepsource-io[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/16372?v=4",
+      "profile": "https://github.com/apps/deepsource-io",
+      "contributions": [
+        "review",
+        "security"
+      ]
+    },
+    {
+      "login": "kanarek-companion[bot]",
+      "name": "kanarek-companion[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/4472094?v=4",
+      "profile": "https://github.com/apps/kanarek-companion",
+      "contributions": [
+        "review",
+        "infra"
+      ]
+    },
+    {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "name": "copilot-pull-request-reviewer[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "profile": "https://github.com/apps/copilot-pull-request-reviewer",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "github-advanced-security[bot]",
+      "name": "github-advanced-security[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/57789?v=4",
+      "profile": "https://github.com/apps/github-advanced-security",
+      "contributions": [
+        "security"
+      ]
+    },
+    {
+      "login": "copilot-swe-agent[bot]",
+      "name": "copilot-swe-agent[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/1143301?v=4",
+      "profile": "https://github.com/apps/copilot-swe-agent",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "kucharz2026-maker",
+      "name": "kucharz2026-maker",
+      "avatar_url": "https://avatars.githubusercontent.com/u/324626588?v=4",
+      "profile": "https://github.com/kucharz2026-maker",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "cubic-dev-ai[bot]",
+      "name": "cubic-dev-ai[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/1082092?v=4",
+      "profile": "https://github.com/apps/cubic-dev-ai",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "greptile-apps[bot]",
+      "name": "greptile-apps[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/867647?v=4",
+      "profile": "https://github.com/apps/greptile-apps",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "allcontributors[bot]",
+      "name": "allcontributors[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/23186?v=4",
+      "profile": "https://github.com/apps/allcontributors",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "codex",
+      "name": "codex",
+      "avatar_url": "https://avatars.githubusercontent.com/u/267193182?v=4",
+      "profile": "https://github.com/codex",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ecc-tools[bot]",
+      "name": "ecc-tools[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2724203?v=4",
+      "profile": "https://github.com/apps/ecc-tools",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "vercel[bot]",
+      "name": "vercel[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/8329?v=4",
+      "profile": "https://github.com/apps/vercel",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "cloudflare-workers-and-pages[bot]",
+      "name": "cloudflare-workers-and-pages[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/85455?v=4",
+      "profile": "https://github.com/apps/cloudflare-workers-and-pages",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "Claude[bot]",
+      "name": "Claude[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2246796?v=4",
+      "profile": "https://github.com/apps/anthropic-code-agent",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "gemini-cli",
+      "name": "gemini-cli",
+      "avatar_url": "https://avatars.githubusercontent.com/u/218195315?v=4",
+      "profile": "https://github.com/gemini-cli",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "github-project-automation[bot]",
+      "name": "github-project-automation[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/235829?v=4",
+      "profile": "https://github.com/apps/github-project-automation",
+      "contributions": [
+        "maintenance"
+      ]
+    },
+    {
+      "login": "context7[bot]",
+      "name": "context7[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2083650?v=4",
+      "profile": "https://github.com/apps/context7",
+      "contributions": [
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": ".github",
+  "projectOwner": "trvny"
+}
