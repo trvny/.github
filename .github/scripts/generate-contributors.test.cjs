@@ -1,0 +1,32 @@
+const assert = require("node:assert/strict");
+const { test } = require("node:test");
+
+const { buildLanguageSvg } = require("./generate-contributors.cjs");
+
+test("language card keeps a real donut and aggregated percentages", () => {
+  const svg = buildLanguageSvg([["Kotlin", 50], ["TypeScript", 30], ["Python", 20]]);
+  assert.equal((svg.match(/class="donut-segment"/g) || []).length, 3);
+  assert.match(svg, /Kotlin 50\.0%/);
+  assert.match(svg, /TypeScript 30\.0%/);
+  assert.match(svg, /Python 20\.0%/);
+  assert.match(svg, /trvny \+ travnie/);
+  assert.match(svg, /linearGradient/);
+  assert.doesNotMatch(svg, /class="track"/);
+});
+
+test("other groups languages beyond the top ten", () => {
+  const svg = buildLanguageSvg(Array.from({ length: 12 }, (_, i) => [
+    "Language" + i, 12 - i,
+  ]));
+  assert.equal((svg.match(/class="donut-segment"/g) || []).length, 11);
+  assert.match(svg, /Other 3\.8%/);
+});
+
+test("empty and untrusted language names render safely", () => {
+  const empty = buildLanguageSvg([["Kotlin", 0]]);
+  assert.match(empty, /No language data available/);
+  assert.doesNotMatch(empty, /class="donut-segment"/);
+  const svg = buildLanguageSvg([["<script>&", 3]]);
+  assert.match(svg, /&lt;script&gt;&amp;/);
+  assert.doesNotMatch(svg, /<script>/);
+});

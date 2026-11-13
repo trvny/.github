@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - ".github/scripts/generate-contributors.cjs"
+      - ".github/scripts/generate-contributors.test.cjs"
       - ".github/scripts/generate-merged-prs.cjs"
       - ".github/scripts/generate-merged-prs.test.cjs"
       - ".github/workflows/stats.yml"
@@ -49,6 +50,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Test language donut renderer
+        if: github.repository == 'trvny/.github' && github.ref == 'refs/heads/main'
+        run: node --test .github/scripts/generate-contributors.test.cjs
 
       - name: Test merged PR counter
         if: github.repository == 'trvny/.github' && github.ref == 'refs/heads/main'
