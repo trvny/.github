@@ -196,6 +196,13 @@
       "avatarUrl": "https://avatars.githubusercontent.com/in/2083650?v=4",
       "profileUrl": "https://github.com/apps/context7",
       "type": "Bot"
+    },
+    {
+      "id": 240665456,
+      "login": "kilo-code-bot[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/2193792?v=4",
+      "profileUrl": "https://github.com/apps/kilo-code-bot",
+      "type": "Bot"
     }
   ]
 }
