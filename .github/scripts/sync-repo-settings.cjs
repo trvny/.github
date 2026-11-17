@@ -1,6 +1,6 @@
 const headers = { "X-GitHub-Api-Version": "2026-03-10" };
 const copilotName = "Copilot review for default branch";
-const advancedCodeQLRepos = new Set(["travnie/aistee"]);
+const advancedCodeQLRepos = new Set(["travnie/aistee", "travnie/autka"]);
 
 async function change(core, dryRun, repository, label, fn) {
   if (dryRun) {
@@ -70,6 +70,7 @@ async function syncCopilot({ github, core, dryRun, repository, owner, repo }) {
 }
 
 // Default setup cannot build Aistee Kotlin with its JDK 21 toolchain.
+// Autka needs an explicit macOS Swift build and Android test compilation.
 // All other repositories retain automatic CodeQL default setup.
 async function syncCodeQL({ github, core, dryRun, repository, owner, repo }) {
   let current;
@@ -86,7 +87,7 @@ async function syncCodeQL({ github, core, dryRun, repository, owner, repo }) {
     throw error;
   }
 
-  const desired = advancedCodeQLRepos.has(repository) ? "not-configured" : "configured";
+  const desired = advancedCodeQLRepos.has(repository.toLowerCase()) ? "not-configured" : "configured";
   if (current.data.state === desired) return;
 
   await change(core, dryRun, repository, `set CodeQL default setup to ${desired}`, () =>
