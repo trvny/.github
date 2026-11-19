@@ -1,6 +1,6 @@
 const headers = { "X-GitHub-Api-Version": "2026-03-10" };
 const copilotName = "Copilot review for default branch";
-const advancedCodeQLRepos = new Set(["travnie/aistee", "travnie/autka"]);
+const advancedCodeQLRepos = new Set(["travnie/aistee", "travnie/autka", "travnie/twojstar"]);
 
 async function change(core, dryRun, repository, label, fn) {
   if (dryRun) {
@@ -71,6 +71,7 @@ async function syncCopilot({ github, core, dryRun, repository, owner, repo }) {
 
 // Default setup cannot build Aistee Kotlin with its JDK 21 toolchain.
 // Autka needs an explicit macOS Swift build and Android test compilation.
+// Twojstar has separate Kotlin toolchains and a generated iOS project.
 // All other repositories retain automatic CodeQL default setup.
 async function syncCodeQL({ github, core, dryRun, repository, owner, repo }) {
   let current;
