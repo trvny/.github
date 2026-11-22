@@ -203,6 +203,13 @@
       "avatarUrl": "https://avatars.githubusercontent.com/in/2193792?v=4",
       "profileUrl": "https://github.com/apps/kilo-code-bot",
       "type": "Bot"
+    },
+    {
+      "id": 57676739,
+      "login": "gitguardian[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/46505?v=4",
+      "profileUrl": "https://github.com/apps/gitguardian",
+      "type": "Bot"
     }
   ]
 }
