@@ -210,6 +210,13 @@
       "avatarUrl": "https://avatars.githubusercontent.com/in/46505?v=4",
       "profileUrl": "https://github.com/apps/gitguardian",
       "type": "Bot"
+    },
+    {
+      "id": 220374863,
+      "login": "mistral-vibe",
+      "avatarUrl": "https://avatars.githubusercontent.com/u/220374863?v=4",
+      "profileUrl": "https://github.com/mistral-vibe",
+      "type": "User"
     }
   ]
 }
