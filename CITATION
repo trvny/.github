@@ -3,8 +3,13 @@ title: "滚"
 message: kurde
 type: software
 authors:
-  - name: trvny
-  - name: claude
+  - affiliation: travnie
+    family-names: trvny
+    name: travny
+  - affiliation: '@anthropics'
+    family-names: Claude
+  - affiliation: '@mistral'
+    family-names: Mistral Vibe
   - name: chatgpt
   - name: codex
   - name: Copilot
@@ -25,7 +30,7 @@ identifiers:
   - type: url
     value: 'https://github.com/trvny'
 repository-code: 'https://github.com/trvny/.github'
-url: 'https://trfny.com/'
+url: 'https://bartek.lol/'
 license: ISC
 version: 0.0.0
 date-released: '2026-07-29'
