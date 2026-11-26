@@ -374,6 +374,51 @@
           "url": "https://github.com/trvny/trvny/commits?author=context7%5Bbot%5D"
         }
       ]
+    },
+    {
+      "login": "Copilot[bot]",
+      "name": "Copilot[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "profile": "https://github.com/apps/copilot-pull-request-reviewer",
+      "contributions": [
+        {
+          "type": "review",
+          "url": "https://github.com/trvny/trvny/pulls?q=is%3Apr+reviewed-by%3ACopilot%5Bbot%5D"
+        }
+      ]
+    },
+    {
+      "login": "kilo-code-bot[bot]",
+      "name": "kilo-code-bot[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/2193792?v=4",
+      "profile": "https://github.com/apps/kilo-code-bot",
+      "contributions": [
+        {
+          "type": "review",
+          "url": "https://github.com/travnie/twojstar/pulls?q=is%3Apr+reviewed-by%3Akilo-code-bot%5Bbot%5D"
+        }
+      ]
+    },
+    {
+      "login": "gitguardian[bot]",
+      "name": "gitguardian[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/46505?v=4",
+      "profile": "https://github.com/apps/gitguardian",
+      "contributions": [
+        "security"
+      ]
+    },
+    {
+      "login": "mistral-vibe",
+      "name": "mistral-vibe",
+      "avatar_url": "https://avatars.githubusercontent.com/u/220374863?v=4",
+      "profile": "https://github.com/mistral-vibe",
+      "contributions": [
+        {
+          "type": "code",
+          "url": "https://github.com/travnie/aistee/commits?author=mistral-vibe"
+        }
+      ]
     }
   ],
   "contributorsPerLine": 7,
