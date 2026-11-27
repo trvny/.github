@@ -217,6 +217,13 @@
       "avatarUrl": "https://avatars.githubusercontent.com/u/220374863?v=4",
       "profileUrl": "https://github.com/mistral-vibe",
       "type": "User"
+    },
+    {
+      "id": 151058649,
+      "login": "qodo-code-review[bot]",
+      "avatarUrl": "https://avatars.githubusercontent.com/in/484649?v=4",
+      "profileUrl": "https://github.com/apps/qodo-code-review",
+      "type": "Bot"
     }
   ]
 }
